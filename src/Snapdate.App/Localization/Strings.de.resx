@@ -155,5 +155,5 @@
   <data name="UpdateFailedVerify" xml:space="preserve"><value>Der Download konnte nicht überprüft werden und wurde deshalb nicht installiert. Bitte laden Sie die neue Version von der Download-Seite.</value></data>
   <data name="UpdateFailedMissing" xml:space="preserve"><value>Diese Version hat kein Installationsprogramm für Ihren PC. Bitte laden Sie sie von der Download-Seite.</value></data>
   <data name="UpdateFailedStart" xml:space="preserve"><value>Das Installationsprogramm konnte nicht gestartet werden. Bitte laden Sie die neue Version von der Download-Seite.</value></data>
-  <data name="UpdateFailedInstaller" xml:space="preserve"><value>Das Setup wurde beendet, ohne etwas zu installieren. Es wurde nichts verändert.</value></data>
+  <data name="UpdateFailedInstaller" xml:space="preserve"><value>Die Installation wurde abgebrochen. Es wurde nichts verändert.</value></data>
 </root>

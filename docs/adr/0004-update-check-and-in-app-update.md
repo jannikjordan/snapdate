@@ -115,7 +115,7 @@ installer that matches the process architecture. Core (no UI) in `InstallUpdateU
   interactive runs show a message (EN/DE).
 - **Results, no exceptions** to the UI: `Completed`, `InstallerRunning`, `NotApplicable`, `AssetMissing`,
   `DownloadFailed`, `VerificationFailed`, `LaunchFailed`, `InstallerFailed`, `Cancelled` (cancellation of the download
-  phase is caught inside the use case). The banner's *Update now* drives it (progress, Cancel, failure message with the release page button; part B).
+  phase is caught inside the use case). The banner's *Update now* drives it (progress, Cancel, failure message with the download page button, plus Try again; part B).
 - Layering: ports `IUpdateDownloader`, `IDownloadedFile`, `IInstallerLauncher`, `IInstallLocationCheck`,
   `IStartedInstaller`, `IProcessArchitecture` and `InstallUpdateUseCase` in Application; `HttpUpdateDownloader`, `ProcessInstallerLauncher`,
   `RegistryInstallLocationCheck`, `ProcessArchitecture` in Infrastructure. No new packages (the registry API is part

@@ -151,7 +151,7 @@ public sealed class InAppUpdateViewModelTests
 
         vm.IsGerman = true;
         Assert.NotEqual(english, vm.Update.FailureText);
-        Assert.Contains("Setup wurde beendet", vm.Update.FailureText, StringComparison.Ordinal);
+        Assert.Contains("Installation wurde abgebrochen", vm.Update.FailureText, StringComparison.Ordinal);
 
         vm.Update.LaterCommand.Execute(null);
         Assert.False(vm.Update.IsBannerVisible);

@@ -149,4 +149,4 @@ UpdateFailedDownload	The download failed. Check your internet connection and try
 UpdateFailedVerify	The download could not be verified, so it was not installed. Please get the new version from the download page.	Der Download konnte nicht überprüft werden und wurde deshalb nicht installiert. Bitte laden Sie die neue Version von der Download-Seite.
 UpdateFailedMissing	This release has no installer for your PC. Please get the new version from the download page.	Diese Version hat kein Installationsprogramm für Ihren PC. Bitte laden Sie sie von der Download-Seite.
 UpdateFailedStart	The installer could not be started. Please get the new version from the download page.	Das Installationsprogramm konnte nicht gestartet werden. Bitte laden Sie die neue Version von der Download-Seite.
-UpdateFailedInstaller	Setup ended without installing. Nothing was changed.	Das Setup wurde beendet, ohne etwas zu installieren. Es wurde nichts verändert.
+UpdateFailedInstaller	The installation was cancelled. Nothing was changed.	Die Installation wurde abgebrochen. Es wurde nichts verändert.

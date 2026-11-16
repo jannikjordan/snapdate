@@ -155,5 +155,5 @@
   <data name="UpdateFailedVerify" xml:space="preserve"><value>The download could not be verified, so it was not installed. Please get the new version from the download page.</value></data>
   <data name="UpdateFailedMissing" xml:space="preserve"><value>This release has no installer for your PC. Please get the new version from the download page.</value></data>
   <data name="UpdateFailedStart" xml:space="preserve"><value>The installer could not be started. Please get the new version from the download page.</value></data>
-  <data name="UpdateFailedInstaller" xml:space="preserve"><value>Setup ended without installing. Nothing was changed.</value></data>
+  <data name="UpdateFailedInstaller" xml:space="preserve"><value>The installation was cancelled. Nothing was changed.</value></data>
 </root>

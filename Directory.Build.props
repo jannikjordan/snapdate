@@ -1,7 +1,7 @@
 <Project>
   <!-- Single source of truth for version and shared build settings. -->
   <PropertyGroup>
-    <VersionPrefix>0.1.0</VersionPrefix>
+    <VersionPrefix>0.2.0</VersionPrefix>
     <Product>Snapdate</Product>
     <Company>Snapdate</Company>
     <Copyright>© 2026 Snapdate contributors</Copyright>
