@@ -124,10 +124,12 @@ Validation inline below the row (e.g. "Target is inside the source folder").
 - Below: token **chip palette** grouped *Date* · *Time* · *File* · *Separators*.
   Click inserts at caret; drag & drop supported. Chips show friendly labels
   ("Year", "Jahr") with the raw token as tooltip.
-- Date/time chips have a small **"07 / 7" toggle** (leading zero on/off)
-  that switches between `{MM}`/`{M}`, `{DD}`/`{D}`, `{HH}`/`{H}`,
-  `{mm}`/`{m}`, `{ss}`/`{s}`. Clicking a pill in the field offers the same
-  switch.
+- A **"Leading zero (07 instead of 7)"** switch converts all date/time blocks
+  (`{MM}`/`{M}`, `{DD}`/`{D}`, `{HH}`/`{H}`, `{mm}`/`{m}`, `{ss}`/`{s}`).
+- **Clicking a pill switches its form**: `07 ⇄ 7`, `2024 ⇄ 24`, `Jul ⇄ July`,
+  `Sun ⇄ Sunday`; the ✕ removes it. This keeps the chip palette short.
+- Implementation note: the text box holds the pattern text; pills are a
+  live, clickable rendering of the parsed pattern below it.
 - **Presets**: `2024-07-14_15-32-08`, `20240714_153208`,
   `2024-07-14 1532`, `2024/07/2024-07-14 …` (folders), `14.07.2024 – IMG_4711`.
 - **Live example** line with the first file's real data, plus extension hint:

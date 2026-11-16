@@ -1,100 +1,136 @@
 <div align="center">
 
-<img src="assets/branding/logo.svg" width="112" height="112" alt="Snapdate logo">
+<img src="assets/branding/logo-256.png" width="112" height="112" alt="Snapdate logo">
 
 # Snapdate
 
 **Sort your photos by the day they were taken.**<br>
 *Fotos nach Aufnahmedatum sortieren.*
 
-![version](https://img.shields.io/badge/version-0.1.0-6D5DFC)
-![platform](https://img.shields.io/badge/platform-Windows%2010%20%7C%2011-B44CF0)
-![no install](https://img.shields.io/badge/install-not%20required-FF7A59)
-![languages](https://img.shields.io/badge/UI-English%20%7C%20Deutsch-1FA971)
+[![Latest release](https://img.shields.io/github/v/release/jannikjordan/snapdate?color=6D5DFC&label=release)](https://github.com/jannikjordan/snapdate/releases)
+![Windows 10 | 11](https://img.shields.io/badge/Windows-10%20%7C%2011-B44CF0)
+![No installation](https://img.shields.io/badge/installation-none-FF7A59)
+![Offline](https://img.shields.io/badge/works-offline-1FA971)
+[![CI](https://github.com/jannikjordan/snapdate/actions/workflows/ci.yml/badge.svg)](https://github.com/jannikjordan/snapdate/actions/workflows/ci.yml)
+[![MIT](https://img.shields.io/badge/license-MIT-5B4BF5)](LICENSE)
+
+🇬🇧 [English](#-english) · 🇩🇪 [Deutsch](#-deutsch)
+
+<img src="docs/images/en/02-preview-light.png" width="860" alt="Snapdate main window">
 
 </div>
 
 ---
 
+## 🇬🇧 English
+
 Snapdate is a small, friendly Windows app that takes a folder full of photos —
-`IMG_4711.JPG`, `DSC00012.ARW`, `WhatsApp Image….jpeg` — and gives every file
-a clean, sortable name based on **when the photo was taken**, e.g.
-`2024-07-14_15-32-08.jpg`.
+`IMG_4711.JPG`, `DSC00012.JPG`, `WhatsApp Image….jpeg` — and gives every file a
+clean, sortable name based on **when the photo was taken**, for example
+`2024-07-14_09-12-33.jpg`.
 
-Just download **one file** and double-click it. Nothing to install.
+**Download one file, double-click, done.** Nothing to install.
 
-<!-- Screenshots are captured from the real app once M4 is done. -->
-<p align="center">
-  <img src="docs/images/screenshot-main-light.png" width="820" alt="Snapdate main window (light)">
-</p>
-<p align="center">
-  <img src="docs/images/screenshot-main-dark.png" width="400" alt="Snapdate main window (dark)">
-  <img src="docs/images/screenshot-done.png" width="400" alt="Snapdate finished copying">
-</p>
+### ✨ Features
 
-## Features
+- 📁 **Two folders, that's it** — where your photos are, and where the renamed ones go. Drag & drop works too.
+- 🕒 **The real capture date** — read from inside the photo (EXIF, XMP, video and PNG data). No date inside? The file date is used and clearly marked.
+- 🧩 **Build your own name with blocks** — Year, Month, Day, Hour, Original name, Camera, Counter … with or without leading zeros (`07` or `7`), plus any text you like: `Holiday {D}.{M}.{YYYY} {HH}{mm}`.
+- 🗂️ **Folders by year and month** — `2024\07\2024-07-14 IMG_4711.jpg` with one click.
+- 👀 **Preview first** — every old → new name with thumbnail before anything happens.
+- 🛡️ **Safe by default** — copies instead of moving, **never overwrites**, adds `(2)` for duplicates, verifies every copy and writes a log.
+- 🖼️ **Many formats** — JPG, PNG, HEIC, AVIF, WebP, TIFF, GIF, BMP, camera RAW (DNG, CR3, NEF, ARW …) and videos (MP4, MOV). The file type is always kept.
+- 🌍 **English & Deutsch** — chosen from your Windows language, switchable any time.
+- 🌗 **Light & dark** — follows Windows.
+- 🔒 **Private** — fully offline. No account, no tracking.
 
-- 📁 **Pick two folders** — where your photos are, and where the renamed copies go. Drag & drop works too.
-- 🕒 **Real capture date** — read from the photo's metadata (EXIF, XMP, QuickTime). If a file has none, its file date is used and clearly marked.
-- 🧩 **Build your own name** — click blocks like *Year*, *Month*, *Day*, *Hour*, *Original name*, *Camera* or *Counter* and add separators. `/` creates sub-folders (`2024/07/…`).
-- 👀 **Preview first** — see every old → new name before anything happens.
-- 🛡️ **Safe by default** — copies instead of moving, never overwrites, adds `(2)` on duplicates, writes a log file.
-- 🖼️ **Many formats** — JPG, PNG, HEIC/HEIF, WebP, TIFF, GIF, BMP, RAW (CR2, CR3, NEF, ARW, DNG, ORF, RW2 …) and videos (MP4, MOV). The file type is always kept.
-- 🌍 **English & Deutsch** — chosen automatically from your Windows language, switchable any time.
-- 🌗 **Light & dark** — follows your Windows setting.
-- 🔒 **Private** — works fully offline. No account, no telemetry, nothing leaves your PC.
+### ⬇️ Download
 
-## Download
+Get **`Snapdate-vX.Y.Z-win-x64.exe`** from the
+[latest release](https://github.com/jannikjordan/snapdate/releases/latest)
+(ARM PCs: `win-arm64`). Windows may say *“Windows protected your PC”* on first
+start — click **More info → Run anyway**.
 
-Get the latest `Snapdate-vX.Y.Z-win-x64.exe` from
-[Releases](../../releases) (use `win-arm64` on ARM devices such as Surface Pro X / Copilot+ PCs).
-Verify the download with the published `SHA256SUMS.txt` if you like.
+### 🚀 How it works
 
-## How to use
+```mermaid
+flowchart LR
+    A["📁 Choose folders"] --> B["🧩 Build the name"] --> C["📋 Copy or move"] --> D["👀 Check preview"] --> E["✅ Go!"]
+```
 
-1. Start `Snapdate.exe`.
-2. **Choose folders** — *Photos from* and *Save renamed copies to*.
-3. **Build the file name** — click the blocks or pick a quick preset.
-4. Check the preview and press **Copy N photos**.
+| | |
+|---|---|
+| <img src="docs/images/en/03-custom-pattern-light.png" width="420" alt="Own text in the name"> | <img src="docs/images/en/04-folders-pattern-light.png" width="420" alt="Sort into year and month folders"> |
+| **Your own text** between the blocks | **Year / month folders** with one block |
+| <img src="docs/images/en/07-confirm-move-light.png" width="420" alt="Confirmation before moving"> | <img src="docs/images/en/02-preview-dark.png" width="420" alt="Dark mode"> |
+| **Asks before moving** originals | **Dark mode** included |
 
-Detailed guides: [English](docs/user-guide.en.md) · [Deutsch](docs/user-guide.de.md) ·
-[All placeholders](docs/placeholders.md)
+📖 **Full guide with pictures: [User guide (English)](docs/user-guide.en.md)**
 
-## Placeholders
+---
 
-| Block | Placeholder | Example |
-|---|---|---|
-| Year | `{YYYY}` / `{YY}` | `2024` / `24` |
-| Month | `{MM}` / `{M}` / `{MMM}` / `{MMMM}` | `07` / `7` / `Jul` / `July` |
-| Day | `{DD}` / `{D}` | `04` / `4` |
-| Weekday | `{ddd}` / `{dddd}` | `Sun` / `Sunday` |
-| Hour · Minute · Second | `{HH}` `{mm}` `{ss}` (or `{H}` `{m}` `{s}` without leading zero) | `09` `05` `08` / `9` `5` `8` |
-| Original name | `{name}` | `IMG_4711` |
-| Camera | `{camera}` | `iPhone 15 Pro` |
-| Counter | `{counter}` | `001` |
+## 🇩🇪 Deutsch
 
-Anything outside `{…}` is kept as typed, so `{YYYY}-{MM}-{DD} {HH}{mm}` gives
-`2024-07-14 1532.jpg` and `Holiday {D}.{M}.{YYYY}` gives `Holiday 4.7.2024.jpg`.
+Snapdate ist eine kleine, freundliche Windows-App: Sie nimmt einen Ordner voller
+Fotos — `IMG_4711.JPG`, `DSC00012.JPG`, `WhatsApp Image….jpeg` — und gibt jeder
+Datei einen klaren, sortierbaren Namen nach dem **Aufnahmezeitpunkt**, zum
+Beispiel `2024-07-14_09-12-33.jpg`.
 
-## For developers
+**Eine Datei herunterladen, doppelklicken, fertig.** Keine Installation.
 
-Built with .NET 10 (LTS), Avalonia 12 and MetadataExtractor, published as a
-Native AOT single executable.
+### ✨ Funktionen
+
+- 📁 **Nur zwei Ordner** — wo Ihre Fotos sind und wohin die umbenannten sollen. Ziehen & Ablegen funktioniert auch.
+- 🕒 **Das echte Aufnahmedatum** — direkt aus dem Foto gelesen (EXIF, XMP, Video- und PNG-Daten). Kein Datum enthalten? Dann wird das Dateidatum verwendet und deutlich markiert.
+- 🧩 **Namen aus Bausteinen** — Jahr, Monat, Tag, Stunde, Originalname, Kamera, Zähler … mit oder ohne führende Null (`07` oder `7`) und mit beliebigem eigenem Text: `Urlaub {D}.{M}.{YYYY} {HH}{mm}`.
+- 🗂️ **Ordner nach Jahr und Monat** — `2024\07\2024-07-14 IMG_4711.jpg` mit einem Klick.
+- 👀 **Erst die Vorschau** — jeder alte → neue Name mit Miniaturbild, bevor etwas passiert.
+- 🛡️ **Sicher von Anfang an** — kopiert statt verschiebt, **überschreibt nie**, ergänzt `(2)` bei Doppelten, prüft jede Kopie und schreibt ein Protokoll.
+- 🖼️ **Viele Formate** — JPG, PNG, HEIC, AVIF, WebP, TIFF, GIF, BMP, Kamera-RAW (DNG, CR3, NEF, ARW …) und Videos (MP4, MOV). Der Dateityp bleibt immer erhalten.
+- 🌍 **Deutsch & English** — passend zur Windows-Sprache, jederzeit umschaltbar.
+- 🌗 **Hell & dunkel** — folgt Windows.
+- 🔒 **Privat** — komplett offline. Kein Konto, kein Tracking.
+
+### ⬇️ Herunterladen
+
+Laden Sie **`Snapdate-vX.Y.Z-win-x64.exe`** aus dem
+[neuesten Release](https://github.com/jannikjordan/snapdate/releases/latest)
+(ARM-PCs: `win-arm64`). Beim ersten Start meldet Windows eventuell *„Der
+Computer wurde durch Windows geschützt“* — klicken Sie auf
+**Weitere Informationen → Trotzdem ausführen**.
+
+| | |
+|---|---|
+| <img src="docs/images/de/02-preview-light.png" width="420" alt="Vorschau"> | <img src="docs/images/de/08-done-light.png" width="420" alt="Fertig"> |
+| **Vorschau** mit Herkunft des Datums | **Fertig** — Ordner direkt öffnen |
+
+📖 **Ausführliche Anleitung mit Bildern: [Anleitung (Deutsch)](docs/user-guide.de.md)**
+
+---
+
+## 🛠️ For developers
+
+Built with **.NET 10 (LTS)**, **Avalonia 12** and **MetadataExtractor**,
+shipped as a single **Native AOT** executable for `win-x64` and `win-arm64`.
 
 ```bash
 pwsh scripts/build/build.ps1 -Target Test
 ```
 
 ```bash
-pwsh scripts/build/build.ps1 -Target All
+dotnet run --project src/Snapdate.App
 ```
 
-- Plan & architecture: [docs/PLAN.md](docs/PLAN.md)
-- Design system: [DESIGN.md](DESIGN.md)
-- Contributor / agent guide: [AGENTS.md](AGENTS.md)
-- Changes: [CHANGELOG.md](CHANGELOG.md)
-- Security: [docs/PLAN.md#5-security-considerations](docs/PLAN.md#5-security-considerations)
+| Topic | Document |
+|---|---|
+| Architecture | [docs/architecture.md](docs/architecture.md) |
+| Design system | [DESIGN.md](DESIGN.md) |
+| Security | [docs/security.md](docs/security.md) · [SECURITY.md](SECURITY.md) |
+| Build & release | [docs/build-and-release.md](docs/build-and-release.md) |
+| Contributing / agents | [AGENTS.md](AGENTS.md) |
+| Plan & decisions | [docs/PLAN.md](docs/PLAN.md) · [docs/adr](docs/adr) |
+| Changes | [CHANGELOG.md](CHANGELOG.md) |
 
-## License
+## 📄 License
 
-To be decided before v0.1.0 (proposal: MIT).
+[MIT](LICENSE) © Snapdate contributors

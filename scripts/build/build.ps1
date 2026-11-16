@@ -169,7 +169,7 @@ function Invoke-Package {
     # SBOM (optional tool: dotnet tool install --global CycloneDX)
     if (Get-Command dotnet-CycloneDX -ErrorAction SilentlyContinue) {
         Write-Step 'SBOM (CycloneDX)'
-        dotnet-CycloneDX $AppProject --output $ReleaseDir --filename 'sbom.cdx.json' --json
+        dotnet-CycloneDX $AppProject --output $ReleaseDir --filename 'sbom.cdx.json' --output-format Json
     }
     else {
         Write-Warning 'CycloneDX tool not installed - skipping SBOM.'

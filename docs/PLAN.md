@@ -167,9 +167,9 @@ image-tool/
 ├─ design/mockup/             # Approved HTML mockup (reference only)
 ├─ docs/
 │  ├─ PLAN.md                 # this file
-│  ├─ architecture.md
+│  ├─ images/{en,de}/          # screenshots rendered by tools/Snapdate.AssetGen
 │  ├─ user-guide.en.md / user-guide.de.md
-│  ├─ placeholders.md
+│  ├─ architecture.md · security.md · build-and-release.md
 │  ├─ security.md             # threat model & mitigations
 │  ├─ build-and-release.md
 │  └─ adr/                    # Architecture Decision Records (0001-avalonia.md, …)
@@ -240,8 +240,8 @@ commits follow *Conventional Commits*.
 |---|---|---|
 | M0 | Plan & design approval | PLAN.md, DESIGN.md, AGENTS.md, logo, HTML mockup ✅ |
 | M1 | Skeleton | Solution, projects, CPM, CI, build script, themed window shell ✅ |
-| M2 | Domain | Pattern parser, tokens, sanitiser, collision logic — fully unit tested |
-| M3 | Metadata & FS | Reader adapter with sample-image tests, safe copy/move |
-| M4 | UI | Folder pickers, pattern builder, preview list, run + progress, results |
-| M5 | i18n & polish | EN/DE, dark mode, animations, accessibility (keyboard, screen reader names, contrast) |
-| M6 | Release v0.1.0 | Docs, user guides, signed/attested GitHub Release |
+| M2 | Domain | Pattern parser, tokens, sanitiser, collision logic — fully unit tested ✅ |
+| M3 | Metadata & FS | Reader adapter with sample-image tests, safe copy/move ✅ |
+| M4 | UI | Folder pickers, pattern builder, preview list, run + progress, results ✅ |
+| M5 | i18n & polish | EN/DE, dark mode, accessibility (keyboard, screen reader names, contrast), trim/AOT check ✅ |
+| M6 | Release v0.1.0 | Docs, user guides, attested draft GitHub Release ✅ |

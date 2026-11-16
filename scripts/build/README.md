@@ -28,3 +28,14 @@ self-contained single-file exe when it is missing. Releases always use `Aot`
 
 GitHub releases are built by `.github/workflows/release.yml` when a `vX.Y.Z`
 tag is pushed.
+
+## Release notes
+
+`New-ReleaseNotes.ps1` renders `.github/RELEASE_NOTES_TEMPLATE.md` with the
+matching `CHANGELOG.md` section, so every release has the same layout
+(download table, EN/DE help links, changes, verification). The release
+workflow uses it to create a **draft** release for review.
+
+```bash
+pwsh scripts/build/New-ReleaseNotes.ps1 -Version 0.1.0
+```

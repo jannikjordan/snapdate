@@ -18,6 +18,10 @@ timestamp) using a user-built placeholder pattern. UI in English and German.
 | [docs/PLAN.md](docs/PLAN.md) | Scope, tech stack, architecture, security, milestones |
 | [DESIGN.md](DESIGN.md) | Design tokens, layout, components, i18n, a11y |
 | [CHANGELOG.md](CHANGELOG.md) | Release history (Keep a Changelog) |
+| [docs/architecture.md](docs/architecture.md) | Layers, use cases, run sequence |
+| [docs/security.md](docs/security.md) | Threat model and mitigations |
+| [docs/build-and-release.md](docs/build-and-release.md) | Build, screenshots, release process |
+| [docs/user-guide.en.md](docs/user-guide.en.md) · [.de.md](docs/user-guide.de.md) | End-user guides (keep both in sync) |
 | `docs/adr/` | Architecture decisions — add one for every significant choice |
 
 ## Tech stack
@@ -36,8 +40,10 @@ tests and screenshots · Native AOT publish (`win-x64`, `win-arm64`).
 - No reflection-based serialization or DI magic — must stay **AOT/trim safe**
   (use source generators: `System.Text.Json` context, CommunityToolkit.Mvvm,
   compiled bindings `x:CompileBindings="True"`).
-- No user-visible string literals in code or XAML — use `Strings.resx` /
-  `Strings.de.resx`. Add both languages in the same change.
+- No user-visible string literals in code or XAML. Add every string (English and
+  German) to `src/Snapdate.App/Localization/strings.tsv` and run
+  `pwsh scripts/dev/Update-Strings.ps1`; never edit the generated `.resx` /
+  `LocalizedStrings.cs` by hand.
 - Colours, spacing, radii come from theme resources defined per DESIGN.md —
   never hard-code them in views.
 
