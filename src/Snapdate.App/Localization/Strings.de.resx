@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="AppTagline" xml:space="preserve"><value>Fotos nach Aufnahmedatum sortieren.</value></data>
+  <data name="LanguageGroup" xml:space="preserve"><value>Sprache</value></data>
+  <data name="ThemeToggle" xml:space="preserve"><value>Hell / Dunkel umschalten</value></data>
+  <data name="About" xml:space="preserve"><value>Über Snapdate</value></data>
+  <data name="Step1Title" xml:space="preserve"><value>Ordner wählen</value></data>
+  <data name="SourceLabel" xml:space="preserve"><value>Fotos aus</value></data>
+  <data name="TargetLabel" xml:space="preserve"><value>Umbenannte Kopien speichern in</value></data>
+  <data name="NotSelected" xml:space="preserve"><value>Klicken, um einen Ordner zu wählen</value></data>
+  <data name="IncludeSubfolders" xml:space="preserve"><value>Unterordner einbeziehen</value></data>
+  <data name="Step2Title" xml:space="preserve"><value>Dateinamen gestalten</value></data>
+  <data name="ExampleLabel" xml:space="preserve"><value>Beispiel</value></data>
+  <data name="ExtensionNote" xml:space="preserve"><value>Der Dateityp (.jpg, .png, .heic …) bleibt automatisch erhalten.</value></data>
+  <data name="Step3Title" xml:space="preserve"><value>Was soll passieren?</value></data>
+  <data name="CopyTitle" xml:space="preserve"><value>Kopieren</value></data>
+  <data name="CopyHint" xml:space="preserve"><value>Originale bleiben unverändert (empfohlen)</value></data>
+  <data name="MoveTitle" xml:space="preserve"><value>Verschieben</value></data>
+  <data name="MoveHint" xml:space="preserve"><value>Originale werden nach sicherer Kopie verschoben</value></data>
+  <data name="NeverOverwrite" xml:space="preserve"><value>Vorhandene Dateien werden niemals überschrieben.</value></data>
+  <data name="PreviewTitle" xml:space="preserve"><value>Vorschau</value></data>
+  <data name="PreviewEmptyTitle" xml:space="preserve"><value>Noch keine Fotos</value></data>
+  <data name="PreviewEmptyBody" xml:space="preserve"><value>Wählen Sie einen Quellordner, um Ihre Fotos hier zu sehen.</value></data>
+  <data name="StatusChooseFolders" xml:space="preserve"><value>Wählen Sie beide Ordner, um zu beginnen</value></data>
+  <data name="StatusNothingChanged" xml:space="preserve"><value>Nichts wird verändert, bevor Sie den Knopf drücken.</value></data>
+  <data name="RunCopy" xml:space="preserve"><value>Fotos kopieren</value></data>
+  <data name="RunMove" xml:space="preserve"><value>Fotos verschieben</value></data>
+</root>

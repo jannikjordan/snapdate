@@ -36,7 +36,7 @@ safety (never lose a photo) and a "just double-click it" experience.
 
 | Concern | Choice | Why |
 |---|---|---|
-| Runtime | **.NET 10 (LTS)**, C# 14 | Current LTS (support until Nov 2028). .NET 11 (GA 2026-11-10) is STS with the *same* EOL; we stay on LTS until Avalonia officially validates 11. Re-evaluate for v0.2. |
+| Runtime | **.NET 10 (LTS)**, C# 14, SDK pinned to 10.0.404 (runtime 10.0.15) in `global.json` | Current LTS (support until Nov 2028). .NET 11 (GA 2026-11-10) is STS with the *same* EOL; we stay on LTS until Avalonia officially validates 11. Re-evaluate for v0.2. |
 | UI framework | **Avalonia 12.x** (latest 12.1.x at time of writing) | Fully stylable (no "grey Win32" look), compiled XAML bindings, supports trimming / Native AOT, MIT. WinUI 3 single-file deployment is fragile; WPF looks dated without heavy theming and cannot AOT. |
 | MVVM | **CommunityToolkit.Mvvm** (source generators) | AOT-friendly, no reflection. |
 | Metadata | **MetadataExtractor 2.9.x** | Mature, pure managed, reads EXIF/XMP/IPTC from JPEG, PNG, HEIC/HEIF, WebP, TIFF, GIF, BMP, many RAW (CR2/CR3/NEF/ARW/DNG/ORF/RW2), MP4/MOV. |
@@ -75,7 +75,7 @@ system, or MetadataExtractor.
 ```
 
 ### 3.1 Domain (`Snapdate.Domain`)
-- `NamePattern` — parsed pattern, e.g. `{YYYY}-{MM}-{DD}_{hh}-{mm}-{ss}`.
+- `NamePattern` — parsed pattern, e.g. `{YYYY}-{MM}-{DD}_{HH}-{mm}-{ss}`.
   Parser produces `Literal` and `Token` segments; validation errors are values,
   not exceptions.
 - `Token` catalogue (v0.1.0):
@@ -83,14 +83,25 @@ system, or MetadataExtractor.
   | Token | Meaning | Example |
   |---|---|---|
   | `{YYYY}` `{YY}` | Year | 2024 / 24 |
-  | `{MM}` `{MMM}` `{MMMM}` | Month number / short / long name (UI language) | 07 / Jul / July |
-  | `{DD}` | Day | 14 |
-  | `{ddd}` | Weekday short | Sun / So |
-  | `{hh}` `{mm}` `{ss}` | Hour (24h), minute, second | 15 / 32 / 08 |
+  | `{MM}` `{M}` | Month with / without leading zero | 07 / 7 |
+  | `{MMM}` `{MMMM}` | Month name short / long (UI language) | Jul / July · Juli |
+  | `{DD}` `{D}` | Day with / without leading zero | 04 / 4 |
+  | `{ddd}` `{dddd}` | Weekday short / long | Sun / Sunday · So / Sonntag |
+  | `{HH}` `{H}` | Hour 24h with / without leading zero | 09 / 9 |
+  | `{mm}` `{m}` | Minute with / without leading zero | 05 / 5 |
+  | `{ss}` `{s}` | Second with / without leading zero | 08 / 8 |
   | `{name}` | Original file name without extension | IMG_4711 |
   | `{camera}` | Camera model (sanitised, may be empty) | iPhone 15 |
   | `{counter}` | Running number, 3 digits | 001 |
   | `{source}` | Date source: `exif` / `file` | exif |
+
+  Tokens are **case-sensitive** (`MM` = month, `mm` = minute, as in .NET/Unicode
+  date formats). **Everything outside `{…}` is literal text** — spaces, dashes,
+  words, any character valid in a Windows file name — so patterns like
+  `{YYYY}-{MM}-{DD} {HH}{mm}` → `2024-07-14 1532.jpg` or
+  `Holiday {D}.{M}.{YYYY}` → `Holiday 4.7.2024.jpg` work. `{{` / `}}` escape a
+  literal brace. Unknown tokens are a validation error shown inline, never
+  silently dropped.
 
   The **extension is never part of the pattern**; it is always appended from
   the original file (lower-cased: `.JPG` → `.jpg`, configurable later).
@@ -228,18 +239,10 @@ commits follow *Conventional Commits*.
 
 | # | Milestone | Deliverable |
 |---|---|---|
-| M0 | Plan & design approval | PLAN.md, DESIGN.md, AGENTS.md, logo, **HTML mockup** ← *we are here* |
-| M1 | Skeleton | Solution, projects, CPM, CI, build script, empty themed window |
+| M0 | Plan & design approval | PLAN.md, DESIGN.md, AGENTS.md, logo, HTML mockup ✅ |
+| M1 | Skeleton | Solution, projects, CPM, CI, build script, themed window shell ✅ |
 | M2 | Domain | Pattern parser, tokens, sanitiser, collision logic — fully unit tested |
 | M3 | Metadata & FS | Reader adapter with sample-image tests, safe copy/move |
 | M4 | UI | Folder pickers, pattern builder, preview list, run + progress, results |
 | M5 | i18n & polish | EN/DE, dark mode, animations, accessibility (keyboard, screen reader names, contrast) |
 | M6 | Release v0.1.0 | Docs, user guides, signed/attested GitHub Release |
-
-## 8. Open questions for the requester
-
-1. Default **copy** (safe) vs **move** — proposal: copy.
-2. Default pattern — proposal: `{YYYY}-{MM}-{DD}_{hh}-{mm}-{ss}`.
-3. Should videos (MP4/MOV) be included in v0.1.0? Proposal: yes, same logic.
-4. Is the name **Snapdate** OK? (Alternatives: *Fotolio*, *Chronoshot*, *Datelens*)
-5. License — proposal: MIT.

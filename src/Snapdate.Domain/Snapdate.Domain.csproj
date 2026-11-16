@@ -1,0 +1,6 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Pure domain model. MUST NOT reference any package or project. -->
+  <PropertyGroup>
+    <RootNamespace>Snapdate.Domain</RootNamespace>
+  </PropertyGroup>
+</Project>

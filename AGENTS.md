@@ -22,8 +22,9 @@ timestamp) using a user-built placeholder pattern. UI in English and German.
 
 ## Tech stack
 
-.NET 10 LTS · C# · Avalonia 12 · CommunityToolkit.Mvvm · MetadataExtractor ·
-xUnit · Native AOT publish (`win-x64`, `win-arm64`).
+.NET 10 LTS (SDK pinned in `global.json`) · C# · Avalonia 12 · CommunityToolkit.Mvvm ·
+MetadataExtractor · xUnit v3 (Microsoft Testing Platform) · Avalonia.Headless for UI
+tests and screenshots · Native AOT publish (`win-x64`, `win-arm64`).
 
 ## Architecture rules
 
@@ -58,6 +59,7 @@ pwsh scripts/build/build.ps1 -Target Test      # restore + build + tests
 pwsh scripts/build/build.ps1 -Target Publish   # Native AOT exe(s) to artifacts/
 pwsh scripts/build/build.ps1 -Target All       # full release pipeline
 dotnet run --project src/Snapdate.App          # run the app in dev
+dotnet run --project tools/Snapdate.AssetGen -c Release   # regenerate app.ico + doc screenshots
 ```
 
 ## Conventions
@@ -70,7 +72,12 @@ dotnet run --project src/Snapdate.App          # run the app in dev
 - **Code style:** `.editorconfig`, nullable enabled, warnings as errors,
   file-scoped namespaces, one public type per file.
 - **Tests:** domain logic is test-first; every bug fix gets a regression test.
-- **Docs:** user-visible behaviour changes update `docs/` (EN and DE guides).
+- **Docs:** user-visible behaviour changes update `docs/` (EN and DE guides) and,
+  when the UI changes, the screenshots (`tools/Snapdate.AssetGen`).
+- **Public repo:** never commit personal data, machine paths or internal notes;
+  internal-only material lives in the git-ignored `.local/` folder.
+- **Package updates:** run `dotnet restore --force-evaluate` and commit the
+  changed `packages.lock.json` files.
 
 ## Definition of done
 

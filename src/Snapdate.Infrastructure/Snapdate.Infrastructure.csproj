@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Adapters for ports: metadata, file system, settings. -->
+  <PropertyGroup>
+    <RootNamespace>Snapdate.Infrastructure</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Snapdate.Application\Snapdate.Application.csproj" />
+  </ItemGroup>
+</Project>

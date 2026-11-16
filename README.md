@@ -65,13 +65,16 @@ Detailed guides: [English](docs/user-guide.en.md) · [Deutsch](docs/user-guide.d
 | Block | Placeholder | Example |
 |---|---|---|
 | Year | `{YYYY}` / `{YY}` | `2024` / `24` |
-| Month | `{MM}` / `{MMM}` | `07` / `Jul` |
-| Day | `{DD}` | `14` |
-| Weekday | `{ddd}` | `Sun` / `So` |
-| Hour · Minute · Second | `{hh}` `{mm}` `{ss}` | `15` `32` `08` |
+| Month | `{MM}` / `{M}` / `{MMM}` / `{MMMM}` | `07` / `7` / `Jul` / `July` |
+| Day | `{DD}` / `{D}` | `04` / `4` |
+| Weekday | `{ddd}` / `{dddd}` | `Sun` / `Sunday` |
+| Hour · Minute · Second | `{HH}` `{mm}` `{ss}` (or `{H}` `{m}` `{s}` without leading zero) | `09` `05` `08` / `9` `5` `8` |
 | Original name | `{name}` | `IMG_4711` |
 | Camera | `{camera}` | `iPhone 15 Pro` |
 | Counter | `{counter}` | `001` |
+
+Anything outside `{…}` is kept as typed, so `{YYYY}-{MM}-{DD} {HH}{mm}` gives
+`2024-07-14 1532.jpg` and `Holiday {D}.{M}.{YYYY}` gives `Holiday 4.7.2024.jpg`.
 
 ## For developers
 

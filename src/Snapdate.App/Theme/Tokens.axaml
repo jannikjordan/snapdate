@@ -1,0 +1,56 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <!-- Design tokens from DESIGN.md §3. Views reference these keys only. -->
+  <ResourceDictionary.ThemeDictionaries>
+    <ResourceDictionary x:Key="Light">
+      <SolidColorBrush x:Key="SdBgBrush" Color="#F6F5FB" />
+      <SolidColorBrush x:Key="SdSurfaceBrush" Color="#FFFFFF" />
+      <SolidColorBrush x:Key="SdSurface2Brush" Color="#F0EEF9" />
+      <SolidColorBrush x:Key="SdBorderBrush" Color="#E4E1F0" />
+      <SolidColorBrush x:Key="SdTextBrush" Color="#1B1A2E" />
+      <SolidColorBrush x:Key="SdMutedBrush" Color="#6B6880" />
+      <SolidColorBrush x:Key="SdPrimaryBrush" Color="#5B4BF5" />
+      <SolidColorBrush x:Key="SdPrimarySoftBrush" Color="#ECE9FF" />
+      <SolidColorBrush x:Key="SdSuccessBrush" Color="#137A50" />
+      <SolidColorBrush x:Key="SdSuccessSoftBrush" Color="#E3F6EE" />
+      <SolidColorBrush x:Key="SdWarningBrush" Color="#8A5A00" />
+      <SolidColorBrush x:Key="SdWarningSoftBrush" Color="#FDF1DC" />
+      <SolidColorBrush x:Key="SdDangerBrush" Color="#C7353A" />
+      <BoxShadows x:Key="SdCardShadow">0 1 2 0 #0A14103C, 0 4 16 0 #0F14103C</BoxShadows>
+      <Color x:Key="SystemAccentColor">#5B4BF5</Color>
+    </ResourceDictionary>
+    <ResourceDictionary x:Key="Dark">
+      <SolidColorBrush x:Key="SdBgBrush" Color="#121119" />
+      <SolidColorBrush x:Key="SdSurfaceBrush" Color="#1B1A26" />
+      <SolidColorBrush x:Key="SdSurface2Brush" Color="#24233A" />
+      <SolidColorBrush x:Key="SdBorderBrush" Color="#302E48" />
+      <SolidColorBrush x:Key="SdTextBrush" Color="#F2F1FA" />
+      <SolidColorBrush x:Key="SdMutedBrush" Color="#A3A0B8" />
+      <SolidColorBrush x:Key="SdPrimaryBrush" Color="#8B7DFF" />
+      <SolidColorBrush x:Key="SdPrimarySoftBrush" Color="#2E2A5C" />
+      <SolidColorBrush x:Key="SdSuccessBrush" Color="#3CCB8F" />
+      <SolidColorBrush x:Key="SdSuccessSoftBrush" Color="#173A2C" />
+      <SolidColorBrush x:Key="SdWarningBrush" Color="#F2B13C" />
+      <SolidColorBrush x:Key="SdWarningSoftBrush" Color="#3A2E14" />
+      <SolidColorBrush x:Key="SdDangerBrush" Color="#FF6B70" />
+      <BoxShadows x:Key="SdCardShadow">0 0 0 0 #00000000</BoxShadows>
+      <Color x:Key="SystemAccentColor">#8B7DFF</Color>
+    </ResourceDictionary>
+  </ResourceDictionary.ThemeDictionaries>
+
+  <LinearGradientBrush x:Key="SdBrandGradient" StartPoint="0%,0%" EndPoint="100%,100%">
+    <GradientStop Offset="0" Color="#6D5DFC" />
+    <GradientStop Offset="0.55" Color="#B44CF0" />
+    <GradientStop Offset="1" Color="#FF7A59" />
+  </LinearGradientBrush>
+  <LinearGradientBrush x:Key="SdBrandGradientHorizontal" StartPoint="0%,50%" EndPoint="100%,50%">
+    <GradientStop Offset="0" Color="#6D5DFC" />
+    <GradientStop Offset="0.55" Color="#B44CF0" />
+    <GradientStop Offset="1" Color="#FF7A59" />
+  </LinearGradientBrush>
+
+  <FontFamily x:Key="SdMonoFont">Cascadia Mono, Consolas, Courier New</FontFamily>
+  <CornerRadius x:Key="SdRadiusSmall">6</CornerRadius>
+  <CornerRadius x:Key="SdRadiusMedium">10</CornerRadius>
+  <CornerRadius x:Key="SdRadiusLarge">16</CornerRadius>
+</ResourceDictionary>

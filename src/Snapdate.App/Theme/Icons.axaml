@@ -1,0 +1,13 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <!-- Filled geometries (24×24) for PathIcon. Stroke-style icons are pre-outlined. -->
+  <StreamGeometry x:Key="IconFolder">M4,5 C2.9,5 2,5.9 2,7 L2,17 C2,18.1 2.9,19 4,19 L20,19 C21.1,19 22,18.1 22,17 L22,9 C22,7.9 21.1,7 20,7 L12,7 L10,5 Z</StreamGeometry>
+  <StreamGeometry x:Key="IconFolderOut">M4,5 C2.9,5 2,5.9 2,7 L2,17 C2,18.1 2.9,19 4,19 L20,19 C21.1,19 22,18.1 22,17 L22,9 C22,7.9 21.1,7 20,7 L12,7 L10,5 Z M13,10.5 L13,12.25 L9,12.25 L9,13.75 L13,13.75 L13,15.5 L16,13 Z</StreamGeometry>
+  <StreamGeometry x:Key="IconChevronRight">M9.3,5.3 L10.7,3.9 L18.8,12 L10.7,20.1 L9.3,18.7 L16,12 Z</StreamGeometry>
+  <StreamGeometry x:Key="IconArrowRight">M4,11 L16.2,11 L11.6,6.4 L13,5 L20,12 L13,19 L11.6,17.6 L16.2,13 L4,13 Z</StreamGeometry>
+  <StreamGeometry x:Key="IconMoon">M21,12.8 A9,9 0 1 1 11.2,3 A7,7 0 0 0 21,12.8 Z</StreamGeometry>
+  <StreamGeometry x:Key="IconSun">M12,7 A5,5 0 1 1 12,17 A5,5 0 1 1 12,7 Z M11,1 L13,1 L13,4 L11,4 Z M11,20 L13,20 L13,23 L11,23 Z M1,11 L4,11 L4,13 L1,13 Z M20,11 L23,11 L23,13 L20,13 Z M4.2,5.6 L5.6,4.2 L7.7,6.3 L6.3,7.7 Z M16.3,17.7 L17.7,16.3 L19.8,18.4 L18.4,19.8 Z M4.2,18.4 L6.3,16.3 L7.7,17.7 L5.6,19.8 Z M16.3,6.3 L18.4,4.2 L19.8,5.6 L17.7,7.7 Z</StreamGeometry>
+  <StreamGeometry x:Key="IconInfo">M12,2 A10,10 0 1 1 12,22 A10,10 0 1 1 12,2 Z M11,10 L11,17 L13,17 L13,10 Z M11,7 L11,9 L13,9 L13,7 Z</StreamGeometry>
+  <StreamGeometry x:Key="IconShieldCheck">M12,2 L20,5 L20,11 C20,16.5 16.6,20.2 12,22 C7.4,20.2 4,16.5 4,11 L4,5 Z M10.6,15.4 L16.7,9.3 L15.3,7.9 L10.6,12.6 L8.7,10.7 L7.3,12.1 Z</StreamGeometry>
+  <StreamGeometry x:Key="IconImages">M7,4 L20,4 C21.1,4 22,4.9 22,6 L22,15 C22,16.1 21.1,17 20,17 L7,17 C5.9,17 5,16.1 5,15 L5,6 C5,4.9 5.9,4 7,4 Z M7,15 L20,15 L16,10 L13,13.5 L11,11.5 Z M10,6.5 A1.5,1.5 0 1 0 10,9.5 A1.5,1.5 0 1 0 10,6.5 Z M2,8 L3,8 L3,19 C3,19.6 3.4,20 4,20 L18,20 L18,21 L4,21 C2.9,21 2,20.1 2,19 Z</StreamGeometry>
+</ResourceDictionary>

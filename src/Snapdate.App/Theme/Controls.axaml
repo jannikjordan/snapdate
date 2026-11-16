@@ -1,0 +1,180 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <!-- Component styles from DESIGN.md §5. -->
+
+  <Style Selector="Window">
+    <Setter Property="Background" Value="{DynamicResource SdBgBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource SdTextBrush}" />
+    <Setter Property="FontSize" Value="13" />
+  </Style>
+
+  <!-- Typography -->
+  <Style Selector="TextBlock.h2">
+    <Setter Property="FontSize" Value="15" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+    <Setter Property="LineHeight" Value="22" />
+  </Style>
+  <Style Selector="TextBlock.label">
+    <Setter Property="FontSize" Value="12" />
+    <Setter Property="FontWeight" Value="Medium" />
+    <Setter Property="Foreground" Value="{DynamicResource SdMutedBrush}" />
+  </Style>
+  <Style Selector="TextBlock.muted">
+    <Setter Property="Foreground" Value="{DynamicResource SdMutedBrush}" />
+  </Style>
+  <Style Selector="TextBlock.mono">
+    <Setter Property="FontFamily" Value="{StaticResource SdMonoFont}" />
+    <Setter Property="FontSize" Value="12.5" />
+  </Style>
+
+  <!-- Surfaces -->
+  <Style Selector="Border.card">
+    <Setter Property="Background" Value="{DynamicResource SdSurfaceBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource SdBorderBrush}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="CornerRadius" Value="{StaticResource SdRadiusLarge}" />
+    <Setter Property="BoxShadow" Value="{DynamicResource SdCardShadow}" />
+    <Setter Property="Padding" Value="16" />
+  </Style>
+  <Style Selector="Border.stepNumber">
+    <Setter Property="Width" Value="24" />
+    <Setter Property="Height" Value="24" />
+    <Setter Property="CornerRadius" Value="12" />
+    <Setter Property="Background" Value="{StaticResource SdBrandGradient}" />
+  </Style>
+  <Style Selector="Border.stepNumber > TextBlock">
+    <Setter Property="Foreground" Value="White" />
+    <Setter Property="FontSize" Value="12" />
+    <Setter Property="FontWeight" Value="Bold" />
+    <Setter Property="HorizontalAlignment" Value="Center" />
+    <Setter Property="VerticalAlignment" Value="Center" />
+  </Style>
+  <Style Selector="Border.iconTile">
+    <Setter Property="Width" Value="32" />
+    <Setter Property="Height" Value="32" />
+    <Setter Property="CornerRadius" Value="8" />
+    <Setter Property="Background" Value="{DynamicResource SdPrimarySoftBrush}" />
+  </Style>
+  <Style Selector="Border.iconTile > PathIcon">
+    <Setter Property="Foreground" Value="{DynamicResource SdPrimaryBrush}" />
+    <Setter Property="Width" Value="18" />
+    <Setter Property="Height" Value="18" />
+  </Style>
+
+  <!-- Buttons: shared reset -->
+  <Style Selector="Button.flat">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="Foreground" Value="{DynamicResource SdMutedBrush}" />
+    <Setter Property="CornerRadius" Value="8" />
+    <Setter Property="Padding" Value="0" />
+    <Setter Property="Width" Value="32" />
+    <Setter Property="Height" Value="32" />
+    <Setter Property="HorizontalContentAlignment" Value="Center" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
+  </Style>
+  <Style Selector="Button.flat:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource SdSurface2Brush}" />
+    <Setter Property="Foreground" Value="{DynamicResource SdTextBrush}" />
+  </Style>
+
+  <!-- Segmented control (EN | DE) -->
+  <Style Selector="Border.segmented">
+    <Setter Property="Background" Value="{DynamicResource SdSurface2Brush}" />
+    <Setter Property="CornerRadius" Value="8" />
+    <Setter Property="Padding" Value="3" />
+  </Style>
+  <Style Selector="ToggleButton.segment">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="Foreground" Value="{DynamicResource SdMutedBrush}" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="CornerRadius" Value="6" />
+    <Setter Property="Height" Value="26" />
+    <Setter Property="MinWidth" Value="36" />
+    <Setter Property="Padding" Value="10,0" />
+    <Setter Property="FontSize" Value="12" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+    <Setter Property="HorizontalContentAlignment" Value="Center" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
+  </Style>
+  <Style Selector="ToggleButton.segment:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="Foreground" Value="{DynamicResource SdTextBrush}" />
+  </Style>
+  <Style Selector="ToggleButton.segment:checked /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource SdSurfaceBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource SdTextBrush}" />
+    <Setter Property="BoxShadow" Value="0 1 2 0 #1F000000" />
+  </Style>
+
+  <!-- Folder row -->
+  <Style Selector="Button.folderRow">
+    <Setter Property="Background" Value="{DynamicResource SdSurface2Brush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource SdBorderBrush}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="CornerRadius" Value="{StaticResource SdRadiusMedium}" />
+    <Setter Property="Padding" Value="12,8" />
+    <Setter Property="MinHeight" Value="52" />
+    <Setter Property="HorizontalAlignment" Value="Stretch" />
+    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+    <Setter Property="Foreground" Value="{DynamicResource SdTextBrush}" />
+  </Style>
+  <Style Selector="Button.folderRow:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource SdPrimarySoftBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource SdPrimaryBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource SdTextBrush}" />
+  </Style>
+
+  <!-- Copy / Move option cards -->
+  <Style Selector="RadioButton.option">
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border Name="PART_Border"
+                Background="{DynamicResource SdSurfaceBrush}"
+                BorderBrush="{DynamicResource SdBorderBrush}"
+                BorderThickness="2"
+                CornerRadius="{StaticResource SdRadiusMedium}"
+                Padding="12,10"
+                MinHeight="64">
+          <ContentPresenter Content="{TemplateBinding Content}"
+                            ContentTemplate="{TemplateBinding ContentTemplate}" />
+        </Border>
+      </ControlTemplate>
+    </Setter>
+    <Setter Property="HorizontalAlignment" Value="Stretch" />
+    <Setter Property="Cursor" Value="Hand" />
+  </Style>
+  <Style Selector="RadioButton.option:pointerover /template/ Border#PART_Border">
+    <Setter Property="BorderBrush" Value="{DynamicResource SdPrimaryBrush}" />
+  </Style>
+  <Style Selector="RadioButton.option:checked /template/ Border#PART_Border">
+    <Setter Property="BorderBrush" Value="{DynamicResource SdPrimaryBrush}" />
+    <Setter Property="Background" Value="{DynamicResource SdPrimarySoftBrush}" />
+  </Style>
+  <Style Selector="RadioButton.option:focus-visible /template/ Border#PART_Border">
+    <Setter Property="BorderBrush" Value="{DynamicResource SdPrimaryBrush}" />
+  </Style>
+
+  <!-- Primary action -->
+  <Style Selector="Button.primary">
+    <Setter Property="Background" Value="{StaticResource SdBrandGradient}" />
+    <Setter Property="Foreground" Value="White" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="CornerRadius" Value="{StaticResource SdRadiusMedium}" />
+    <Setter Property="Height" Value="48" />
+    <Setter Property="Padding" Value="24,0" />
+    <Setter Property="FontSize" Value="15" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
+  </Style>
+  <Style Selector="Button.primary:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{StaticResource SdBrandGradient}" />
+    <Setter Property="Foreground" Value="White" />
+    <Setter Property="Opacity" Value="0.92" />
+  </Style>
+  <Style Selector="Button.primary:disabled /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{StaticResource SdBrandGradient}" />
+    <Setter Property="Foreground" Value="White" />
+    <Setter Property="Opacity" Value="0.45" />
+  </Style>
+</Styles>

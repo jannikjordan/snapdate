@@ -1,0 +1,28 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Snapdate.App.Controls.BrandLogo"
+             x:Name="Root">
+  <!-- Vector logo; same geometry as assets/branding/logo.svg (256×256 design grid). -->
+  <Viewbox Stretch="Uniform">
+    <Canvas Width="256" Height="256">
+      <Rectangle Canvas.Left="8" Canvas.Top="8" Width="240" Height="240" RadiusX="58" RadiusY="58"
+                 Fill="{StaticResource SdBrandGradient}" />
+      <Path Fill="White"
+            Data="M76,58 H166 L202,94 V180 A20,20 0 0 1 182,200 H76 A20,20 0 0 1 56,180 V78 A20,20 0 0 1 76,58 Z">
+        <Path.Effect>
+          <DropShadowEffect OffsetX="0" OffsetY="6" BlurRadius="16" Color="#2A1460" Opacity="0.28" />
+        </Path.Effect>
+      </Path>
+      <Path Fill="#E6E1FF" Data="M166,58 V82 A12,12 0 0 0 178,94 H202 Z" />
+      <Ellipse x:Name="Sun" Canvas.Left="85" Canvas.Top="93" Width="30" Height="30" Fill="#FF8A5F" />
+      <Path x:Name="Mountain" Data="M72,182 L114,128 L138,158 L154,140 L186,182 Z">
+        <Path.Fill>
+          <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
+            <GradientStop Offset="0" Color="#6D5DFC" />
+            <GradientStop Offset="1" Color="#B44CF0" />
+          </LinearGradientBrush>
+        </Path.Fill>
+      </Path>
+    </Canvas>
+  </Viewbox>
+</UserControl>

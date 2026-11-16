@@ -1,0 +1,65 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <RootNamespace>Snapdate.App</RootNamespace>
+    <AssemblyName>Snapdate</AssemblyName>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon Condition="Exists('Assets\app.ico')">Assets\app.ico</ApplicationIcon>
+    <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+    <BuiltInComInteropSupport>false</BuiltInComInteropSupport>
+    <!-- Native AOT is the release format. Declared here (not only at publish time) so the
+         locked restore already contains the ILCompiler packs. -->
+    <PublishAot>true</PublishAot>
+    <OptimizationPreference>Size</OptimizationPreference>
+
+    <!-- Trimming/AOT: everything must be statically analysable. -->
+    <IsTrimmable>true</IsTrimmable>
+    <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
+    <EnableAotAnalyzer>true</EnableAotAnalyzer>
+    <EnableSingleFileAnalyzer>true</EnableSingleFileAnalyzer>
+
+    <!-- Hardening / size -->
+    <InvariantGlobalization>false</InvariantGlobalization>
+    <UseSystemResourceKeys>false</UseSystemResourceKeys>
+    <DebuggerSupport Condition="'$(Configuration)' == 'Release'">false</DebuggerSupport>
+    <EventSourceSupport>false</EventSourceSupport>
+    <StackTraceSupport>true</StackTraceSupport>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <AvaloniaResource Include="Assets\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" />
+    <PackageReference Include="Avalonia.Desktop" />
+    <PackageReference Include="Avalonia.Themes.Fluent" />
+    <PackageReference Include="Avalonia.Fonts.Inter" />
+    <PackageReference Include="CommunityToolkit.Mvvm" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Snapdate.Application\Snapdate.Application.csproj" />
+    <ProjectReference Include="..\Snapdate.Infrastructure\Snapdate.Infrastructure.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="Localization\Strings.resx">
+      <LogicalName>Snapdate.App.Localization.Strings.resources</LogicalName>
+    </EmbeddedResource>
+    <InternalsVisibleTo Include="Snapdate.App.Tests" />
+    <InternalsVisibleTo Include="Snapdate.AssetGen" />
+  </ItemGroup>
+  <!-- Avalonia.DesignerSupport is only used by the IDE previewer, is not referenced at
+       runtime and is not trim/AOT-safe: keep it out of every published build. -->
+  <Target Name="ExcludeDesignerSupportFromPublish" AfterTargets="ComputeResolvedFilesToPublishList">
+    <ItemGroup>
+      <ResolvedFileToPublish Remove="@(ResolvedFileToPublish)" Condition="'%(Filename)' == 'Avalonia.DesignerSupport'" />
+    </ItemGroup>
+  </Target>
+  <Target Name="ExcludeDesignerSupportFromAot" BeforeTargets="PrepareForILLink;SetupOSSpecificProps" Condition="'$(PublishAot)' == 'true'">
+    <ItemGroup>
+      <IlcReference Remove="@(IlcReference)" Condition="'%(Filename)' == 'Avalonia.DesignerSupport'" />
+    </ItemGroup>
+  </Target>
+</Project>

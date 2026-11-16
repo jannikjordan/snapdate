@@ -51,7 +51,7 @@ Follows Windows light/dark setting; can be overridden in settings.
 ### 3.2 Typography
 
 **Inter** (bundled via `Avalonia.Fonts.Inter`, OFL licence) — no reliance on
-installed fonts. Monospace for file names: **JetBrains Mono** (OFL, bundled).
+installed fonts. Monospace for file names: **Cascadia Mono** (ships with Windows 11), falling back to Consolas — nothing extra to bundle.
 
 | Style | Size / line | Weight |
 |---|---|---|
@@ -87,7 +87,7 @@ and snap layouts.
 │  ☐ include sub-folders        │ │ [thumb] IMG_4711.JPG                 │ │
 │                               │ │         → 2024-07-14_15-32-08.jpg  ● │ │
 │ ② File name                   │ │ [thumb] DSC00012.ARW                 │ │
-│  [{YYYY}-{MM}-{DD}_{hh}… ✎]   │ │         → 2024-07-14_16-01-55.arw  ● │ │
+│  [{YYYY}-{MM}-{DD}_{HH}… ✎]   │ │         → 2024-07-14_16-01-55.arw  ● │ │
 │  Year Month Day Hour Min …    │ │   …  (virtualised list)              │ │
 │  Example: 2024-07-14_15-32…   │ │                                      │ │
 │                               │ └──────────────────────────────────────┘ │
@@ -118,12 +118,18 @@ Validation inline below the row (e.g. "Target is inside the source folder").
 
 ### 5.3 Pattern builder
 - Text field (mono) showing the pattern; tokens rendered as **pills** inside
-  the field (inline elements), literal text editable normally.
+  the field (inline elements). **Free text can be typed anywhere** between
+  pills — spaces, dashes, words — and is kept literally
+  (`{YYYY}-{MM}-{DD} {HH}{mm}` → `2024-07-14 1532`).
 - Below: token **chip palette** grouped *Date* · *Time* · *File* · *Separators*.
   Click inserts at caret; drag & drop supported. Chips show friendly labels
   ("Year", "Jahr") with the raw token as tooltip.
-- **Presets** dropdown: `2024-07-14_15-32-08`, `20240714_153208`,
-  `2024/07/2024-07-14 …` (folders), `14.07.2024 15-32 – IMG_4711`.
+- Date/time chips have a small **"07 / 7" toggle** (leading zero on/off)
+  that switches between `{MM}`/`{M}`, `{DD}`/`{D}`, `{HH}`/`{H}`,
+  `{mm}`/`{m}`, `{ss}`/`{s}`. Clicking a pill in the field offers the same
+  switch.
+- **Presets**: `2024-07-14_15-32-08`, `20240714_153208`,
+  `2024-07-14 1532`, `2024/07/2024-07-14 …` (folders), `14.07.2024 – IMG_4711`.
 - **Live example** line with the first file's real data, plus extension hint:
   "The file extension (.jpg, .png, …) is added automatically."
 - Invalid characters typed by the user are shown with a red underline and a

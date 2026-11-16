@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Use cases and ports. References Domain only. -->
+  <PropertyGroup>
+    <RootNamespace>Snapdate.Application</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Snapdate.Domain\Snapdate.Domain.csproj" />
+  </ItemGroup>
+</Project>

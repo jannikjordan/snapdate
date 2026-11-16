@@ -1,0 +1,189 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="using:Snapdate.App.ViewModels"
+        xmlns:c="using:Snapdate.App.Controls"
+        mc:Ignorable="d"
+        x:Class="Snapdate.App.Views.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Title="Snapdate"
+        Width="1180" Height="760" MinWidth="960" MinHeight="640"
+        WindowStartupLocation="CenterScreen"
+        ExtendClientAreaToDecorationsHint="True"
+        ExtendClientAreaTitleBarHeightHint="48">
+
+  <DockPanel>
+    <!-- Title bar (48 px). Native caption buttons are drawn by the OS on the right. -->
+    <Border DockPanel.Dock="Top" Height="48"
+            Background="{DynamicResource SdSurfaceBrush}"
+            BorderBrush="{DynamicResource SdBorderBrush}" BorderThickness="0,0,0,1">
+      <Grid ColumnDefinitions="Auto,Auto,Auto,*,Auto,Auto,Auto,150" Margin="16,0,0,0">
+        <c:BrandLogo Grid.Column="0" Width="28" Height="28" VerticalAlignment="Center" IsHitTestVisible="False" />
+        <TextBlock Grid.Column="1" Text="Snapdate" FontSize="16" FontWeight="Bold" Margin="12,0,0,0"
+                   VerticalAlignment="Center" IsHitTestVisible="False" />
+        <Border Grid.Column="2" Background="{DynamicResource SdSurface2Brush}" CornerRadius="6"
+                Padding="6,1" Margin="10,0,0,0" VerticalAlignment="Center" IsHitTestVisible="False">
+          <TextBlock Text="{Binding VersionLabel}" FontSize="11" FontWeight="SemiBold"
+                     Foreground="{DynamicResource SdMutedBrush}" />
+        </Border>
+
+        <Border Grid.Column="4" Classes="segmented" VerticalAlignment="Center"
+                AutomationProperties.Name="{Binding L.LanguageGroup}">
+          <StackPanel Orientation="Horizontal" Spacing="2">
+            <ToggleButton Classes="segment" Content="EN" IsChecked="{Binding IsEnglish}"
+                          AutomationProperties.Name="English" />
+            <ToggleButton Classes="segment" Content="DE" IsChecked="{Binding IsGerman}"
+                          AutomationProperties.Name="Deutsch" />
+          </StackPanel>
+        </Border>
+        <Button Grid.Column="5" Classes="flat" Margin="8,0,0,0" VerticalAlignment="Center"
+                Command="{Binding ToggleThemeCommand}"
+                ToolTip.Tip="{Binding L.ThemeToggle}"
+                AutomationProperties.Name="{Binding L.ThemeToggle}">
+          <PathIcon Data="{StaticResource IconMoon}" Width="16" Height="16" />
+        </Button>
+        <Button Grid.Column="6" Classes="flat" Margin="2,0,0,0" VerticalAlignment="Center"
+                ToolTip.Tip="{Binding L.About}"
+                AutomationProperties.Name="{Binding L.About}">
+          <PathIcon Data="{StaticResource IconInfo}" Width="16" Height="16" />
+        </Button>
+      </Grid>
+    </Border>
+
+    <!-- Action bar (72 px) -->
+    <Border DockPanel.Dock="Bottom" Height="72" Padding="20,0"
+            Background="{DynamicResource SdSurfaceBrush}"
+            BorderBrush="{DynamicResource SdBorderBrush}" BorderThickness="0,1,0,0">
+      <Grid ColumnDefinitions="Auto,*,Auto" VerticalAlignment="Center">
+        <Border Width="32" Height="32" CornerRadius="16" Background="{DynamicResource SdPrimarySoftBrush}">
+          <PathIcon Data="{StaticResource IconInfo}" Width="18" Height="18" Foreground="{DynamicResource SdPrimaryBrush}" />
+        </Border>
+        <StackPanel Grid.Column="1" Margin="12,0" VerticalAlignment="Center">
+          <TextBlock Text="{Binding L.StatusChooseFolders}" FontWeight="SemiBold" />
+          <TextBlock Text="{Binding L.StatusNothingChanged}" Classes="muted" FontSize="12" />
+        </StackPanel>
+        <Button Grid.Column="2" Classes="primary" IsEnabled="False">
+          <StackPanel Orientation="Horizontal" Spacing="10">
+            <TextBlock Text="{Binding L.RunCopy}" VerticalAlignment="Center" />
+            <PathIcon Data="{StaticResource IconArrowRight}" Width="16" Height="16" Foreground="White" />
+          </StackPanel>
+        </Button>
+      </Grid>
+    </Border>
+
+    <!-- Body -->
+    <Grid ColumnDefinitions="400,16,*" Margin="16">
+      <ScrollViewer Grid.Column="0" VerticalScrollBarVisibility="Auto">
+        <StackPanel Spacing="12">
+
+          <!-- Step 1: folders -->
+          <Border Classes="card">
+            <StackPanel Spacing="10">
+              <StackPanel Orientation="Horizontal" Spacing="10">
+                <Border Classes="stepNumber"><TextBlock Text="1" /></Border>
+                <TextBlock Classes="h2" Text="{Binding L.Step1Title}" VerticalAlignment="Center" />
+              </StackPanel>
+              <Button Classes="folderRow" AutomationProperties.Name="{Binding L.SourceLabel}">
+                <Grid ColumnDefinitions="Auto,*,Auto">
+                  <Border Classes="iconTile"><PathIcon Data="{StaticResource IconFolder}" /></Border>
+                  <StackPanel Grid.Column="1" Margin="12,0" VerticalAlignment="Center">
+                    <TextBlock Classes="label" Text="{Binding L.SourceLabel}" />
+                    <TextBlock Classes="muted" Text="{Binding L.NotSelected}" TextTrimming="CharacterEllipsis" />
+                  </StackPanel>
+                  <PathIcon Grid.Column="2" Data="{StaticResource IconChevronRight}" Width="14" Height="14"
+                            Foreground="{DynamicResource SdMutedBrush}" />
+                </Grid>
+              </Button>
+              <Button Classes="folderRow" AutomationProperties.Name="{Binding L.TargetLabel}">
+                <Grid ColumnDefinitions="Auto,*,Auto">
+                  <Border Classes="iconTile"><PathIcon Data="{StaticResource IconFolderOut}" /></Border>
+                  <StackPanel Grid.Column="1" Margin="12,0" VerticalAlignment="Center">
+                    <TextBlock Classes="label" Text="{Binding L.TargetLabel}" />
+                    <TextBlock Classes="muted" Text="{Binding L.NotSelected}" TextTrimming="CharacterEllipsis" />
+                  </StackPanel>
+                  <PathIcon Grid.Column="2" Data="{StaticResource IconChevronRight}" Width="14" Height="14"
+                            Foreground="{DynamicResource SdMutedBrush}" />
+                </Grid>
+              </Button>
+              <CheckBox IsChecked="{Binding IncludeSubfolders}" Content="{Binding L.IncludeSubfolders}"
+                        Foreground="{DynamicResource SdMutedBrush}" />
+            </StackPanel>
+          </Border>
+
+          <!-- Step 2: file name -->
+          <Border Classes="card">
+            <StackPanel Spacing="10">
+              <StackPanel Orientation="Horizontal" Spacing="10">
+                <Border Classes="stepNumber"><TextBlock Text="2" /></Border>
+                <TextBlock Classes="h2" Text="{Binding L.Step2Title}" VerticalAlignment="Center" />
+              </StackPanel>
+              <Border BorderBrush="{DynamicResource SdPrimaryBrush}" BorderThickness="2"
+                      CornerRadius="{StaticResource SdRadiusMedium}" Padding="10,8">
+                <TextBlock Classes="mono" Text="{Binding DefaultPattern}" FontWeight="SemiBold" />
+              </Border>
+              <Border Background="{DynamicResource SdSurface2Brush}" CornerRadius="{StaticResource SdRadiusMedium}" Padding="12,8">
+                <StackPanel Spacing="2">
+                  <TextBlock Classes="label" Text="{Binding L.ExampleLabel}" />
+                  <TextBlock Classes="mono" Text="{Binding ExampleFileName}" FontSize="13" FontWeight="SemiBold" />
+                  <TextBlock Classes="muted" Text="{Binding L.ExtensionNote}" FontSize="11.5" TextWrapping="Wrap" />
+                </StackPanel>
+              </Border>
+            </StackPanel>
+          </Border>
+
+          <!-- Step 3: options -->
+          <Border Classes="card">
+            <StackPanel Spacing="10">
+              <StackPanel Orientation="Horizontal" Spacing="10">
+                <Border Classes="stepNumber"><TextBlock Text="3" /></Border>
+                <TextBlock Classes="h2" Text="{Binding L.Step3Title}" VerticalAlignment="Center" />
+              </StackPanel>
+              <Grid ColumnDefinitions="*,8,*">
+                <RadioButton Classes="option" GroupName="mode" IsChecked="{Binding IsCopyMode}"
+                             AutomationProperties.Name="{Binding L.CopyTitle}">
+                  <StackPanel Spacing="2">
+                    <TextBlock Text="{Binding L.CopyTitle}" FontWeight="SemiBold" />
+                    <TextBlock Classes="muted" Text="{Binding L.CopyHint}" FontSize="11.5" TextWrapping="Wrap" />
+                  </StackPanel>
+                </RadioButton>
+                <RadioButton Grid.Column="2" Classes="option" GroupName="mode"
+                             AutomationProperties.Name="{Binding L.MoveTitle}">
+                  <StackPanel Spacing="2">
+                    <TextBlock Text="{Binding L.MoveTitle}" FontWeight="SemiBold" />
+                    <TextBlock Classes="muted" Text="{Binding L.MoveHint}" FontSize="11.5" TextWrapping="Wrap" />
+                  </StackPanel>
+                </RadioButton>
+              </Grid>
+              <StackPanel Orientation="Horizontal" Spacing="8">
+                <PathIcon Data="{StaticResource IconShieldCheck}" Width="16" Height="16"
+                          Foreground="{DynamicResource SdSuccessBrush}" />
+                <TextBlock Classes="muted" Text="{Binding L.NeverOverwrite}" FontSize="12" />
+              </StackPanel>
+            </StackPanel>
+          </Border>
+        </StackPanel>
+      </ScrollViewer>
+
+      <!-- Preview panel -->
+      <Border Grid.Column="2" Classes="card" Padding="0">
+        <DockPanel>
+          <Border DockPanel.Dock="Top" Padding="20,16,20,12"
+                  BorderBrush="{DynamicResource SdBorderBrush}" BorderThickness="0,0,0,1">
+            <TextBlock Classes="h2" Text="{Binding L.PreviewTitle}" />
+          </Border>
+          <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="10" MaxWidth="320">
+            <Border Width="72" Height="72" CornerRadius="20" Background="{DynamicResource SdPrimarySoftBrush}"
+                    HorizontalAlignment="Center">
+              <PathIcon Data="{StaticResource IconImages}" Width="34" Height="34"
+                        Foreground="{DynamicResource SdPrimaryBrush}" />
+            </Border>
+            <TextBlock Classes="h2" Text="{Binding L.PreviewEmptyTitle}" HorizontalAlignment="Center" />
+            <TextBlock Classes="muted" Text="{Binding L.PreviewEmptyBody}" TextWrapping="Wrap"
+                       TextAlignment="Center" />
+          </StackPanel>
+        </DockPanel>
+      </Border>
+    </Grid>
+  </DockPanel>
+</Window>
