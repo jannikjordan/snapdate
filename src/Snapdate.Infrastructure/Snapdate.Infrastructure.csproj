@@ -6,4 +6,10 @@
   <ItemGroup>
     <ProjectReference Include="..\Snapdate.Application\Snapdate.Application.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="MetadataExtractor" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Snapdate.Infrastructure.Tests" />
+  </ItemGroup>
 </Project>

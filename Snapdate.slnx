@@ -9,6 +9,8 @@
     <Project Path="tests/Snapdate.App.Tests/Snapdate.App.Tests.csproj" />
     <Project Path="tests/Snapdate.Application.Tests/Snapdate.Application.Tests.csproj" />
     <Project Path="tests/Snapdate.Architecture.Tests/Snapdate.Architecture.Tests.csproj" />
+    <Project Path="tests/Snapdate.Domain.Tests/Snapdate.Domain.Tests.csproj" />
+    <Project Path="tests/Snapdate.Infrastructure.Tests/Snapdate.Infrastructure.Tests.csproj" />
   </Folder>
   <Folder Name="/tools/">
     <Project Path="tools/Snapdate.AssetGen/Snapdate.AssetGen.csproj" />

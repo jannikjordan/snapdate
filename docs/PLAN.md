@@ -93,7 +93,6 @@ system, or MetadataExtractor.
   | `{name}` | Original file name without extension | IMG_4711 |
   | `{camera}` | Camera model (sanitised, may be empty) | iPhone 15 |
   | `{counter}` | Running number, 3 digits | 001 |
-  | `{source}` | Date source: `exif` / `file` | exif |
 
   Tokens are **case-sensitive** (`MM` = month, `mm` = minute, as in .NET/Unicode
   date formats). **Everything outside `{…}` is literal text** — spaces, dashes,
