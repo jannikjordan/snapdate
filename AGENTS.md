@@ -6,10 +6,25 @@ This file is the single source of truth; tool-specific files (e.g.
 
 ## Project in one paragraph
 
-Snapdate is a portable Windows GUI app (single `.exe`, no runtime to install)
+Snapdate is a Windows GUI app (single self-contained `.exe`, no runtime to install)
 for non-technical users. It copies or moves photos from a source folder to a
 destination folder and renames them by capture date (metadata, fallback file
 timestamp) using a user-built placeholder pattern. UI in English and German.
+
+## Roles
+
+Agents work in one of three roles. The role is assigned in the prompt
+("Role: Coder …"). **If your prompt does not name a role, ask which role you
+have before doing anything else.** Then read your role file:
+
+| Role | Does | File |
+|---|---|---|
+| **Orchestrator** | Plans, manages issues, delegates to Coders and Reviewers, integrates. Never writes code. Usually the main session. | [docs/agents/orchestrator.md](docs/agents/orchestrator.md) |
+| **Coder** | Implements one task from a brief, with tests and docs. | [docs/agents/coder.md](docs/agents/coder.md) |
+| **Reviewer** | Reviews a Coder's change and reports findings. Never changes code. | [docs/agents/reviewer.md](docs/agents/reviewer.md) |
+
+Flow: Orchestrator → Coder → Reviewer → (fixes by Coder) → Orchestrator integrates.
+The rules below apply to every role.
 
 ## Read first
 

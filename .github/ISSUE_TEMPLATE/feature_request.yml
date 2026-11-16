@@ -1,0 +1,40 @@
+name: ✨ Feature request · Idee vorschlagen
+description: Suggest an improvement or a new feature. · Verbesserung oder neue Funktion vorschlagen.
+labels: ["enhancement", "needs triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        You can write in **English or German**. · Sie können auf **Englisch oder Deutsch** schreiben.
+  - type: textarea
+    id: problem
+    attributes:
+      label: What would you like to do? · Was möchten Sie tun?
+      description: Describe the situation or problem, not only the solution.
+      placeholder: "I sort photos from several cameras and want …"
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: Your idea · Ihre Idee
+      description: How could Snapdate help? Mockups or examples of file names are welcome.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives · Alternativen
+      description: Workarounds or other tools you tried.
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area · Bereich
+      options:
+        - File name / placeholders · Dateiname / Bausteine
+        - Folders & scanning · Ordner & Suche
+        - Preview · Vorschau
+        - Copy / move · Kopieren / Verschieben
+        - Installation & updates
+        - Language & texts · Sprache & Texte
+        - Other · Sonstiges

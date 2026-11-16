@@ -1,0 +1,80 @@
+name: 🐞 Bug report · Fehler melden
+description: Something does not work as expected. · Etwas funktioniert nicht wie erwartet.
+labels: ["bug", "needs triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping to improve Snapdate! You can write in **English or German**.
+        Danke, dass Sie helfen, Snapdate zu verbessern! Sie können auf **Englisch oder Deutsch** schreiben.
+
+        ⚠️ Security problems: please use [private vulnerability reporting](../security/advisories/new) instead.
+        Please do not attach private photos. · Bitte keine privaten Fotos anhängen.
+  - type: input
+    id: version
+    attributes:
+      label: Snapdate version · Version
+      description: Shown in the About dialog (ⓘ, top right). · Steht im Info-Dialog (ⓘ oben rechts).
+      placeholder: "0.1.0"
+    validations:
+      required: true
+  - type: dropdown
+    id: download
+    attributes:
+      label: Which download? · Welche Datei?
+      options:
+        - win-x64 (most PCs)
+        - win-arm64 (ARM PCs)
+        - Built from source
+    validations:
+      required: true
+  - type: input
+    id: windows
+    attributes:
+      label: Windows version
+      placeholder: "Windows 11 24H2"
+    validations:
+      required: true
+  - type: dropdown
+    id: language
+    attributes:
+      label: App language · Sprache der App
+      options:
+        - English
+        - Deutsch
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce · Schritte zum Nachstellen
+      description: What did you do? · Was haben Sie gemacht?
+      placeholder: |
+        1. Chose folder …
+        2. Name pattern …
+        3. Pressed “Copy …”
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect? · Was haben Sie erwartet?
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: What happened instead? · Was ist stattdessen passiert?
+      description: Error messages, screenshots of Snapdate (not of your photos), the name pattern you used.
+    validations:
+      required: true
+  - type: textarea
+    id: files
+    attributes:
+      label: File types involved · Betroffene Dateitypen
+      description: e.g. iPhone HEIC, Sony ARW, WhatsApp JPEG. Lines from the snapdate-log-….csv help a lot (remove private paths).
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checks
+      options:
+        - label: I searched existing issues. · Ich habe bestehende Issues durchsucht.
+          required: true
