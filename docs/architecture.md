@@ -41,8 +41,8 @@ The dependency rules are enforced by `tests/Snapdate.Architecture.Tests`.
 | Project | Responsibility |
 |---|---|
 | `Snapdate.Domain` | Pattern parsing/rendering, placeholder catalogue, sanitising, path guard, duplicate-free names, `AppVersion` (SemVer). No package references. |
-| `Snapdate.Application` | Use cases (scan → plan → execute, update check), ports, folder checks, settings model, UI language rules. |
-| `Snapdate.Infrastructure` | MetadataExtractor adapter, safe local file system, JSON settings store, GitHub release feed (the only network code). |
+| `Snapdate.Application` | Use cases (scan → plan → execute, update check), ports, folder checks, settings model, UI language rules, install info (`IInstallInfo`). |
+| `Snapdate.Infrastructure` | MetadataExtractor adapter, safe local file system, JSON settings store, GitHub release feed (the only network code), install-marker reader. |
 | `Snapdate.App` | Avalonia UI: MVVM with CommunityToolkit source generators, compiled bindings, design tokens, EN/DE resources, composition root in `App.axaml.cs`. |
 | `tools/Snapdate.AssetGen` | Developer tool: renders `app.ico` and the documentation screenshots headlessly from the real views. |
 
@@ -67,11 +67,32 @@ sequenceDiagram
     Run-->>VM: outcomes + CSV log path
 ```
 
+## Installed or portable
+
+The Inno Setup installer (`installer/Snapdate.iss`) writes a marker file
+`snapdate-install.ini` next to `Snapdate.exe`:
+
+```ini
+[Install]
+Scope=user
+```
+
+`Scope` is `user` (per-user install) or `all` (all users). The port
+`IInstallInfo.Current` returns an `InstallInfo(Kind, Scope)` with
+`InstallKind.Installed` or `InstallKind.Portable` and `InstallScope.CurrentUser`,
+`AllUsers` or `None`. `FileInstallInfo` (Infrastructure) reads the marker next to
+`Environment.ProcessPath` once, strictly: a missing, oversized, non-UTF-8 or
+malformed file (wrong section, unknown or duplicate `Scope`, stray lines) means
+portable, and it never throws. The marker is a hint for the UI (for example
+which update path to offer), not a security boundary; downloaded updates are
+signature-verified regardless.
+
 ## Key decisions
 
 - [ADR 0001 — Avalonia for the user interface](adr/0001-avalonia-ui.md)
 - [ADR 0002 — Native AOT releases and locked package restore](adr/0002-native-aot-and-locked-restore.md) (AOT part superseded)
 - [ADR 0003 — Self-contained single-file exe instead of Native AOT](adr/0003-single-file-instead-of-native-aot.md)
+- [ADR 0006 — Inno Setup installer](adr/0006-inno-setup-installer.md)
 
 ## Conventions
 

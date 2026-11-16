@@ -4,6 +4,11 @@
 
 - Windows 10/11, [.NET SDK](https://dotnet.microsoft.com/download) as pinned in
   `global.json`, PowerShell 7.4+.
+- [Inno Setup 6](https://jrsoftware.org/isdl.php) (6.3 or newer; CI uses the
+  pinned 6.7.3, see `scripts/build/Ensure-InnoSetup.ps1`) for the
+  installer targets. A per-user install is enough; `build.ps1` finds `ISCC.exe`
+  on the `PATH`, in `%LOCALAPPDATA%\Programs\Inno Setup 6` or in
+  `Program Files (x86)\Inno Setup 6` and stops with a clear message otherwise.
 
 ## Everyday commands
 
@@ -41,12 +46,15 @@ See [scripts/build/README.md](../scripts/build/README.md) for every build target
    ```
 
 5. The **Release** workflow builds single-file executables for `win-x64` and
-   `win-arm64` and self-tests the x64 exe on the build runner. The `win-arm64`
-   exe cannot run there, so it is handed over as a workflow artefact to a job on
+   `win-arm64`, wraps each in an Inno Setup installer and self-tests the x64 exe
+   and installer on the build runner. The `win-arm64` exe and installer cannot
+   run there, so they are handed over as workflow artefacts to a job on
    GitHub's ARM64 Windows runner (`windows-11-arm`), which starts
-   `Snapdate.exe --self-test` from an empty folder. The **draft** GitHub release
-   (zips, checksums, SBOM, and provenance attestations once the repository is
-   public) is only created if that ARM64 self-test succeeds. Provenance is\n   attested in that same job, so only files that passed the gate get it.
+   `Snapdate.exe --self-test` from an empty folder and runs the installer smoke
+   test. The **draft** GitHub release (installers, portable exes, checksums,
+   SBOM, and provenance attestations once the repository is public) is only
+   created if that ARM64 job succeeds. Provenance is attested in the draft job
+   after it, so only files that passed the gate get it.
 6. Review the draft on GitHub and press **Publish release**.
 
 ## Continuous integration
@@ -57,6 +65,11 @@ also builds the `win-arm64` exe, uploads it as a short-lived artefact and starts
 it with `--self-test` on the `windows-11-arm` runner. Pull requests skip the
 ARM64 job to save runner minutes; the release workflow runs it for every tag.
 The exe is built once and reused, never rebuilt on the ARM64 runner.
+
+On pushes to `main` (not on pull requests) CI also builds both installers
+(`Ensure-InnoSetup.ps1` installs a pinned, hash-verified Inno Setup if the runner image
+lacks it), smoke-tests the x64 installer and passes the arm64 installer to the ARM64
+job for the same smoke test.
 
 ## Release notes
 
@@ -73,11 +86,102 @@ pwsh scripts/build/New-ReleaseNotes.ps1 -Version 0.1.0
 
 | File | Purpose |
 |---|---|
-| `Snapdate-vX.Y.Z-win-x64.exe` | The app for most PCs (Intel/AMD). |
-| `Snapdate-vX.Y.Z-win-arm64.exe` | The app for ARM PCs. |
-| `Snapdate-vX.Y.Z-win-*.zip` | Exe plus README, CHANGELOG, LICENSE. |
+| `Snapdate-Setup-vX.Y.Z-win-x64.exe` | **Installer (recommended)** for most PCs (Intel/AMD). |
+| `Snapdate-Setup-vX.Y.Z-win-arm64.exe` | **Installer (recommended)** for ARM PCs. |
+| `Snapdate-vX.Y.Z-win-x64-portable.exe` | Portable single exe, no installation. |
+| `Snapdate-vX.Y.Z-win-arm64-portable.exe` | Portable single exe for ARM PCs. |
 | `SHA256SUMS.txt` | Checksums of all files. |
 | `sbom.cdx.json` | CycloneDX software bill of materials. |
+
+There is no zip any more: it only held the exe plus README, CHANGELOG and
+LICENSE, which are on the release page and in the repository (the installer
+also installs the LICENSE). Every file above also has a `<file>.sig`
+(see *Update signatures*).
+
+## Installer
+
+`installer/Snapdate.iss` is an [Inno Setup 6](https://jrsoftware.org/isinfo.php)
+script, see [ADR 0006](adr/0006-inno-setup-installer.md). Never compile it by
+hand: `build.ps1` passes the version (from `Directory.Build.props`), the
+architecture, the exe, the icon and the licence as `/D` defines.
+
+```bash
+pwsh scripts/build/build.ps1 -Target Publish
+pwsh scripts/build/build.ps1 -Target Installer
+```
+
+This builds `artifacts/installer/Snapdate-Setup-vX.Y.Z-win-x64.exe` and
+`...-win-arm64.exe` (the x64 installer also runs on ARM PCs through emulation,
+the arm64 one is native). `-Target All` runs it between `Sign` and `Package`.
+With `SNAPDATE_SIGN_PFX` set, the installers are Authenticode-signed after the
+build (the exe inside is signed by `Sign`); without it nothing is signed.
+
+**What the installer does**
+
+- First interactive install asks *Only for me* (default, no administrator,
+  `%LOCALAPPDATA%\Programs\Snapdate`) or *For all users* (UAC,
+  `C:\Program Files\Snapdate`).
+- Start menu shortcut always; desktop shortcut is a task checkbox, checked by
+  default.
+- Settings → Apps entry: publisher "Snapdate contributors", version, icon, working
+  uninstaller. The `AppId` GUID in the script identifies the installation and
+  **must never change**: it is how a newer installer upgrades in place.
+- An upgrade runs in the same scope and folder as the existing installation
+  and keeps the settings in `%APPDATA%\Snapdate`.
+- Writes `snapdate-install.ini` (`[Install]` / `Scope=user|all`) next to the exe.
+  The app reads it (`IInstallInfo`, see [architecture](architecture.md)) to tell
+  an installed copy from a portable one.
+- Closes a running Snapdate before replacing the exe. Setup closes the window
+  through the Restart Manager, so the app must have finished starting (a window
+  that does not exist yet cannot be closed).
+- Uninstall of a **per-user** install asks whether to also delete
+  `%APPDATA%\Snapdate` (default: keep). Silent uninstalls always keep it, and an
+  **all-users** uninstall never touches it: it runs elevated, where the profile
+  folder may belong to another administrator account.
+- The two scopes are separate installations. An interactive Setup reuses the
+  scope of an existing install (`UsePreviousPrivileges`), but forcing
+  `/ALLUSERS` over a per-user install (or `/CURRENTUSER` over an all-users one)
+  creates a second install, because the uninstall entry lives in `HKCU` or
+  `HKLM`. That is why the updater must pass the scope from the marker. The
+  all-users mode needs UAC and is only tested by hand.
+- English and German; the language follows Windows (a language dialog only
+  appears when neither matches).
+
+**Silent switches (for the in-app updater, issue #3)**
+
+The updater downloads the installer matching the CPU, verifies its `.sig`, reads
+the scope from the install marker and starts it, then exits so Setup can replace
+the exe:
+
+| Install kind | Command line |
+|---|---|
+| Per user (`Scope=user`) | `Snapdate-Setup-vX.Y.Z-win-x64.exe /VERYSILENT /SUPPRESSMSGBOXES /NORESTART /CURRENTUSER /RESTARTAPP` |
+| All users (`Scope=all`) | `Snapdate-Setup-vX.Y.Z-win-x64.exe /VERYSILENT /SUPPRESSMSGBOXES /NORESTART /ALLUSERS /RESTARTAPP` |
+
+- `/CURRENTUSER` / `/ALLUSERS` pin the scope so no dialog can appear;
+  `/ALLUSERS` still shows the UAC prompt (the updater process is not elevated).
+  The folder comes from the existing installation (`UsePreviousAppDir`); the
+  updater may add `/DIR="<folder of Snapdate.exe>"` to be explicit.
+- `/RESTARTAPP` is a custom switch: in silent mode it starts Snapdate again
+  after the install (as the original, non-elevated user). Interactive installs
+  ignore it and show the usual "Launch Snapdate" checkbox.
+- `/VERYSILENT` can be `/SILENT` (shows a progress window). Add `/LOG="<file>"`
+  to get a log. Exit code `0` means success.
+- A portable exe must never run the installer unasked: only the installed
+  kind (`InstallKind.Installed`) uses this path.
+
+**Smoke test** (`-Target Installer` runs it for the host CPU, `-Target InstallerTest`
+alone): silent per-user install into a temp folder; checks files, marker,
+Start menu and desktop shortcuts and the registry entry
+`HKCU\...\Uninstall\{AppId}_is1` (`DisplayName`, `DisplayVersion`, `Publisher`,
+`DisplayIcon`, `InstallLocation`); runs the installed `Snapdate.exe --self-test`;
+upgrades in place twice (first with `/RESTARTAPP`, which must start the app,
+then with the app running, which Setup must close); silently uninstalls and
+checks that folder, shortcuts and registry entry are gone while the settings
+folder is kept. Logs go to `artifacts/installer-test/`. The test never touches
+a real installation: if the `AppId` is registered or the default folder exists,
+it is skipped with a warning. The *all users* mode needs UAC and is not
+covered by the unattended test.
 
 ## Update signatures
 

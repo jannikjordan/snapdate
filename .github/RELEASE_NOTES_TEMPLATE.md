@@ -15,13 +15,15 @@
 
 ## ⬇️ Download
 
-| Your PC | File |
-|---|---|
-| 💻 Most Windows PCs (Intel / AMD) | **`Snapdate-v{{VERSION}}-win-x64.exe`** |
-| 📱 ARM PCs (Surface Pro X, Copilot+ PCs) | `Snapdate-v{{VERSION}}-win-arm64.exe` |
+| Your PC | Installer (recommended) | Portable (no installation) |
+|---|---|---|
+| 💻 Most Windows PCs (Intel / AMD) | **`Snapdate-Setup-v{{VERSION}}-win-x64.exe`** | `Snapdate-v{{VERSION}}-win-x64-portable.exe` |
+| 📱 ARM PCs (Surface Pro X, Copilot+ PCs) | `Snapdate-Setup-v{{VERSION}}-win-arm64.exe` | `Snapdate-v{{VERSION}}-win-arm64-portable.exe` |
 
-Just download and double-click — **nothing to install**. Windows 10 and 11.
-*Einfach herunterladen und doppelklicken — keine Installation nötig.*
+The **installer** adds Snapdate to the Start menu (and optionally the desktop), for you only or for all users.
+The **portable** file is a single exe: download and double-click, nothing is installed. Windows 10 and 11.
+*Der **Installer** legt Snapdate im Startmenü (optional auch auf dem Desktop) an, nur für Sie oder für alle Benutzer.
+Die **portable** Datei ist eine einzelne exe: herunterladen und doppelklicken, nichts wird installiert.*
 
 ## 📖 Help · Hilfe
 

@@ -19,6 +19,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 💾 Remembers folders, name pattern, options, language and theme.
 - 📦 One portable executable each for `win-x64` and `win-arm64` (self-contained, about 22 MB); no installation, works offline.
 - 📖 User guides in English and German with screenshots and diagrams.
+- 💿 Installer (`Snapdate-Setup-vX.Y.Z-win-x64.exe` / `-win-arm64.exe`): installs Snapdate like a normal Windows program, with Start menu and (optional) desktop shortcut and an entry in Settings → Apps. Choose "only for me" (no administrator rights) or "for all users"; a newer installer updates in place and keeps your settings; uninstalling asks whether to keep them. English and German. The portable single exe is still available as `Snapdate-vX.Y.Z-win-x64-portable.exe` / `-win-arm64-portable.exe`.
+
+### Changed
+- Release files are renamed: portable exes now end in `-portable.exe`, and the zip packages are gone (they only held the exe plus README, CHANGELOG and LICENSE).
 
 ### Fixed
 - 👀 While the file name pattern is invalid, the preview no longer keeps showing the previous names as if they were current: the list is dimmed with the new names struck through, a red note explains that the names can't be built right now, and the "Numbered" tab is hidden until the pattern is valid again (#9).

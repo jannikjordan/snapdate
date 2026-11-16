@@ -1,6 +1,7 @@
 name: Release
 
-# Pushing a tag vX.Y.Z builds single-file executables, self-tests them (arm64 on a native ARM64
+# Pushing a tag vX.Y.Z builds single-file executables and Inno Setup installers, self-tests them (the
+# x64 installer is installed, upgraded and uninstalled on the build runner; arm64 on a native ARM64
 # runner) and creates a DRAFT release. A maintainer reviews the draft on GitHub and publishes it
 # by hand.
 
@@ -39,6 +40,14 @@ jobs:
         shell: pwsh
         run: dotnet tool install --global CycloneDX --version 6.3.1
 
+      # Inno Setup builds the installers. Present on GitHub's Windows images; otherwise a pinned
+      # version is installed.
+      - name: Ensure Inno Setup
+        shell: pwsh
+        run: ./scripts/build/Ensure-InnoSetup.ps1
+
+      # Publishes, builds both installers, smoke-tests the x64 one (silent install, upgrade,
+      # uninstall) and packages everything into artifacts/release.
       - name: Build release
         shell: pwsh
         env:
@@ -66,7 +75,7 @@ jobs:
 
       # Hand the finished files to the draft-release job, which only runs after the arm64 self-test.
       # Two artefacts with a single path each, so the layout after download is unambiguous:
-      # release-files holds the files (exe, zip, SHA256SUMS, SBOM and their .sig) at its root.
+      # release-files holds the files (installers, portable exes, SHA256SUMS, SBOM and their .sig) at its root.
       - name: Upload release files
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
@@ -91,19 +100,39 @@ jobs:
           if-no-files-found: error
           retention-days: 1
 
-  # The x64 runner cannot start the arm64 exe, so it is started on a real ARM64 Windows machine.
-  # Keep the self-test step in sync with Invoke-SelfTest in scripts/build/build.ps1 and with the
-  # same job in ci.yml.
+      - name: Upload win-arm64 installer for the smoke test
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: snapdate-installer-win-arm64
+          path: artifacts/installer/*-win-arm64.exe
+          if-no-files-found: error
+          retention-days: 1
+
+  # The x64 runner cannot start the arm64 exe or installer, so they are started on a real ARM64
+  # Windows machine. Keep the self-test step in sync with Invoke-SelfTest in scripts/build/build.ps1
+  # and with the same job in ci.yml.
   self-test-arm64:
     needs: release
     runs-on: windows-11-arm
-    timeout-minutes: 10
-    permissions: {}
+    timeout-minutes: 15
+    permissions:
+      contents: read         # checkout, for the installer smoke test in scripts/build/build.ps1
+    env:
+      TAG: ${{ github.ref_name }}
     steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: snapdate-win-arm64
           path: ${{ runner.temp }}/arm64-exe
+
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: snapdate-installer-win-arm64
+          path: ${{ runner.temp }}/arm64-installer
 
       - name: Self-test the exe
         shell: pwsh
@@ -117,6 +146,23 @@ jobs:
           Get-Content (Join-Path $sandbox 'stderr.txt') -ErrorAction SilentlyContinue | Write-Host
           if ($process.ExitCode -ne 0) { throw "Self-test of win-arm64 failed with exit code $($process.ExitCode)." }
           Write-Host 'Self-test passed.'
+
+      # Silent per-user install, upgrade, uninstall of the arm64 installer (see Invoke-InstallerTest).
+      - name: Smoke-test the installer
+        shell: pwsh
+        run: |
+          $setup = Get-ChildItem (Join-Path $env:RUNNER_TEMP 'arm64-installer') -Filter 'Snapdate-Setup-*-win-arm64.exe' | Select-Object -First 1
+          if (-not $setup) { throw 'The arm64 installer was not downloaded.' }
+          ./scripts/build/build.ps1 -Target InstallerTest -Version $env:TAG -InstallerPath $setup.FullName
+
+      - name: Upload installer smoke-test logs
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: installer-test-logs-arm64
+          path: artifacts/installer-test
+          if-no-files-found: ignore
+          retention-days: 7
 
   draft-release:
     needs: [release, self-test-arm64]
@@ -149,7 +195,6 @@ jobs:
         with:
           subject-path: |
             artifacts/release/*.exe
-            artifacts/release/*.zip
 
       - name: Create draft GitHub Release
         shell: pwsh

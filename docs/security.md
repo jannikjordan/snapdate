@@ -113,12 +113,12 @@ Decision and rationale: [ADR 0004](adr/0004-update-check-and-in-app-update.md).
 ## Verifying a download
 
 ```powershell
-Get-FileHash .\Snapdate-v0.1.0-win-x64.exe -Algorithm SHA256
+Get-FileHash .\Snapdate-Setup-v0.1.0-win-x64.exe -Algorithm SHA256
 ```
 
 Compare the result with `SHA256SUMS.txt` from the same release, or verify the
 provenance with the GitHub CLI:
 
 ```bash
-gh attestation verify Snapdate-v0.1.0-win-x64.exe --repo jannikjordan/snapdate
+gh attestation verify Snapdate-Setup-v0.1.0-win-x64.exe --repo jannikjordan/snapdate
 ```
