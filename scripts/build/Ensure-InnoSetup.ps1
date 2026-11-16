@@ -41,12 +41,13 @@ if ($iscc) {
     return
 }
 
+Write-Host ("==> [{0:HH:mm:ss}] Ensure Inno Setup" -f (Get-Date))
 Write-Host "Inno Setup not found - downloading $Version from $Url"
 $dir = Join-Path ([IO.Path]::GetTempPath()) "snapdate-innosetup-$([guid]::NewGuid().ToString('N'))"
 New-Item -ItemType Directory -Path $dir | Out-Null
 try {
     $installer = Join-Path $dir "innosetup-$Version.exe"
-    Invoke-WebRequest -Uri $Url -OutFile $installer -UseBasicParsing
+    Invoke-WebRequest -Uri $Url -OutFile $installer -UseBasicParsing -TimeoutSec 300
 
     $actual = (Get-FileHash $installer -Algorithm SHA256).Hash.ToLowerInvariant()
     if ($actual -ne $Sha256.ToLowerInvariant()) {
@@ -55,7 +56,11 @@ try {
     Write-Host "SHA256 verified: $actual"
 
     $process = Start-Process -FilePath $installer -ArgumentList '/VERYSILENT', '/SUPPRESSMSGBOXES', '/CURRENTUSER', '/NORESTART' -PassThru
-    $process.WaitForExit()
+    # Bounded wait: a stuck installer must fail this step, not block the job until its timeout.
+    if (-not $process.WaitForExit(300000)) {
+        try { $process.Kill($true) } catch { }
+        throw 'Step "Install Inno Setup" timed out after 300 s and was killed.'
+    }
     if ($process.ExitCode -ne 0) { throw "The Inno Setup installer exited with code $($process.ExitCode)." }
 }
 finally {

@@ -12,6 +12,12 @@ on:
 permissions:
   contents: read
 
+# No long-lived build servers: they inherit the step's output pipes and keep a step from ever finishing.
+env:
+  MSBUILDDISABLENODEREUSE: '1'
+  DOTNET_CLI_USE_MSBUILD_SERVER: '0'
+  DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+  UseSharedCompilation: 'false'
 jobs:
   release:
     runs-on: windows-latest
@@ -38,33 +44,71 @@ jobs:
 
       - name: Install CycloneDX (SBOM)
         shell: pwsh
+        timeout-minutes: 5
         run: dotnet tool install --global CycloneDX --version 6.3.1
 
       # Inno Setup builds the installers. Present on GitHub's Windows images; otherwise a pinned
       # version is installed.
       - name: Ensure Inno Setup
         shell: pwsh
+        timeout-minutes: 10
         run: ./scripts/build/Ensure-InnoSetup.ps1
 
-      # Publishes, builds both installers, smoke-tests the x64 one (silent install, upgrade,
-      # uninstall) and packages everything into artifacts/release.
-      - name: Build release
+      # The release build is `build.ps1 -Target All` split into one step per stage (same order), each
+      # with its own timeout, so a hang shows which stage it is in and does not eat the whole job.
+      # build.ps1 prints a "==> [time]" banner per stage and kills any external process that exceeds
+      # its own timeout. The update-signing key is NOT available to any of these steps (see below).
+      - name: Audit NuGet packages
         shell: pwsh
+        timeout-minutes: 10
+        run: ./scripts/build/build.ps1 -Target Audit -Version $env:TAG
+
+      - name: Build and test
+        shell: pwsh
+        timeout-minutes: 20
+        run: ./scripts/build/build.ps1 -Target Test -Version $env:TAG
+
+      - name: Publish and self-test the exes
+        shell: pwsh
+        timeout-minutes: 20
+        run: ./scripts/build/build.ps1 -Target Publish -Version $env:TAG
+
+      # Authenticode secrets only where they are needed: signing the exes here and the installers below.
+      - name: Authenticode-sign the exes
+        shell: pwsh
+        timeout-minutes: 5
         env:
           SNAPDATE_SIGN_PFX: ${{ secrets.SNAPDATE_SIGN_PFX }}
           SNAPDATE_SIGN_PASSWORD: ${{ secrets.SNAPDATE_SIGN_PASSWORD }}
-        # The update signature is a separate step below so the private key never reaches the build.
-        run: ./scripts/build/build.ps1 -Target All -Version $env:TAG -SkipUpdateSignature
+        run: ./scripts/build/build.ps1 -Target Sign -Version $env:TAG
+
+      # Builds both installers (Authenticode-signed when a certificate is configured) and smoke-tests
+      # the x64 one (silent install, upgrade, uninstall).
+      - name: Build installers and smoke-test the x64 installer
+        shell: pwsh
+        timeout-minutes: 15
+        env:
+          SNAPDATE_SIGN_PFX: ${{ secrets.SNAPDATE_SIGN_PFX }}
+          SNAPDATE_SIGN_PASSWORD: ${{ secrets.SNAPDATE_SIGN_PASSWORD }}
+        run: ./scripts/build/build.ps1 -Target Installer -Version $env:TAG
+
+      # Installers and portable exes, SHA256SUMS.txt and the SBOM into artifacts/release.
+      - name: Package release files
+        shell: pwsh
+        timeout-minutes: 10
+        run: ./scripts/build/build.ps1 -Target Package -Version $env:TAG
 
       # Detached ECDSA signatures (<file>.sig) that the app's updater verifies (ADR 0005). Only this
       # step sees the private key; the script verifies every signature against the key in the repo.
       - name: Sign release files for update verification
         shell: pwsh
+        timeout-minutes: 5
         env:
           SNAPDATE_UPDATE_SIGNING_KEY: ${{ secrets.SNAPDATE_UPDATE_SIGNING_KEY }}
         run: ./scripts/build/build.ps1 -Target SignRelease -Version $env:TAG
 
       - name: Release notes from template
+        timeout-minutes: 3
         shell: pwsh
         env:
           REPO_PRIVATE: ${{ github.event.repository.private }}
@@ -135,6 +179,7 @@ jobs:
           path: ${{ runner.temp }}/arm64-installer
 
       - name: Self-test the exe
+        timeout-minutes: 5
         shell: pwsh
         run: |
           # Run from an empty folder so no stray DLL next to the working directory can be picked up.
@@ -149,6 +194,7 @@ jobs:
 
       # Silent per-user install, upgrade, uninstall of the arm64 installer (see Invoke-InstallerTest).
       - name: Smoke-test the installer
+        timeout-minutes: 10
         shell: pwsh
         run: |
           $setup = Get-ChildItem (Join-Path $env:RUNNER_TEMP 'arm64-installer') -Filter 'Snapdate-Setup-*-win-arm64.exe' | Select-Object -First 1

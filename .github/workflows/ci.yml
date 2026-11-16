@@ -8,6 +8,12 @@ on:
 permissions:
   contents: read
 
+# No long-lived build servers: they inherit the step's output pipes and keep a step from ever finishing.
+env:
+  MSBUILDDISABLENODEREUSE: '1'
+  DOTNET_CLI_USE_MSBUILD_SERVER: '0'
+  DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+  UseSharedCompilation: 'false'
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
@@ -26,6 +32,7 @@ jobs:
           global-json-file: global.json
 
       - name: Audit, build and test
+        timeout-minutes: 20
         shell: pwsh
         run: |
           ./scripts/build/build.ps1 -Target Audit
@@ -34,6 +41,7 @@ jobs:
       # Pull requests only build and self-test x64. On main the arm64 exe is built as well and
       # handed to the self-test-arm64 job, because the x64 runner cannot start it.
       - name: Publish and self-test the exe
+        timeout-minutes: 20
         shell: pwsh
         env:
           RUNTIMES: ${{ github.event_name == 'push' && 'win-x64,win-arm64' || 'win-x64' }}
@@ -42,11 +50,13 @@ jobs:
       # Installers only on main (runner minutes): build both, smoke-test the x64 one here (silent
       # install, upgrade, uninstall) and hand the arm64 one to the ARM64 job.
       - name: Ensure Inno Setup
+        timeout-minutes: 10
         if: github.event_name == 'push'
         shell: pwsh
         run: ./scripts/build/Ensure-InnoSetup.ps1
 
       - name: Build installers and smoke-test the x64 installer
+        timeout-minutes: 15
         if: github.event_name == 'push'
         shell: pwsh
         run: ./scripts/build/build.ps1 -Target Installer -Runtime win-x64,win-arm64
@@ -103,6 +113,7 @@ jobs:
           path: ${{ runner.temp }}/arm64-installer
 
       - name: Self-test the exe
+        timeout-minutes: 5
         shell: pwsh
         run: |
           # Run from an empty folder so no stray DLL next to the working directory can be picked up.
@@ -116,6 +127,7 @@ jobs:
           Write-Host 'Self-test passed.'
 
       - name: Smoke-test the installer
+        timeout-minutes: 10
         shell: pwsh
         run: |
           $setup = Get-ChildItem (Join-Path $env:RUNNER_TEMP 'arm64-installer') -Filter 'Snapdate-Setup-*-win-arm64.exe' | Select-Object -First 1

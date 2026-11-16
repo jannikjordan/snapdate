@@ -30,6 +30,17 @@ architecture); a failing self-test stops the build. The arm64 exe is
 self-tested on an ARM64 runner in CI and release. See
 [ADR 0003](../../docs/adr/0003-single-file-instead-of-native-aot.md).
 
+Every step prints a `==> [time +elapsed]` banner, and every external program (`dotnet`, ISCC, Setup,
+the exe self-tests, CycloneDX, signtool) runs with an explicit timeout; on timeout its process tree is
+killed and the build fails naming the step, including when the output pipes never close. Inno Setup is
+always run with `/VERYSILENT /SUPPRESSMSGBOXES`.
+
+Background build servers are disabled (`MSBUILDDISABLENODEREUSE=1`, `DOTNET_CLI_USE_MSBUILD_SERVER=0`,
+`UseSharedCompilation=false`, `-nodeReuse:false`; the workflows set the same at `env:` level and the
+script runs `dotnet build-server shutdown` at the end). Reason: MSBuild nodes and the Roslyn compiler server
+outlive the command that started them and inherit its stdout/stderr pipes, so a captured command (or a CI
+step) never sees end-of-output and never finishes, which looks like a hung build.
+
 `Ensure-InnoSetup.ps1` installs Inno Setup on CI runners that lack it: it downloads the pinned official installer and runs it only if its SHA256 matches.
 
 GitHub releases are built by `.github/workflows/release.yml` when a `vX.Y.Z`

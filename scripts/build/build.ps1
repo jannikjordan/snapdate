@@ -70,6 +70,11 @@ $PSNativeCommandUseErrorActionPreference = $true
 $env:DOTNET_CLI_TELEMETRY_OPTOUT = '1'
 $env:DOTNET_NOLOGO = '1'
 $env:DOTNET_CLI_UI_LANGUAGE = 'en'
+# No long-lived background children (MSBuild nodes, MSBuild server, Roslyn compiler server): they inherit the
+# step's output pipes, so a CI step (or a captured command) would never see end-of-output and never finish.
+$env:MSBUILDDISABLENODEREUSE = '1'
+$env:DOTNET_CLI_USE_MSBUILD_SERVER = '0'
+$env:UseSharedCompilation = 'false'
 
 $Root = (Resolve-Path (Join-Path $PSScriptRoot '..' '..')).Path
 $Solution = Join-Path $Root 'Snapdate.slnx'
@@ -81,9 +86,117 @@ $InstallerDir = Join-Path $Artifacts 'installer'
 $InstallerScript = Join-Path $Root 'installer' 'Snapdate.iss'
 $TestResults = Join-Path $Artifacts 'test-results'
 
+$ScriptClock = [Diagnostics.Stopwatch]::StartNew()
+
+# Banner with wall-clock time and time since the script started, so a hang in CI can be located
+# from the last banner in the log.
 function Write-Step([string] $Message) {
     Write-Host ""
-    Write-Host "==> $Message" -ForegroundColor Magenta
+    Write-Host ("==> [{0:HH:mm:ss} +{1:mm\:ss}] {2}" -f (Get-Date), $ScriptClock.Elapsed, $Message) -ForegroundColor Magenta
+}
+
+# Runs an external program and waits for it with an explicit timeout. On timeout the whole process tree is
+# killed and the step fails with a message that names it (a hung tool must never block CI until the job
+# timeout). Output is inherited (streams live) unless -Capture is given; -StdErrFile writes stderr to a file.
+# Only the started process is awaited, not programs it launches (Setup's /RESTARTAPP). Returns the exit code,
+# or an object with ExitCode and Output when -Capture is given; fails on a non-zero exit code unless
+# -AllowFailure is given.
+function Invoke-Native {
+    param(
+        [Parameter(Mandatory)] [string] $Name,
+        [Parameter(Mandatory)] [string] $FilePath,
+        [string[]] $Arguments = @(),
+        [Parameter(Mandatory)] [int] $TimeoutSec,
+        [string] $WorkingDirectory,
+        [string] $StdErrFile,
+        [switch] $Capture,
+        [switch] $AllowFailure
+    )
+    $psi = [Diagnostics.ProcessStartInfo]::new($FilePath)
+    foreach ($argument in $Arguments) { $psi.ArgumentList.Add($argument) }
+    $psi.UseShellExecute = $false
+    # Nothing here is interactive: never let a child wait for keyboard input.
+    $psi.RedirectStandardInput = $true
+    if ($WorkingDirectory) { $psi.WorkingDirectory = $WorkingDirectory }
+    if ($Capture) { $psi.RedirectStandardOutput = $true; $psi.RedirectStandardError = $true }
+    elseif ($StdErrFile) { $psi.RedirectStandardError = $true }
+
+    $process = [Diagnostics.Process]::new()
+    $process.StartInfo = $psi
+    [void] $process.Start()
+    $process.StandardInput.Close()
+    $stdout = if ($Capture) { $process.StandardOutput.ReadToEndAsync() }
+    $stderr = if ($Capture -or $StdErrFile) { $process.StandardError.ReadToEndAsync() }
+    $deadline = [DateTime]::UtcNow.AddSeconds($TimeoutSec)
+    $timedOut = "Step '$Name' timed out after $TimeoutSec s and was killed ($([IO.Path]::GetFileName($FilePath)))."
+    try {
+        if (-not $process.WaitForExit([TimeSpan]::FromSeconds($TimeoutSec))) {
+            try { $process.Kill($true) } catch { }
+            throw $timedOut
+        }
+        # The redirected pipes only reach EOF when every program that inherited them has exited too (MSBuild
+        # node reuse, compiler servers), so reading them is bounded by the same deadline.
+        $streams = @(@($stdout, $stderr) | Where-Object { $_ })
+        if ($streams.Count -gt 0) {
+            $remainingMs = [Math]::Max(1000, [int]($deadline - [DateTime]::UtcNow).TotalMilliseconds)
+            if (-not [Threading.Tasks.Task]::WaitAll([Threading.Tasks.Task[]] $streams, $remainingMs)) {
+                try { $process.Kill($true) } catch { }
+                throw "$timedOut (output pipes stayed open: a background child process still holds them)"
+            }
+        }
+        if ($StdErrFile) { [IO.File]::WriteAllText($StdErrFile, $stderr.GetAwaiter().GetResult()) }
+        $exitCode = $process.ExitCode
+        $output = if ($Capture) { $stdout.GetAwaiter().GetResult() + $stderr.GetAwaiter().GetResult() }
+    }
+    finally {
+        $process.Dispose()
+    }
+    if ($exitCode -ne 0 -and -not $AllowFailure) {
+        if ($Capture -and $output) { Write-Host $output }
+        throw "Step '$Name' failed with exit code $exitCode."
+    }
+    if ($Capture) { return [pscustomobject]@{ ExitCode = $exitCode; Output = $output } }
+    return $exitCode
+}
+
+# Runs a program that may leave long-lived children behind (Inno Setup and the app it restarts, the uninstaller's
+# temporary copy) WITHOUT handing it this process's console or output pipes: UseShellExecute starts it with no
+# inherited handles, so nothing it spawns can keep the CI step's stdout/stderr pipe open after this script ends
+# (the GitHub runner waits for end-of-output, so such a leftover would hang the step until the job timeout).
+# Waits with a timeout (the process tree is killed on expiry) and returns the exit code. There is no captured
+# output: pass /LOG to Setup instead.
+function Invoke-Detached {
+    param(
+        [Parameter(Mandatory)] [string] $Name,
+        [Parameter(Mandatory)] [string] $FilePath,
+        [string[]] $Arguments = @(),
+        [Parameter(Mandatory)] [int] $TimeoutSec
+    )
+    $quoted = foreach ($argument in $Arguments) {
+        if ($argument -notmatch '[\s"]') { $argument }
+        elseif ($argument -match '^(/[A-Za-z0-9]+=)(.*)$') { $Matches[1] + '"' + $Matches[2].Replace('"', '\"') + '"' }
+        else { '"' + $argument.Replace('"', '\"') + '"' }
+    }
+    $psi = [Diagnostics.ProcessStartInfo]::new($FilePath)
+    $psi.UseShellExecute = $true
+    $psi.Arguments = $quoted -join ' '
+    $psi.WindowStyle = [Diagnostics.ProcessWindowStyle]::Hidden
+    $process = [Diagnostics.Process]::Start($psi)
+    if (-not $process) { throw "Step '$Name' could not be started ($([IO.Path]::GetFileName($FilePath)))." }
+    try {
+        if (-not $process.WaitForExit([TimeSpan]::FromSeconds($TimeoutSec))) {
+            try { $process.Kill($true) } catch { }
+            throw "Step '$Name' timed out after $TimeoutSec s and was killed ($([IO.Path]::GetFileName($FilePath)))."
+        }
+        return $process.ExitCode
+    }
+    finally { $process.Dispose() }
+}
+
+# The dotnet CLI. Timeouts are generous upper bounds (a normal run takes a fraction of them).
+function Invoke-Dotnet([string] $Name, [string[]] $Arguments, [int] $TimeoutSec = 900, [switch] $Capture) {
+    $dotnet = (Get-Command dotnet -CommandType Application | Select-Object -First 1).Source
+    Invoke-Native -Name $Name -FilePath $dotnet -Arguments $Arguments -TimeoutSec $TimeoutSec -Capture:$Capture
 }
 
 function Get-ProjectVersion {
@@ -104,12 +217,12 @@ function Invoke-Clean {
 
 function Invoke-Restore {
     Write-Step 'Restore (locked mode)'
-    dotnet restore $Solution --locked-mode
+    [void](Invoke-Dotnet 'dotnet restore' @('restore', $Solution, '--locked-mode') 600)
 }
 
 function Invoke-Audit {
     Write-Step 'Audit NuGet packages for known vulnerabilities'
-    $report = dotnet list $Solution package --vulnerable --include-transitive 2>&1 | Out-String
+    $report = (Invoke-Dotnet 'dotnet list package --vulnerable' @('list', $Solution, 'package', '--vulnerable', '--include-transitive') 600 -Capture).Output
     Write-Host $report
     if ($report -match 'has the following vulnerable packages') {
         throw 'Vulnerable packages found. Update them in Directory.Packages.props.'
@@ -119,10 +232,10 @@ function Invoke-Audit {
 function Invoke-Test {
     Write-Step 'Build and test'
     $ver = Get-ProjectVersion
-    dotnet build $Solution -c $Configuration --no-restore -p:Version=$ver
+    [void](Invoke-Dotnet 'dotnet build' @('build', $Solution, '-c', $Configuration, '--no-restore', "-p:Version=$ver", '-p:UseSharedCompilation=false', '-nodeReuse:false') 900)
     New-Item -ItemType Directory -Force -Path $TestResults | Out-Null
-    dotnet test --solution $Solution -c $Configuration --no-build `
-        --results-directory $TestResults --report-xunit-trx
+    [void](Invoke-Dotnet 'dotnet test' @('test', '--solution', $Solution, '-c', $Configuration, '--no-build',
+            '--results-directory', $TestResults, '--report-xunit-trx') 1200)
 }
 
 function Invoke-Publish {
@@ -136,11 +249,11 @@ function Invoke-Publish {
         # One exe that contains the .NET runtime, all assemblies and the native libraries
         # (Skia, HarfBuzz, ANGLE). Native libraries are extracted to a per-user folder and
         # loaded from there only, never from PATH. See ADR 0003.
-        dotnet publish $AppProject -c $Configuration -r $rid -o $out `
-            -p:Version=$ver -p:DebugType=none -p:RestoreLockedMode=true `
-            --self-contained true `
-            -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true `
-            -p:EnableCompressionInSingleFile=true
+        [void](Invoke-Dotnet "dotnet publish $rid" @('publish', $AppProject, '-c', $Configuration, '-r', $rid, '-o', $out,
+                "-p:Version=$ver", '-p:DebugType=none', '-p:RestoreLockedMode=true', '-p:UseSharedCompilation=false', '-nodeReuse:false',
+                '--self-contained', 'true',
+                '-p:PublishSingleFile=true', '-p:IncludeNativeLibrariesForSelfExtract=true',
+                '-p:EnableCompressionInSingleFile=true') 900)
 
         $files = @(Get-ChildItem $out -File | Where-Object Extension -notin '.xml', '.pdb')
         if ($files.Count -ne 1 -or $files[0].Name -ne 'Snapdate.exe') {
@@ -166,15 +279,20 @@ function Invoke-SelfTest([string] $Exe, [string] $Rid) {
     try {
         $copy = Join-Path $sandbox 'Snapdate.exe'
         Copy-Item $Exe $copy
-        $process = Start-Process -FilePath $copy -ArgumentList '--self-test' -WorkingDirectory $sandbox `
-            -PassThru -Wait -RedirectStandardError (Join-Path $sandbox 'stderr.txt')
-        if ($process.ExitCode -ne 0) {
-            Get-Content (Join-Path $sandbox 'stderr.txt') -ErrorAction SilentlyContinue | Write-Host
-            throw "Self-test of $Rid failed with exit code $($process.ExitCode)."
+        $stderrFile = Join-Path $sandbox 'stderr.txt'
+        $exit = Invoke-Native -Name "Self-test $Rid" -FilePath $copy -Arguments @('--self-test') -WorkingDirectory $sandbox `
+            -TimeoutSec 180 -StdErrFile $stderrFile -AllowFailure
+        if ($exit -ne 0) {
+            Get-Content $stderrFile -ErrorAction SilentlyContinue | Write-Host
+            throw "Self-test of $Rid failed with exit code $exit."
         }
         Write-Host "Self-test passed." -ForegroundColor Green
     }
     finally {
+        # --self-test exits by itself; if it ever left a process behind, stop it so it cannot hold the step's pipes.
+        Get-Process -Name 'Snapdate' -ErrorAction SilentlyContinue |
+            Where-Object { $_.Path -and (Get-LongPath $_.Path).StartsWith((Get-LongPath $sandbox).TrimEnd('\') + '\', [StringComparison]::OrdinalIgnoreCase) } |
+            Stop-Process -Force -ErrorAction SilentlyContinue
         Remove-Item $sandbox -Recurse -Force -ErrorAction SilentlyContinue
     }
 }
@@ -233,14 +351,14 @@ function Invoke-Installer {
         }
 
         Write-Step "Compile installer $rid"
-        $PSNativeCommandUseErrorActionPreference = $false
-        $output = & $iscc "/O$InstallerDir" "/DAppVersion=$ver" "/DAppVersionNumeric=$numeric" `
-            "/DArch=$arch" "/DRid=$rid" "/DSourceExe=$exe" `
-            "/DLicenseFile=$(Join-Path $Root 'LICENSE')" `
-            "/DIconFile=$(Join-Path $Root 'src' 'Snapdate.App' 'Assets' 'app.ico')" `
-            $InstallerScript 2>&1 | ForEach-Object { "$_" }
-        $isccExit = $LASTEXITCODE
-        $PSNativeCommandUseErrorActionPreference = $true
+        $result = Invoke-Native -Name "Inno Setup compile $rid" -FilePath $iscc -TimeoutSec 600 -Capture -AllowFailure -Arguments @(
+            "/O$InstallerDir", "/DAppVersion=$ver", "/DAppVersionNumeric=$numeric",
+            "/DArch=$arch", "/DRid=$rid", "/DSourceExe=$exe",
+            "/DLicenseFile=$(Join-Path $Root 'LICENSE')",
+            "/DIconFile=$(Join-Path $Root 'src' 'Snapdate.App' 'Assets' 'app.ico')",
+            $InstallerScript)
+        $output = @($result.Output -split '\r?\n')
+        $isccExit = $result.ExitCode
         if ($isccExit -ne 0) {
             $output | Select-Object -Last 15 | ForEach-Object { Write-Host $_ }
             throw "Inno Setup failed for $rid with exit code $isccExit."
@@ -299,7 +417,14 @@ function Invoke-InstallerTest {
     if (Test-Path $logDir) { Remove-Item $logDir -Recurse -Force }
     New-Item -ItemType Directory -Force -Path $logDir | Out-Null
 
-    $root = Join-Path (Get-LongPath ([IO.Path]::GetTempPath())) "snapdate-installer-test-$([guid]::NewGuid().ToString('N'))"
+    # $runId is a unique marker of this run. Processes are attributed to the test only through it (it is part of
+    # the temp folder and of the log folder, so it shows up on Setup's and the uninstaller's command lines).
+    $runId = [guid]::NewGuid().ToString('N')
+    $runLogDir = Join-Path $logDir $runId
+    New-Item -ItemType Directory -Force -Path $runLogDir | Out-Null
+    $root = Join-Path (Get-LongPath ([IO.Path]::GetTempPath())) "snapdate-installer-test-$runId"
+    $rootShort = $null   # 8.3 form of $root, set once the folder exists
+    $failed = $false
     $appDir = Join-Path $root 'app'
     $exe = Join-Path $appDir 'Snapdate.exe'
     $startMenuLink = Join-Path ([Environment]::GetFolderPath('Programs')) 'Snapdate.lnk'
@@ -316,18 +441,88 @@ function Invoke-InstallerTest {
 
     function Invoke-Setup([string] $Program, [string[]] $Arguments, [string] $Name) {
         $state.Step++
-        $log = Join-Path $logDir ('{0}-{1}.log' -f $state.Step, $Name)
-        $process = Start-Process -FilePath $Program -ArgumentList ($Arguments + @('/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART', "/LOG=`"$log`"")) -PassThru
-        # Not "Start-Process -Wait": that would also wait for the app that /RESTARTAPP starts.
-        $process.WaitForExit()
-        if ($process.ExitCode -ne 0) {
+        $log = Join-Path $runLogDir ('{0}-{1}.log' -f $state.Step, $Name)
+        Write-Host "  ... $Name"
+        # Only the Setup process itself is awaited, not the app that /RESTARTAPP starts. Started detached (no
+        # inherited output pipes, see Invoke-Detached) so neither that app nor Setup's helper processes can keep
+        # the CI step's pipe open. Always silent and with /SUPPRESSMSGBOXES: a message box nobody can click
+        # would block forever (the timeout is the backstop).
+        $exit = Invoke-Detached -Name "Installer smoke test: $Name" -FilePath $Program -TimeoutSec 240 `
+            -Arguments ($Arguments + @('/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART', "/LOG=$log"))
+        if ($exit -ne 0) {
             Get-Content $log -Tail 40 -ErrorAction SilentlyContinue | Write-Host
-            throw "Installer smoke test failed: $Name exited with code $($process.ExitCode) (log: $log)."
+            throw "Installer smoke test failed: $Name exited with code $exit (log: $log)."
         }
+        # Setup's extracted helper copy and the uninstaller's temporary copy may outlive the process awaited above.
+        Wait-SmokeProcessesGone -Name $Name -TimeoutSec 60 -Except $exe
     }
 
     function Get-RunningInstalled {
         @(Get-Process -Name 'Snapdate' -ErrorAction SilentlyContinue | Where-Object { $_.Path -and (Get-LongPath $_.Path) -eq $exe })
+    }
+
+    # Every process that belongs to this test: anything running from the temp test folder, plus Setup and
+    # uninstaller helper copies (they run from %TEMP% but carry the test folder or the per-run marker $runId on
+    # their command line). Only these GUID-bearing strings are matched (case-insensitive, long and 8.3 form).
+    function Test-Contains([string] $Text, [string] $Part) {
+        [bool]($Text -and $Part -and $Text.IndexOf($Part, [StringComparison]::OrdinalIgnoreCase) -ge 0)
+    }
+
+    function Get-SmokeProcesses([string] $Except) {
+        @(Get-CimInstance Win32_Process -ErrorAction SilentlyContinue | Where-Object {
+            $_.ProcessId -ne $PID -and (
+                ($_.ExecutablePath -and (
+                    (Get-LongPath $_.ExecutablePath).StartsWith($root + '\', [StringComparison]::OrdinalIgnoreCase) -or
+                    ($rootShort -and $_.ExecutablePath.StartsWith($rootShort + '\', [StringComparison]::OrdinalIgnoreCase)))) -or
+                (Test-Contains $_.CommandLine $runId) -or (Test-Contains $_.CommandLine $root) -or (Test-Contains $_.CommandLine $rootShort)) -and
+            -not ($Except -and $_.ExecutablePath -and (Get-LongPath $_.ExecutablePath) -eq $Except)
+        })
+    }
+
+    # One line per process: name, PID, parent, path, command line (truncated) and start time.
+    function Format-Processes($Processes) {
+        (@($Processes) | Where-Object { $_ } | ForEach-Object {
+            $cmd = if ($_.CommandLine) { $_.CommandLine.Substring(0, [Math]::Min(200, $_.CommandLine.Length)) } else { '' }
+            "$($_.Name) pid=$($_.ProcessId) parent=$($_.ParentProcessId) created=$($_.CreationDate.ToString('HH:mm:ss')) path=$($_.ExecutablePath) cmd=$cmd"
+        }) -join [Environment]::NewLine
+    }
+
+    # Prints (and saves to survivors.txt) every process of this test, before anything is killed. When there are
+    # some, also lists orphans (parent gone) that look like Snapdate or this run - the likely holders of the pipes.
+    function Write-SmokeDiagnostics([string] $Title) {
+        $found = Get-SmokeProcesses
+        $lines = @("$Title ($([DateTime]::Now.ToString('HH:mm:ss'))): $(@($found).Count) process(es) of this run ($runId)")
+        if ($found) { $lines += Format-Processes $found }
+        if ($found) {
+            $all = @(Get-CimInstance Win32_Process -ErrorAction SilentlyContinue)
+            $pids = @{}
+            foreach ($p in $all) { $pids[[int]$p.ProcessId] = 1 }
+            $orphans = @($all | Where-Object {
+                    -not $pids.ContainsKey([int]$_.ParentProcessId) -and
+                    ((Test-Contains $_.ExecutablePath 'Snapdate') -or (Test-Contains $_.CommandLine 'Snapdate') -or (Test-Contains $_.CommandLine $runId))
+                })
+            $lines += "Orphans (parent no longer exists) mentioning Snapdate or this run: $($orphans.Count)"
+            if ($orphans) { $lines += Format-Processes $orphans }
+        }
+        $lines | ForEach-Object { Write-Host $_ }
+        try { Add-Content -Path (Join-Path $runLogDir 'survivors.txt') -Value $lines -ErrorAction Stop } catch { }
+    }
+
+    # Waits (bounded) until no process of this test is left, so nothing can hold the step's output pipes.
+    function Wait-SmokeProcessesGone([string] $Name, [int] $TimeoutSec, [string] $Except) {
+        $deadline = [DateTime]::UtcNow.AddSeconds($TimeoutSec)
+        while ((Get-SmokeProcesses $Except) -and [DateTime]::UtcNow -lt $deadline) { Start-Sleep -Milliseconds 300 }
+        $left = Get-SmokeProcesses $Except
+        if ($left) { Assert-That $false "after '$Name' these processes are still running:`n$(Format-Processes $left)" }
+    }
+
+    # Stops every process of this test (the app, Setup and uninstaller helpers) and waits for them to be gone.
+    function Stop-SmokeProcesses([int] $WaitSec = 10) {
+        $deadline = [DateTime]::UtcNow.AddSeconds($WaitSec)
+        do {
+            foreach ($p in Get-SmokeProcesses) { Stop-Process -Id $p.ProcessId -Force -ErrorAction SilentlyContinue }
+            Start-Sleep -Milliseconds 300
+        } while ((Get-SmokeProcesses) -and [DateTime]::UtcNow -lt $deadline)
     }
 
     function Assert-Installed([string] $Stage) {
@@ -355,16 +550,18 @@ function Invoke-InstallerTest {
     try {
         Assert-That (-not (Test-Path $startMenuLink) -and -not (Test-Path $desktopLink)) 'a Snapdate shortcut already exists (leftover of a real installation?).'
         New-Item -ItemType Directory -Path $root | Out-Null
+        $rootShort = try { (New-Object -ComObject Scripting.FileSystemObject).GetFolder($root).ShortPath } catch { $null }
+        if ($rootShort -eq $root) { $rootShort = $null }
 
-        Invoke-Setup $setup @('/CURRENTUSER', "/DIR=`"$appDir`"", '/TASKS=desktopicon') 'install'
+        Invoke-Setup $setup @('/CURRENTUSER', "/DIR=$appDir", '/TASKS=desktopicon') 'install'
         Assert-Installed 'install'
         Write-Host '  [ok] silent per-user install: files, marker, shortcuts, Apps entry (name, version, publisher, icon)'
 
-        $selfTest = Start-Process -FilePath $exe -ArgumentList '--self-test' -WorkingDirectory $appDir -PassThru -Wait `
-            -RedirectStandardError (Join-Path $root 'selftest-stderr.txt')
-        if ($selfTest.ExitCode -ne 0) {
+        $selfTestExit = Invoke-Native -Name 'Installer smoke test: installed exe --self-test' -FilePath $exe -Arguments @('--self-test') `
+            -WorkingDirectory $appDir -TimeoutSec 180 -AllowFailure -StdErrFile (Join-Path $root 'selftest-stderr.txt')
+        if ($selfTestExit -ne 0) {
             Get-Content (Join-Path $root 'selftest-stderr.txt') -ErrorAction SilentlyContinue | Write-Host
-            throw "Installer smoke test failed: installed exe self-test exit code $($selfTest.ExitCode)."
+            throw "Installer smoke test failed: installed exe self-test exit code $selfTestExit."
         }
         Write-Host '  [ok] installed exe passes --self-test'
 
@@ -399,15 +596,28 @@ function Invoke-InstallerTest {
         Assert-That (Test-Path $sentinel) 'silent uninstall deleted the settings folder (it must keep it).'
         Write-Host '  [ok] silent uninstall removes folder, shortcuts and Apps entry, keeps settings'
 
-        Write-Host "Installer smoke test passed. Logs: $logDir" -ForegroundColor Green
+        Write-Host "Installer smoke test passed. Logs: $runLogDir" -ForegroundColor Green
+    }
+    catch {
+        $failed = $true
+        throw
     }
     finally {
-        # Never leave a test installation behind, whatever happened.
-        Get-RunningInstalled | Stop-Process -Force -ErrorAction SilentlyContinue
+        # Never leave a test installation behind, whatever happened - and no process of it either: a survivor
+        # that holds the CI step's output pipes would keep the step from ever finishing. First give helpers
+        # (the uninstaller's temporary copy) time to exit on their own, then record what is left, then kill.
+        $deadline = [DateTime]::UtcNow.AddSeconds(60)
+        while ((Get-SmokeProcesses $exe) -and [DateTime]::UtcNow -lt $deadline) { Start-Sleep -Milliseconds 500 }
+        Write-SmokeDiagnostics 'Processes of the smoke test before cleanup'
+        Stop-SmokeProcesses
         $uninstaller = Join-Path $appDir 'unins000.exe'
         if (Test-Path $uninstaller) {
-            Start-Process -FilePath $uninstaller -ArgumentList '/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART' -Wait -ErrorAction SilentlyContinue
-            Start-Sleep -Seconds 3
+            try {
+                [void](Invoke-Detached -Name 'Installer smoke test: cleanup uninstall' -FilePath $uninstaller -TimeoutSec 120 `
+                    -Arguments @('/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART', "/LOG=$(Join-Path $runLogDir 'cleanup-uninstall.log')"))
+            }
+            catch { Write-Warning $_.Exception.Message }
+            Stop-SmokeProcesses -WaitSec 30
         }
         foreach ($link in $startMenuLink, $desktopLink) {
             if (Test-Path $link) {
@@ -424,6 +634,13 @@ function Invoke-InstallerTest {
             Remove-Item $settingsDir -Force -ErrorAction SilentlyContinue
         }
         Remove-Item $root -Recurse -Force -ErrorAction SilentlyContinue
+        $survivors = Get-SmokeProcesses
+        if ($survivors) {
+            Write-SmokeDiagnostics 'Processes that could not be stopped'
+            $message = "Installer smoke test left processes running that could not be stopped:`n$(Format-Processes $survivors)"
+            # Do not hide the original failure behind this one.
+            if ($failed) { Write-Warning $message } else { throw $message }
+        }
     }
 }
 
@@ -450,9 +667,15 @@ function Invoke-Package {
         Copy-Item (Join-Path $InstallerDir "Snapdate-Setup-v$ver-$rid.exe") $ReleaseDir
     }
     # SBOM (optional tool: dotnet tool install --global CycloneDX)
-    if (Get-Command dotnet-CycloneDX -ErrorAction SilentlyContinue) {
-        Write-Step 'SBOM (CycloneDX)'
-        dotnet-CycloneDX $AppProject --output $ReleaseDir --filename 'sbom.cdx.json' --output-format Json
+    $cyclone = Get-Command dotnet-CycloneDX -CommandType Application -ErrorAction SilentlyContinue | Select-Object -First 1
+    if ($cyclone) {
+        Write-Step "SBOM (CycloneDX, $($cyclone.Source))"
+        # The assets file written by Publish already covers every runtime, so the tool must not restore on its
+        # own (a second, differently configured restore in the middle of the release is a needless risk);
+        # -dct caps its own dotnet calls, the outer timeout kills it if it hangs anyway.
+        [void](Invoke-Native -Name 'SBOM (CycloneDX)' -FilePath $cyclone.Source -TimeoutSec 300 -Arguments @(
+                $AppProject, '--output', $ReleaseDir, '--filename', 'sbom.cdx.json', '--output-format', 'Json',
+                '--disable-package-restore', '--dotnet-command-timeout', '120000'))
     }
     else {
         Write-Warning 'CycloneDX tool not installed - skipping SBOM.'
@@ -480,8 +703,10 @@ function Invoke-Authenticode([string[]] $Files) {
     try {
         [IO.File]::WriteAllBytes($pfx, [Convert]::FromBase64String($env:SNAPDATE_SIGN_PFX))
         foreach ($file in $Files) {
-            & $signtool sign /fd SHA256 /td SHA256 /tr 'http://timestamp.digicert.com' `
-                /f $pfx /p $env:SNAPDATE_SIGN_PASSWORD $file
+            # The timestamp server is a network call: bounded, so an unreachable server fails the step.
+            [void](Invoke-Native -Name "signtool $([IO.Path]::GetFileName($file))" -FilePath $signtool.Source -TimeoutSec 180 -Arguments @(
+                    'sign', '/fd', 'SHA256', '/td', 'SHA256', '/tr', 'http://timestamp.digicert.com',
+                    '/f', $pfx, '/p', $env:SNAPDATE_SIGN_PASSWORD, $file))
         }
     }
     finally {
@@ -601,4 +826,6 @@ try {
 }
 finally {
     Pop-Location
+    # Belt and braces: stop any build server that still got started.
+    try { [void](Invoke-Dotnet 'dotnet build-server shutdown' @('build-server', 'shutdown') 60 -Capture) } catch { Write-Warning $_.Exception.Message }
 }
