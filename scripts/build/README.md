@@ -23,7 +23,8 @@ pwsh scripts/build/build.ps1 -Target All -Version 0.1.0
 
 `Publish` produces exactly one self-contained `Snapdate.exe` per runtime and
 starts it with `--self-test` from an empty folder (on the matching CPU
-architecture); a failing self-test stops the build. See
+architecture); a failing self-test stops the build. The arm64 exe is
+self-tested on an ARM64 runner in CI and release. See
 [ADR 0003](../../docs/adr/0003-single-file-instead-of-native-aot.md).
 
 GitHub releases are built by `.github/workflows/release.yml` when a `vX.Y.Z`

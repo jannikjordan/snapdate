@@ -41,10 +41,22 @@ See [scripts/build/README.md](../scripts/build/README.md) for every build target
    ```
 
 5. The **Release** workflow builds single-file executables for `win-x64` and
-   `win-arm64`, self-tests them, adds zips, checksums, SBOM (and provenance
-   attestations once the repository is public) and creates a **draft** GitHub
-   release.
+   `win-arm64` and self-tests the x64 exe on the build runner. The `win-arm64`
+   exe cannot run there, so it is handed over as a workflow artefact to a job on
+   GitHub's ARM64 Windows runner (`windows-11-arm`), which starts
+   `Snapdate.exe --self-test` from an empty folder. The **draft** GitHub release
+   (zips, checksums, SBOM, and provenance attestations once the repository is
+   public) is only created if that ARM64 self-test succeeds.
 6. Review the draft on GitHub and press **Publish release**.
+
+## Continuous integration
+
+The **CI** workflow (`.github/workflows/ci.yml`) audits, builds, tests and
+self-tests the x64 exe on every push and pull request. On pushes to `main` it
+also builds the `win-arm64` exe, uploads it as a short-lived artefact and starts
+it with `--self-test` on the `windows-11-arm` runner. Pull requests skip the
+ARM64 job to save runner minutes; the release workflow runs it for every tag.
+The exe is built once and reused, never rebuilt on the ARM64 runner.
 
 ## Release notes
 

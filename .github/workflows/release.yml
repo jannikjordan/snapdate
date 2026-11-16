@@ -1,7 +1,8 @@
 name: Release
 
-# Pushing a tag vX.Y.Z builds single-file executables, self-tests them and creates a DRAFT release.
-# A maintainer reviews the draft on GitHub and publishes it by hand.
+# Pushing a tag vX.Y.Z builds single-file executables, self-tests them (arm64 on a native ARM64
+# runner) and creates a DRAFT release. A maintainer reviews the draft on GitHub and publishes it
+# by hand.
 
 on:
   push:
@@ -15,7 +16,7 @@ jobs:
     runs-on: windows-latest
     timeout-minutes: 45
     permissions:
-      contents: write        # create the draft GitHub Release
+      contents: read
       id-token: write        # build provenance attestation
       attestations: write
     env:
@@ -64,6 +65,65 @@ jobs:
           $notesArgs = @{ Version = $env:TAG; OutFile = 'artifacts/release-notes.md' }
           if ($env:REPO_PRIVATE -eq 'true') { $notesArgs.WithoutAttestation = $true }
           ./scripts/build/New-ReleaseNotes.ps1 @notesArgs
+
+      # Hand the finished files to the draft-release job, which only runs after the arm64 self-test.
+      - name: Upload release files
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: release-files
+          path: |
+            artifacts/release
+            artifacts/release-notes.md
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Upload win-arm64 exe for the self-test
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: snapdate-win-arm64
+          path: artifacts/publish/win-arm64/Snapdate.exe
+          if-no-files-found: error
+          retention-days: 1
+
+  # The x64 runner cannot start the arm64 exe, so it is started on a real ARM64 Windows machine.
+  self-test-arm64:
+    needs: release
+    runs-on: windows-11-arm
+    timeout-minutes: 10
+    permissions: {}
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: snapdate-win-arm64
+          path: ${{ runner.temp }}/arm64-exe
+
+      - name: Self-test the exe
+        shell: pwsh
+        run: |
+          # Run from an empty folder so no stray DLL next to the working directory can be picked up.
+          $sandbox = Join-Path $env:RUNNER_TEMP 'snapdate-selftest'
+          New-Item -ItemType Directory -Path $sandbox | Out-Null
+          Copy-Item (Join-Path $env:RUNNER_TEMP 'arm64-exe/Snapdate.exe') $sandbox
+          $process = Start-Process -FilePath (Join-Path $sandbox 'Snapdate.exe') -ArgumentList '--self-test' `
+            -WorkingDirectory $sandbox -PassThru -Wait -RedirectStandardError (Join-Path $sandbox 'stderr.txt')
+          Get-Content (Join-Path $sandbox 'stderr.txt') -ErrorAction SilentlyContinue | Write-Host
+          if ($process.ExitCode -ne 0) { throw "Self-test of win-arm64 failed with exit code $($process.ExitCode)." }
+          Write-Host 'Self-test passed.'
+
+  draft-release:
+    needs: [release, self-test-arm64]
+    runs-on: windows-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write        # create the draft GitHub Release
+    env:
+      TAG: ${{ github.ref_name }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: release-files
+          path: artifacts
 
       - name: Create draft GitHub Release
         shell: pwsh
