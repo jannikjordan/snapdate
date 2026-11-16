@@ -25,18 +25,27 @@ in any folder, on any computer.
 7. [Go!](#-7-go)
 8. [Where does the date come from?](#-8-where-does-the-date-come-from)
 9. [All blocks (placeholders)](#-9-all-blocks-placeholders)
-10. [Questions & answers](#-10-questions--answers)
+10. [Install](#-10-install)
+11. [Portable version](#-11-portable-version)
+12. [Updates](#-12-updates)
+13. [Uninstall](#-13-uninstall)
+14. [Questions & answers](#-14-questions--answers)
 
 ---
 
 ## 🚀 1. Getting started
 
-1. Download `Snapdate-…-win-x64.exe` from the
-   [Releases page](https://github.com/jannikjordan/snapdate/releases).
+1. Download the installer `Snapdate-Setup-vX.Y.Z-win-x64.exe` from the
+   [Releases page](https://github.com/jannikjordan/snapdate/releases/latest).
    (On ARM devices such as Surface Pro X or Copilot+ PCs, pick `win-arm64`.)
-2. Double-click the file. There is **nothing to install**.
+2. Double-click it and follow the steps — details in
+   [Install](#-10-install). Then start **Snapdate** from the Start menu.
 3. Windows may show *“Windows protected your PC”* the first time, because the
    app is new. Click **More info → Run anyway**.
+
+> 💡 You'd rather not install anything? Use the **portable** file instead
+> (`Snapdate-vX.Y.Z-win-x64-portable.exe`): just double-click it. See
+> [Portable version](#-11-portable-version).
 
 Snapdate speaks **English and German**. It picks the language of your Windows
 automatically — you can switch any time with **EN | DE** at the top right.
@@ -240,7 +249,120 @@ RAW (DNG, CR2, CR3, NEF, ARW, ORF, RW2, RAF, PEF, …) and videos (MP4, MOV, M4V
 
 ---
 
-## ❓ 10. Questions & answers
+## 💿 10. Install
+
+The installer is the recommended way to get Snapdate. It puts Snapdate in the
+Start menu like any other program and lets it tell you about new versions.
+
+1. Download `Snapdate-Setup-vX.Y.Z-win-x64.exe` (ARM devices:
+   `…-win-arm64.exe`) and double-click it.
+2. Choose **who** should get Snapdate:
+
+   ![Choose the install mode](images/en/14-installer-scope.png)
+
+   | Choice | What it means |
+   |---|---|
+   | **Install for me only** *(recommended)* | Only your Windows account. No administrator rights needed. |
+   | **Install for all users** | Every account on this PC. Windows asks for administrator approval. |
+
+3. If the installer first asks for a **language**, pick English or German. Then
+   click **Next** through the steps. You can keep the suggested folder. The
+   **desktop shortcut** is ticked by default (untick it if you don't want it);
+   the **Start menu** entry is always created.
+4. Click **Install**, then **Finish**. Snapdate starts if you leave
+   the “Launch Snapdate” box ticked.
+
+> ⚠️ **Windows may warn you** (“Windows protected your PC”, *SmartScreen*)
+> when you open the installer or Snapdate for the first time. Snapdate is new
+> and not yet signed with a paid certificate, so Windows doesn't know it yet.
+> Click **More info**, then **Run anyway**. If you'd like to double-check the
+> file first, see the checksum in the release notes
+> (`SHA256SUMS.txt`; in PowerShell: `Get-FileHash <file> -Algorithm SHA256`).
+
+**Installing a newer version** works the same way: run the new installer. It
+updates Snapdate in place and **keeps your settings**.
+
+---
+
+## 🧳 11. Portable version
+
+The **portable** file needs no installation at all:
+
+1. Download `Snapdate-vX.Y.Z-win-x64-portable.exe` (ARM devices:
+   `…-win-arm64-portable.exe`).
+2. Save it anywhere — your Documents folder or a USB stick — and double-click it.
+
+It does not add anything to the Start menu or to *Settings → Apps*. To remove
+it, simply delete the file. Your settings stay in `%APPDATA%\Snapdate` (see the
+questions at the end); delete that folder too if you want everything gone.
+
+The portable version **does not update itself**. When a new version is out, it
+shows a banner with a **Download** button that opens the release page, so you
+can download the new file again (see [Updates](#-12-updates)).
+
+---
+
+## 🔔 12. Updates
+
+Snapdate checks **at most once a day**, when it starts, whether a newer version
+exists. For this it only asks GitHub (`api.github.com`) for the newest version
+number. It sends **no photos, no file names and no personal data** — GitHub
+sees your IP address, as with any website you visit.
+
+**First start:** Snapdate only shows a short notice that explains this. The first
+check happens at the next start. Press **Got it** to close the notice. If you
+switch the automatic check off in the meantime, the notice disappears too.
+
+![Notice on the first start](images/en/13-first-start-notice-light.png)
+
+**When a new version is out**, a slim banner appears at the top:
+
+![Update banner, installed version](images/en/10-update-installed-light.png)
+
+| Button | What it does |
+|---|---|
+| **Update now** | Installed version only. Downloads the new installer from GitHub, checks its signature and installs it. For an “all users” install, Windows asks for administrator approval first. Snapdate restarts afterwards. |
+| **What's new** | Opens the release notes in your browser. |
+| **Later** | Hides the banner until the next start; it returns at the next automatic check. |
+| **Skip this version** | Stops the automatic reminders for this version. A newer one is announced again. **Check now** (see below) still shows a skipped version. |
+
+If the download or the check of the signature fails, **nothing is installed**
+and Snapdate offers the release page instead.
+
+**Portable version:** the banner has a **Download** button instead of
+*Update now*. It opens the latest release page, where you download the new
+portable file again.
+
+![Update banner, portable version](images/en/11-update-portable-light.png)
+
+**Turning it off, checking by hand:** click the **ⓘ** button in the top right
+(*About Snapdate*). There you can untick **Check for updates automatically**,
+or press **Check now** at any time.
+
+![About window with update settings](images/en/12-about-update-light.png)
+
+If you are offline, nothing bad happens: the automatic check simply stays
+silent and Snapdate keeps working normally. Only when you press **Check now**
+does it tell you *“Couldn't check right now — are you offline?”*.
+
+---
+
+## 🗑️ 13. Uninstall
+
+1. Open Windows **Settings → Apps → Installed apps** (Windows 10: *Apps & features*).
+2. Find **Snapdate**, choose **Uninstall** and follow the steps.
+
+If you installed **for me only**, Snapdate asks whether to **also delete your
+settings** (remembered folders, file name pattern, language). Choose **No** to
+keep them — handy if you want to install Snapdate again later.
+With an **all users** install your settings are always kept.
+
+Your photos and renamed files are never touched. The portable version has no
+uninstaller: delete the file.
+
+---
+
+## ❓ 14. Questions & answers
 
 **Will my photos be changed?**
 No. With **Copy**, originals are never touched. Even the photos themselves are
@@ -250,8 +372,12 @@ not modified — only the file names of the copies differ.
 No. If a name already exists in the target folder, Snapdate adds `(2)`, `(3)` …
 
 **Does Snapdate send anything to the internet?**
-No. Snapdate works completely offline — no account, no tracking. Only the
-**?** and *Project website* buttons open a web page, and only when you click them.
+Snapdate works offline — except the optional update check. Once a day at
+most it asks GitHub for the newest version number; your photos, file names and
+personal data are never sent (GitHub sees your IP address, as any website does).
+You can turn the check off under *About* → **Check for updates automatically**.
+There is no account and no tracking. The **?** and *Project website* buttons open
+a web page only when you click them.
 
 **Why do some photos say “File date”?**
 Screenshots, pictures saved from chats or social media often have no

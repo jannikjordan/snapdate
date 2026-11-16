@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Release files are renamed: portable exes now end in `-portable.exe`, and the zip packages are gone (they only held the exe plus README, CHANGELOG and LICENSE).
 - The About text no longer says Snapdate runs fully offline; it now mentions the optional update check.
+- 📖 README, both user guides (English and German) and the release notes now describe the installer (recommended) and the portable version, the update check and in-app update, the Windows SmartScreen warning, privacy (works offline except the optional update check) and uninstalling.
 
 ### Fixed
 - 👀 While the file name pattern is invalid, the preview no longer keeps showing the previous names as if they were current: the list is dimmed with the new names struck through, a red note explains that the names can't be built right now, and the "Numbered" tab is hidden until the pattern is valid again (#9).

@@ -14,7 +14,7 @@ safety (never lose a photo) and a "just double-click it" experience.
 ## 1. Goals & non-goals
 
 **Goals (v0.1.0)**
-- Single portable `Snapdate.exe` — no installer, no .NET/Python runtime needed.
+- Portable single `Snapdate.exe` — no .NET/Python runtime needed; since v0.2.0 also an installer (see ADR 0006).
 - Pick source + destination folder (button or drag & drop).
 - Read capture date from metadata (EXIF / XMP / QuickTime / PNG text chunks),
   fall back to file timestamps.
@@ -220,6 +220,10 @@ product is the exe) with steps selectable via `-Target`:
 3. `Publish` — single-file exe for `win-x64` and `win-arm64` + `--self-test`, version from
    `Directory.Build.props` (or `-Version` / git tag)
 4. `Package` — into `artifacts/release/`:
+   - *Historical (v0.1.0 plan; superseded since v0.2.0 by installers
+     `Snapdate-Setup-vX.Y.Z-<rid>.exe`, portable exes
+     `Snapdate-vX.Y.Z-<rid>-portable.exe`, a `.sig` per file and no zip — see
+     [build-and-release.md](build-and-release.md#release-artefacts)):*
    - `Snapdate-v0.1.0-win-x64.exe`, `Snapdate-v0.1.0-win-arm64.exe`
    - `Snapdate-v0.1.0-win-x64.zip` (exe + README + LICENSE + CHANGELOG)
    - `SHA256SUMS.txt`, `sbom.cdx.json`

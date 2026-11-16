@@ -26,19 +26,28 @@ in der richtigen Reihenfolge, in jedem Ordner, auf jedem Computer.
 7. [Los!](#-7-los)
 8. [Woher kommt das Datum?](#-8-woher-kommt-das-datum)
 9. [Alle Bausteine (Platzhalter)](#-9-alle-bausteine-platzhalter)
-10. [Fragen & Antworten](#-10-fragen--antworten)
+10. [Installation](#-10-installation)
+11. [Portable Version](#-11-portable-version)
+12. [Updates](#-12-updates)
+13. [Deinstallation](#-13-deinstallation)
+14. [Fragen & Antworten](#-14-fragen--antworten)
 
 ---
 
 ## 🚀 1. Los geht's
 
-1. Laden Sie `Snapdate-…-win-x64.exe` von der
-   [Release-Seite](https://github.com/jannikjordan/snapdate/releases) herunter.
+1. Laden Sie den Installer `Snapdate-Setup-vX.Y.Z-win-x64.exe` von der
+   [Release-Seite](https://github.com/jannikjordan/snapdate/releases/latest) herunter.
    (Auf ARM-Geräten wie Surface Pro X oder Copilot+ PCs: `win-arm64`.)
-2. Doppelklick auf die Datei. Es muss **nichts installiert** werden.
+2. Doppelklick darauf und den Schritten folgen — Einzelheiten unter
+   [Installation](#-10-installation). Starten Sie **Snapdate** danach über das Startmenü.
 3. Beim ersten Start zeigt Windows eventuell *„Der Computer wurde durch Windows
    geschützt“*, weil die App neu ist. Klicken Sie auf
    **Weitere Informationen → Trotzdem ausführen**.
+
+> 💡 Sie möchten nichts installieren? Nehmen Sie stattdessen die **portable**
+> Datei (`Snapdate-vX.Y.Z-win-x64-portable.exe`): einfach doppelklicken. Siehe
+> [Portable Version](#-11-portable-version).
 
 Snapdate spricht **Deutsch und Englisch**. Die Sprache Ihres Windows wird
 automatisch gewählt — umschalten können Sie jederzeit oben rechts mit
@@ -253,7 +262,133 @@ MOV, M4V, 3GP).
 
 ---
 
-## ❓ 10. Fragen & Antworten
+## 💿 10. Installation
+
+Der Installer ist der empfohlene Weg. Er legt Snapdate wie jedes andere
+Programm im Startmenü an und ermöglicht es, dass Snapdate Sie über neue
+Versionen informiert.
+
+1. Laden Sie `Snapdate-Setup-vX.Y.Z-win-x64.exe` herunter (ARM-Geräte:
+   `…-win-arm64.exe`) und doppelklicken Sie darauf.
+2. Wählen Sie, **für wen** Snapdate installiert wird:
+
+   ![Installationsmodus wählen](images/de/14-installer-scope.png)
+
+   | Auswahl | Bedeutung |
+   |---|---|
+   | **Installation nur für Sie** *(empfohlen)* | Nur Ihr Windows-Konto. Es werden keine Administratorrechte benötigt. |
+   | **Installation für alle Benutzer** | Alle Konten auf diesem PC. Windows fragt nach der Zustimmung eines Administrators. |
+
+3. Fragt der Installer zuerst nach der **Sprache**, wählen Sie Deutsch oder
+   Englisch. Klicken Sie sich dann mit **Weiter** durch die Schritte. Den
+   vorgeschlagenen Ordner können Sie behalten. Die **Desktop-Verknüpfung** ist
+   standardmäßig angehakt (nehmen Sie das Häkchen heraus, wenn Sie sie nicht
+   möchten); der Eintrag im **Startmenü** wird immer angelegt.
+4. Klicken Sie auf **Installieren** und dann auf **Fertigstellen**. Snapdate
+   startet, wenn das Häkchen bei „Snapdate starten“ gesetzt bleibt.
+
+> ⚠️ **Windows zeigt eventuell eine Warnung** („Der Computer wurde durch Windows
+> geschützt“, *SmartScreen*), wenn Sie den Installer oder Snapdate zum ersten
+> Mal öffnen. Snapdate ist neu und noch nicht mit einem kostenpflichtigen
+> Zertifikat signiert, deshalb kennt Windows es noch nicht. Klicken Sie auf
+> **Weitere Informationen** und dann auf **Trotzdem ausführen**. Wenn Sie die
+> Datei vorher prüfen möchten, finden Sie die Prüfsumme in den Release-Hinweisen
+> (`SHA256SUMS.txt`; in PowerShell: `Get-FileHash <Datei> -Algorithm SHA256`).
+
+**Eine neuere Version installieren** geht genauso: Starten Sie den neuen
+Installer. Er aktualisiert Snapdate an Ort und Stelle und **behält Ihre
+Einstellungen**.
+
+---
+
+## 🧳 11. Portable Version
+
+Die **portable** Datei braucht keine Installation:
+
+1. Laden Sie `Snapdate-vX.Y.Z-win-x64-portable.exe` herunter (ARM-Geräte:
+   `…-win-arm64-portable.exe`).
+2. Speichern Sie sie, wo Sie möchten — etwa im Ordner Dokumente oder auf einem
+   USB-Stick — und doppelklicken Sie darauf.
+
+Es wird nichts im Startmenü oder unter *Einstellungen → Apps* eingetragen. Zum
+Entfernen löschen Sie einfach die Datei. Ihre Einstellungen liegen in
+`%APPDATA%\Snapdate` (siehe Fragen am Ende); löschen Sie auch diesen Ordner,
+wenn alles verschwinden soll.
+
+Die portable Version **aktualisiert sich nicht selbst**. Gibt es eine neue
+Version, zeigt sie einen Hinweis mit dem Knopf **Herunterladen**, der die
+Release-Seite öffnet — dort laden Sie die neue Datei erneut herunter (siehe
+[Updates](#-12-updates)).
+
+---
+
+## 🔔 12. Updates
+
+Snapdate prüft **höchstens einmal täglich** beim Start, ob es eine neuere
+Version gibt. Dafür fragt es bei GitHub (`api.github.com`) nur nach der neuesten
+Versionsnummer. Es werden **keine Fotos, keine Dateinamen und keine persönlichen
+Daten** gesendet — GitHub sieht Ihre IP-Adresse, wie bei jeder Webseite, die Sie
+besuchen.
+
+**Erster Start:** Snapdate zeigt nur einen kurzen Hinweis, der das erklärt. Die
+erste Prüfung findet beim nächsten Start statt. Mit **Verstanden** schließen Sie
+den Hinweis. Schalten Sie die automatische Prüfung zwischenzeitlich aus,
+verschwindet der Hinweis ebenfalls.
+
+![Hinweis beim ersten Start](images/de/13-first-start-notice-light.png)
+
+**Gibt es eine neue Version**, erscheint oben ein schmaler Hinweis:
+
+![Update-Hinweis, installierte Version](images/de/10-update-installed-light.png)
+
+| Knopf | Was er tut |
+|---|---|
+| **Jetzt aktualisieren** | Nur bei der installierten Version. Lädt den neuen Installer von GitHub herunter, prüft seine Signatur und installiert ihn. Bei einer Installation „für alle Benutzer“ fragt Windows zuerst nach der Zustimmung eines Administrators. Danach startet Snapdate neu. |
+| **Was ist neu** | Öffnet die Versionshinweise im Browser. |
+| **Später** | Blendet den Hinweis bis zum nächsten Start aus; bei der nächsten automatischen Prüfung erscheint er wieder. |
+| **Diese Version überspringen** | Keine automatischen Erinnerungen mehr für diese Version. Eine neuere wird wieder gemeldet. **Jetzt prüfen** (siehe unten) zeigt eine übersprungene Version trotzdem an. |
+
+Schlägt der Download oder die Prüfung der Signatur fehl, wird **nichts
+installiert**, und Snapdate bietet stattdessen die Release-Seite an.
+
+**Portable Version:** Statt *Jetzt aktualisieren* gibt es den Knopf
+**Herunterladen**. Er öffnet die neueste Release-Seite, wo Sie die neue portable
+Datei erneut herunterladen.
+
+![Update-Hinweis, portable Version](images/de/11-update-portable-light.png)
+
+**Ausschalten, von Hand prüfen:** Klicken Sie oben rechts auf den Knopf **ⓘ**
+(*Über Snapdate*). Dort können Sie das Häkchen bei **Automatisch nach Updates
+suchen** entfernen oder jederzeit auf **Jetzt prüfen** klicken.
+
+![Über Snapdate mit Update-Einstellungen](images/de/12-about-update-light.png)
+
+Sind Sie offline, passiert nichts Schlimmes: Die automatische Prüfung bleibt
+einfach still, und Snapdate arbeitet normal weiter. Nur wenn Sie auf
+**Jetzt prüfen** klicken, meldet es *„Prüfung gerade nicht möglich — sind Sie
+offline?“*.
+
+---
+
+## 🗑️ 13. Deinstallation
+
+1. Öffnen Sie in Windows **Einstellungen → Apps → Installierte Apps** (Windows 10:
+   *Apps & Features*).
+2. Suchen Sie **Snapdate**, wählen Sie **Deinstallieren** und folgen Sie den
+   Schritten.
+
+Haben Sie **nur für sich** installiert, fragt Snapdate, ob **auch Ihre
+Einstellungen gelöscht** werden sollen (gemerkte Ordner, Dateinamen-Muster,
+Sprache). Wählen Sie **Nein**, um sie zu behalten — praktisch, wenn Sie
+Snapdate später erneut installieren möchten. Bei einer Installation für **alle
+Benutzer** bleiben die Einstellungen immer erhalten.
+
+Ihre Fotos und umbenannten Dateien werden nie angefasst. Die portable Version
+hat kein Deinstallationsprogramm: Löschen Sie einfach die Datei.
+
+---
+
+## ❓ 14. Fragen & Antworten
 
 **Werden meine Fotos verändert?**
 Nein. Mit **Kopieren** werden Originale nie angefasst. Auch die Bilder selbst
@@ -263,9 +398,13 @@ werden nicht verändert — nur die Dateinamen der Kopien sind anders.
 Nein. Gibt es einen Namen im Zielordner schon, ergänzt Snapdate `(2)`, `(3)` …
 
 **Sendet Snapdate etwas ins Internet?**
-Nein. Snapdate arbeitet komplett offline — kein Konto, kein Tracking. Nur die
-Knöpfe **?** und *Projektseite* öffnen eine Webseite, und zwar nur, wenn Sie
-darauf klicken.
+Snapdate arbeitet offline — bis auf die optionale Update-Prüfung. Höchstens
+einmal täglich fragt es bei GitHub nach der neuesten Versionsnummer; Ihre Fotos,
+Dateinamen und persönlichen Daten werden nie gesendet (GitHub sieht Ihre
+IP-Adresse, wie jede Webseite). Die Prüfung können Sie unter *Über Snapdate* →
+**Automatisch nach Updates suchen** ausschalten. Es gibt kein Konto und kein
+Tracking. Die Knöpfe **?** und *Projektseite* öffnen eine Webseite, und zwar nur,
+wenn Sie darauf klicken.
 
 **Warum steht bei manchen Fotos „Dateidatum“?**
 Screenshots und Bilder aus Chats oder sozialen Netzwerken enthalten oft kein
