@@ -54,7 +54,7 @@ Anleitung.
 ```mermaid
 flowchart LR
     A["📁 1. Ordner wählen<br/>Wo sind die Fotos,<br/>wohin sollen sie?"] --> B["🧩 2. Namen gestalten<br/>Bausteine wie<br/>Jahr · Monat · Tag klicken"]
-    B --> C["📋 3. Kopieren oder<br/>verschieben"]
+    B --> C["📋 3. Kopieren oder<br/>verschieben (untere Leiste)"]
     C --> D["👀 Vorschau prüfen"]
     D --> E["▶️ Großen Knopf drücken"]
     E --> F["✅ Fertig — Ordner öffnen"]
@@ -106,7 +106,7 @@ Beispielwert:
 - **Klick auf einen Baustein** wechselt seine Form: `07 ⇄ 7`, `2024 ⇄ 24`,
   `Jul ⇄ Juli`, `So ⇄ Sonntag`.
 - **Klick auf das ✕** daneben entfernt ihn.
-- **Führende Null (07 statt 7)** stellt alle Datums- und Zeitbausteine auf einmal um.
+- Der kleine Knopf **07** neben der Überschrift stellt alle Datums- und Zeitbausteine auf einmal zwischen `07` und `7` um.
 
 ### ✍️ Eigener Text
 
@@ -132,7 +132,7 @@ Ordner pro Jahr und Monat:
 
 ### ⚡ Vorlagen
 
-Keine Lust zu basteln? Klicken Sie auf eine der **Vorlagen** — sie zeigen
+Keine Lust zu basteln? Öffnen Sie **Vorlagen ▾** neben der Überschrift — die Einträge zeigen
 genau, wie das Ergebnis aussieht. **Zurücksetzen** stellt den Standardnamen
 wieder her.
 
@@ -149,6 +149,11 @@ erklärt in einfachen Worten, was zu tun ist:
 
 ## 📋 5. Schritt 3 — Kopieren oder verschieben
 
+Diese Wahl finden Sie in der **Leiste unten**, direkt neben dem großen Knopf:
+**Kopieren** oder **Verschieben**.
+
+![Verschieben in der unteren Leiste gewählt](images/de/06-move-light.png)
+
 | Option | Was passiert | Wann sinnvoll |
 |---|---|---|
 | **Kopieren** *(empfohlen)* | Originale bleiben unverändert; es entstehen umbenannte Kopien. | Fast immer. Die sicherste Wahl. |
@@ -160,8 +165,6 @@ sofort und sicher. Vor dem Verschieben fragt Snapdate noch einmal nach:
 
 ![Rückfrage vor dem Verschieben](images/de/07-confirm-move-light.png)
 
-![Kopieren oder verschieben](images/de/06-options-light.png)
-
 ---
 
 ## 👀 6. Vorschau prüfen
@@ -171,7 +174,7 @@ den **neuen Namen** fett. Ein farbiges Etikett zeigt, woher das Datum stammt:
 
 | Etikett | Bedeutung |
 |---|---|
-| 🟢 **Kamera** | Das Datum stammt aus dem Foto selbst — der Moment der Aufnahme. |
+| 🟢 **Aufnahmedatum** | Das Datum stammt aus dem Foto selbst — der Moment der Aufnahme. |
 | 🟠 **Dateidatum** | Die Datei enthält kein Datum (typisch für Screenshots und Chat-Bilder), daher wurde das Datum der Datei verwendet. |
 | 🟠 **Nummeriert** | Zwei Fotos bekämen denselben Namen (z. B. in derselben Sekunde aufgenommen), daher wurde `(2)`, `(3)` … ergänzt. |
 

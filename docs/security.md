@@ -57,8 +57,12 @@ To report a vulnerability, see [SECURITY.md](../SECURITY.md).
 
 ### Process hardening
 - Runs as the normal user (`asInvoker` manifest), never asks for admin rights.
-- Native AOT build: no JIT, no runtime code generation, smaller attack surface;
-  ASLR/DEP/CET compatible by default.
+- Self-contained single-file build: the .NET runtime and the native graphics
+  libraries are bundled and loaded only from the app's own per-user extraction
+  folder, never from `PATH` or the working directory (no DLL planting;
+  see [ADR 0003](adr/0003-single-file-instead-of-native-aot.md)).
+- Every release candidate is started with `--self-test` from an empty folder
+  before it is packaged.
 - Trim/AOT analysers are enabled and warnings are errors.
 
 ### Supply chain
@@ -73,7 +77,7 @@ To report a vulnerability, see [SECURITY.md](../SECURITY.md).
 - GitHub Actions are pinned to **commit SHAs**; workflows use least-privilege
   `permissions`; Dependabot keeps NuGet packages and actions current.
 - Releases are built only in GitHub Actions and ship with **SHA-256 checksums**,
-  a **CycloneDX SBOM** and **build provenance attestations**
+  a **CycloneDX SBOM** and — once the repository is public — **build provenance attestations**
   (`gh attestation verify <file> --repo jannikjordan/snapdate`).
 - Optional Authenticode signing is wired into the build script.
 

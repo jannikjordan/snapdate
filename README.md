@@ -111,7 +111,7 @@ Computer wurde durch Windows geschützt“* — klicken Sie auf
 ## 🛠️ For developers
 
 Built with **.NET 10 (LTS)**, **Avalonia 12** and **MetadataExtractor**,
-shipped as a single **Native AOT** executable for `win-x64` and `win-arm64`.
+shipped as one **self-contained, trimmed executable** for `win-x64` and `win-arm64`.
 
 ```bash
 pwsh scripts/build/build.ps1 -Target Test

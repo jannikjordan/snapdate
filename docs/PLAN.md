@@ -40,7 +40,7 @@ safety (never lose a photo) and a "just double-click it" experience.
 | UI framework | **Avalonia 12.x** (latest 12.1.x at time of writing) | Fully stylable (no "grey Win32" look), compiled XAML bindings, supports trimming / Native AOT, MIT. WinUI 3 single-file deployment is fragile; WPF looks dated without heavy theming and cannot AOT. |
 | MVVM | **CommunityToolkit.Mvvm** (source generators) | AOT-friendly, no reflection. |
 | Metadata | **MetadataExtractor 2.9.x** | Mature, pure managed, reads EXIF/XMP/IPTC from JPEG, PNG, HEIC/HEIF, WebP, TIFF, GIF, BMP, many RAW (CR2/CR3/NEF/ARW/DNG/ORF/RW2), MP4/MOV. |
-| Packaging | `dotnet publish` **Native AOT**, `win-x64` (+ `win-arm64`) | One native exe (~20–30 MB), fast start, nothing to install. Fallback: self-contained single-file + trimming if an AOT blocker appears. |
+| Packaging | Self-contained **single-file** exe, `win-x64` (+ `win-arm64`) — Native AOT was tried and dropped, see ADR 0003 | One exe (~22 MB) with runtime and native libraries inside, nothing to install. AOT would need the native DLLs next to the exe. |
 | Tests | xUnit v3 + FluentAssertions-free assertions (`Assert`), Avalonia.Headless for UI smoke tests | Keep dependency surface small. |
 | Package management | Central Package Management (`Directory.Packages.props`) + `packages.lock.json` | Pinned, auditable versions. |
 
@@ -206,7 +206,7 @@ Images are **untrusted input**; folder names and metadata end up in paths.
 | Supply chain | Few dependencies, exact pins, `packages.lock.json` with `--locked-mode` in CI, NuGet audit (`NuGetAudit=true`, `NuGetAuditMode=all`, fail on high), Dependabot, GitHub Actions pinned by SHA, SBOM (CycloneDX) per release, SHA-256 checksums published. |
 | Tampered binaries | Release built only in GitHub Actions; artefact attestation (`actions/attest-build-provenance`); Authenticode signing hook in build script (cert supplied via secret, optional). |
 | Privacy | No network, no telemetry, no crash upload. Settings stored locally only. |
-| Hardening | Native AOT + default CET/ASLR/DEP; `TreatWarningsAsErrors`, .NET analyzers at `latest-recommended`. |
+| Hardening | Bundled native libraries loaded only from the app folder (no DLL planting), self-test of every build; `TreatWarningsAsErrors`, .NET analyzers at `latest-recommended`. |
 
 ---
 
@@ -217,7 +217,7 @@ product is the exe) with steps selectable via `-Target`:
 
 1. `Clean` → `Restore` (locked mode) → `Audit` (fail on vulnerable packages)
 2. `Test` (all test projects, TRX + coverage)
-3. `Publish` — Native AOT for `win-x64` and `win-arm64`, version from
+3. `Publish` — single-file exe for `win-x64` and `win-arm64` + `--self-test`, version from
    `Directory.Build.props` (or `-Version` / git tag)
 4. `Package` — into `artifacts/release/`:
    - `Snapdate-v0.1.0-win-x64.exe`, `Snapdate-v0.1.0-win-arm64.exe`

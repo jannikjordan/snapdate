@@ -1,6 +1,6 @@
 # ADR 0002 — Native AOT releases and locked package restore
 
-- Status: accepted
+- Status: accepted — the Native AOT part is superseded by [ADR 0003](0003-single-file-instead-of-native-aot.md); locked restore and audit still apply
 - Date: 2026-11-16
 
 ## Context

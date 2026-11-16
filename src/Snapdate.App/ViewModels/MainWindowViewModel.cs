@@ -243,7 +243,7 @@ public sealed partial class MainWindowViewModel : ObservableObject
     [ObservableProperty]
     public partial int CountRenamed { get; private set; }
 
-    public string PhotosCountText => L.Format(nameof(LocalizedStrings.PhotosCount), CountAll);
+    public string PhotosCountText => L.Plural(nameof(LocalizedStrings.PhotosCount), CountAll);
 
     // ---------- Action bar ----------
 
@@ -300,6 +300,9 @@ public sealed partial class MainWindowViewModel : ObservableObject
 
     [ObservableProperty]
     public partial string ConfirmMoveText { get; private set; } = string.Empty;
+
+    [ObservableProperty]
+    public partial string ConfirmMoveYesText { get; private set; } = string.Empty;
 
     public string AboutVersionText => L.Format(nameof(LocalizedStrings.AboutVersion), GetVersion());
 
@@ -364,7 +367,8 @@ public sealed partial class MainWindowViewModel : ObservableObject
 
         if (Mode == TransferMode.Move)
         {
-            ConfirmMoveText = L.Format(nameof(LocalizedStrings.ConfirmMoveBody), _plan.Items.Count);
+            ConfirmMoveText = L.Plural(nameof(LocalizedStrings.ConfirmMoveBody), _plan.Items.Count);
+            ConfirmMoveYesText = L.Plural(nameof(LocalizedStrings.ConfirmMoveYes), _plan.Items.Count);
             IsConfirmMoveOpen = true;
             return;
         }
@@ -636,7 +640,8 @@ public sealed partial class MainWindowViewModel : ObservableObject
 
         var problem = FolderCheck.Check(_services.FileSystem, SourceFolder, TargetFolder, IncludeSubfolders);
         var count = _plan?.Items.Count ?? _photos.Count;
-        RunButtonText = L.Format(IsCopyMode ? nameof(LocalizedStrings.RunCopy) : nameof(LocalizedStrings.RunMove), count);
+        var runKey = IsCopyMode ? nameof(LocalizedStrings.RunCopy) : nameof(LocalizedStrings.RunMove);
+        RunButtonText = count == 0 ? L.Get(runKey + "None") : L.Plural(runKey, count);
 
         var (kind, title, sub) = (problem, Phase) switch
         {
@@ -646,9 +651,9 @@ public sealed partial class MainWindowViewModel : ObservableObject
             (FolderProblem.TargetMissing, _) => (StatusKind.Info, L.ProblemTargetMissing, L.StatusNothingChanged),
             (FolderProblem.TargetInsideSource, _) => (StatusKind.Warning, L.ProblemTargetInsideSource, L.ProblemTargetInsideSourceHint),
             (FolderProblem.SourceInsideTarget, _) => (StatusKind.Warning, L.ProblemSourceInsideTarget, L.ProblemSourceInsideTargetHint),
-            _ when Pattern.Pattern is null => (StatusKind.Warning, L.ProblemPattern, Pattern.ErrorMessage ?? string.Empty),
+            _ when Pattern.Pattern is null => (StatusKind.Warning, L.ProblemPattern, L.ProblemPatternHint),
             _ when count == 0 => (StatusKind.Info, L.ProblemNoPhotos, L.StatusNothingChanged),
-            _ => (StatusKind.Ready, L.Format(nameof(LocalizedStrings.ReadyTitle), count), IsCopyMode ? L.ReadySubCopy : L.ReadySubMove),
+            _ => (StatusKind.Ready, L.Plural(nameof(LocalizedStrings.ReadyTitle), count), IsCopyMode ? L.ReadySubCopy : L.ReadySubMove),
         };
 
         StatusKind = kind;
@@ -704,14 +709,14 @@ public sealed partial class MainWindowViewModel : ObservableObject
     private void ShowResult(ExecutionResult result)
     {
         var mode = _plan?.Mode ?? Mode;
-        DoneTitle = L.Format(
+        DoneTitle = L.Plural(
             mode == TransferMode.Copy ? nameof(LocalizedStrings.DoneCopy) : nameof(LocalizedStrings.DoneMove),
             result.DoneCount + result.UnchangedCount);
         DoneHasProblems = result.FailedCount > 0 || result.WasCancelled;
         DoneSubtitle = result.WasCancelled
             ? L.DoneCancelled
             : result.FailedCount > 0
-                ? L.Format(nameof(LocalizedStrings.DoneFailed), result.FailedCount)
+                ? L.Plural(nameof(LocalizedStrings.DoneFailed), result.FailedCount)
                 : L.DoneSub;
     }
 

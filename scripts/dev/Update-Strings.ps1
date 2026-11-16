@@ -75,6 +75,10 @@ foreach ($row in $rows) {
 [void] $cs.AppendLine('')
 [void] $cs.AppendLine('    /// <summary>Formats a string that contains placeholders such as {0}.</summary>')
 [void] $cs.AppendLine('    public string Format(string key, params object?[] args) => string.Format(Culture, Get(key), args);')
+[void] $cs.AppendLine('')
+[void] $cs.AppendLine('    /// <summary>Formats a count, using the "keyOne" variant for exactly one when it exists.</summary>')
+[void] $cs.AppendLine('    public string Plural(string key, int count) =>')
+[void] $cs.AppendLine('        count == 1 && Resources.GetString(key + "One", Culture) is not null ? Format(key + "One", count) : Format(key, count);')
 [void] $cs.AppendLine('}')
 [IO.File]::WriteAllText((Join-Path $dir 'LocalizedStrings.cs'), $cs.ToString().Replace("`r`n", "`n"), [Text.UTF8Encoding]::new($false))
 

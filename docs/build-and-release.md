@@ -4,9 +4,6 @@
 
 - Windows 10/11, [.NET SDK](https://dotnet.microsoft.com/download) as pinned in
   `global.json`, PowerShell 7.4+.
-- For Native AOT locally: Visual Studio 2022+ or Build Tools with the
-  *Desktop development with C++* workload. Without it, the build script falls
-  back to a self-contained single-file exe.
 
 ## Everyday commands
 
@@ -43,9 +40,10 @@ See [scripts/build/README.md](../scripts/build/README.md) for every build target
    git push origin vX.Y.Z
    ```
 
-5. The **Release** workflow builds Native AOT executables for `win-x64` and
-   `win-arm64`, zips, checksums, SBOM and provenance attestations, and creates a
-   **draft** GitHub release.
+5. The **Release** workflow builds single-file executables for `win-x64` and
+   `win-arm64`, self-tests them, adds zips, checksums, SBOM (and provenance
+   attestations once the repository is public) and creates a **draft** GitHub
+   release.
 6. Review the draft on GitHub and press **Publish release**.
 
 ## Release notes

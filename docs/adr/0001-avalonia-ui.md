@@ -15,7 +15,7 @@ CommunityToolkit.Mvvm source generators.
 
 ## Consequences
 - Full control over look and feel; light/dark via theme dictionaries.
-- Native AOT and trimming supported; reflection-based patterns are not allowed.
+- Trimming (and Native AOT) supported; reflection-based patterns are not allowed.
 - `Avalonia.DesignerSupport` is excluded from published output (IDE-only, not
   trim-safe; see `Snapdate.App.csproj`).
 - WinForms/WPF rejected (dated look, no AOT); WinUI 3 rejected (fragile

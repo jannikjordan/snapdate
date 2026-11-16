@@ -51,7 +51,7 @@ The 🌙 button switches between light and dark, **?** opens this guide.
 ```mermaid
 flowchart LR
     A["📁 1. Choose folders<br/>where are the photos,<br/>where should they go?"] --> B["🧩 2. Build the name<br/>click blocks like<br/>Year · Month · Day"]
-    B --> C["📋 3. Copy or move"]
+    B --> C["📋 3. Copy or move<br/>(bottom bar)"]
     C --> D["👀 Check the preview"]
     D --> E["▶️ Press the big button"]
     E --> F["✅ Done — open the folder"]
@@ -100,7 +100,7 @@ coloured blocks under the box shows what you built, with an example value:
 
 - **Click a block** to switch its form: `07 ⇄ 7`, `2024 ⇄ 24`, `Jul ⇄ July`, `Sun ⇄ Sunday`.
 - **Click the ✕** next to a block to remove it.
-- **Leading zero (07 instead of 7)** switches all date and time blocks at once.
+- The small **07** button next to the title switches all date and time blocks between `07` and `7` at once.
 
 ### ✍️ Your own text
 
@@ -126,7 +126,7 @@ folder per year and month:
 
 ### ⚡ Quick picks
 
-Don't want to build anything? Click one of the **Quick picks** — they show
+Don't want to build anything? Open **Quick picks ▾** next to the title — the entries show
 exactly how the result will look. **Reset** brings back the standard name.
 
 > 💡 The file type (`.jpg`, `.png`, `.heic` …) is **always kept automatically**.
@@ -142,6 +142,11 @@ words what to fix:
 
 ## 📋 5. Step 3 — Copy or move
 
+You find this choice in the **bar at the bottom**, right next to the big
+button: **Copy** or **Move**.
+
+![Move selected in the bottom bar](images/en/06-move-light.png)
+
 | Option | What happens | When to use |
 |---|---|---|
 | **Copy** *(recommended)* | Your originals stay untouched; renamed copies are created. | Almost always. Safest choice. |
@@ -153,8 +158,6 @@ Before moving, Snapdate asks you once more:
 
 ![Confirmation before moving](images/en/07-confirm-move-light.png)
 
-![Copy or move](images/en/06-options-light.png)
-
 ---
 
 ## 👀 6. Check the preview
@@ -164,7 +167,7 @@ the **new name** in bold. A coloured label tells you where the date came from:
 
 | Label | Meaning |
 |---|---|
-| 🟢 **Camera** | The date was read from the photo itself — the moment the picture was taken. |
+| 🟢 **Camera date** | The date was read from the photo itself — the moment the picture was taken. |
 | 🟠 **File date** | The file has no date inside (common for screenshots and chat pictures), so the date of the file was used. |
 | 🟠 **Numbered** | Two photos would get the same name (e.g. taken in the same second), so `(2)`, `(3)` … was added. |
 

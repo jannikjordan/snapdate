@@ -73,35 +73,39 @@ installed fonts. Monospace for file names: **Cascadia Mono** (ships with Windows
 
 ## 4. Layout
 
-Window: default **1180 × 760**, minimum **960 × 640**. Custom title bar
+Window: default **1180 × 780**, minimum **980 × 720** (fits 1366 × 768 laptops). Custom title bar
 (Avalonia `ExtendClientAreaToDecorationsHint`) keeping native min/max/close
 and snap layouts.
 
+**Rule: the left column must fit without scrolling at the default and the minimum size**
+(guarded by UI tests in both languages). Long names are shortened with “…”
+and shown in full as a tooltip. Step 3 lives in the action bar, next to the button it
+affects; secondary helpers (hint text, quick picks, extension note) are
+tooltips or flyouts.
+
 ```
 ┌──────────────────────────────────────────────────────────────────────────┐
-│ [logo] Snapdate                              EN | DE   ☾   ─  □  ✕      │ 48 px title bar
-├───────────────────────────────┬──────────────────────────────────────────┤
-│ ① Folders                     │ Preview                     128 photos   │
-│  Source  [📁 D:\Camera   ▸]   │ ● 121 camera date  ● 7 file date  2 dup  │
-│  Target  [📁 E:\Sorted   ▸]   │ ┌──────────────────────────────────────┐ │
-│  ☐ include sub-folders        │ │ [thumb] IMG_4711.JPG                 │ │
-│                               │ │         → 2024-07-14_15-32-08.jpg  ● │ │
-│ ② File name                   │ │ [thumb] DSC00012.ARW                 │ │
-│  [{YYYY}-{MM}-{DD}_{HH}… ✎]   │ │         → 2024-07-14_16-01-55.arw  ● │ │
-│  Year Month Day Hour Min …    │ │   …  (virtualised list)              │ │
-│  Example: 2024-07-14_15-32…   │ │                                      │ │
-│                               │ └──────────────────────────────────────┘ │
-│ ③ Options                     │                                          │
-│  (•) Copy  ( ) Move           │                                          │
-│  Same name → add (2)          │                                          │
-├───────────────────────────────┴──────────────────────────────────────────┤
-│ ✓ Ready · originals stay untouched        [  Copy 128 photos  ➜ ]       │ 72 px action bar
+│ [logo] Snapdate v0.1.0                 EN | DE   ☾   ?   ⓘ   ─  □  ✕     │ 48 px title bar
+├────────────────────────────────┬─────────────────────────────────────────┤
+│ ① Choose folders               │ Preview                      12 photos  │
+│  [📁 Photos from   D:\…   ▸]   │ All 12 · ● Camera 9 · ● File 3 · ● 1     │
+│  [📁 Save to       E:\…   ▸]   │ ┌─────────────────────────────────────┐ │
+│  ☑ Include sub-folders         │ │ [thumb] IMG_4711.JPG                │ │
+│                                │ │         → 2024-07-14_09-12-33.jpg ● │ │
+│ ② Build the name ⓘ [07] Quick picks ▾ Reset                             │
+│  [{YYYY}-{MM}-{DD}_{HH}…   ]   │ │ [thumb] DSC00013.JPG                │ │
+│  (Year 2024✕)(-✕)(Month 07✕)…  │ │         → …_16-01-55 (2).jpg  Numb. │ │
+│  Date  Year Month Day Name Wd  │ │   …  (virtualised list)             │ │
+│  Time  Hour Minute Second      │ │                                     │ │
+│  File  Original Camera Counter │ │                                     │ │
+│  Sep.  - _ . Space NewFolder   │ │                                     │ │
+│  Example  2024-07-14_09-12….jpg│ └─────────────────────────────────────┘ │
+├────────────────────────────────┴─────────────────────────────────────────┤
+│ ✓ Ready: 12 photos               ③ [Copy|Move]   [ Copy 12 photos ➜ ]   │ 68 px action bar
 └──────────────────────────────────────────────────────────────────────────┘
-   left column 400 px fixed            right column fills
+   left column 470 px fixed             right column fills
 ```
 
-Below 1040 px width the left column shrinks to 360 px; text wraps, nothing is
-hidden.
 
 ## 5. Components
 

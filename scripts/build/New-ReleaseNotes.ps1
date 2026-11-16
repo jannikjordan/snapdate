@@ -12,6 +12,10 @@
 .PARAMETER OutFile
     Where to write the notes. Defaults to artifacts/release-notes.md.
 
+.PARAMETER WithoutAttestation
+    Leaves out the build-provenance line (used when no attestation was created,
+    e.g. while the repository is private).
+
 .EXAMPLE
     pwsh scripts/build/New-ReleaseNotes.ps1 -Version 0.1.0
 #>
@@ -19,7 +23,8 @@
 param(
     [string] $Version,
     [string] $Repository,
-    [string] $OutFile
+    [string] $OutFile,
+    [switch] $WithoutAttestation
 )
 
 Set-StrictMode -Version Latest
@@ -58,6 +63,10 @@ $notes = $template.
     Replace('{{CHANGES}}', $changes).
     Replace('{{REPO_SLUG}}', $Repository).
     Replace('{{REPO}}', "https://github.com/$Repository")
+
+if ($WithoutAttestation) {
+    $notes = ($notes -split "`n" | Where-Object { $_ -notmatch 'gh attestation verify' }) -join "`n"
+}
 
 if (-not $OutFile) { $OutFile = Join-Path $root 'artifacts' 'release-notes.md' }
 New-Item -ItemType Directory -Force -Path (Split-Path $OutFile) | Out-Null

@@ -31,9 +31,9 @@ jobs:
           ./scripts/build/build.ps1 -Target Audit
           ./scripts/build/build.ps1 -Target Test
 
-      - name: Publish (Native AOT, x64 smoke check)
+      - name: Publish x64 and self-test the exe
         shell: pwsh
-        run: ./scripts/build/build.ps1 -Target Publish -Mode Aot -Runtime win-x64
+        run: ./scripts/build/build.ps1 -Target Publish -Runtime win-x64
 
       - name: Upload test results
         if: always()

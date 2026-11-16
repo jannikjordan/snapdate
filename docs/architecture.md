@@ -67,7 +67,8 @@ sequenceDiagram
 ## Key decisions
 
 - [ADR 0001 — Avalonia for the user interface](adr/0001-avalonia-ui.md)
-- [ADR 0002 — Native AOT releases and locked package restore](adr/0002-native-aot-and-locked-restore.md)
+- [ADR 0002 — Native AOT releases and locked package restore](adr/0002-native-aot-and-locked-restore.md) (AOT part superseded)
+- [ADR 0003 — Self-contained single-file exe instead of Native AOT](adr/0003-single-file-instead-of-native-aot.md)
 
 ## Conventions
 

@@ -17,11 +17,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 🌍 English and German interface, chosen from the Windows display language and switchable at any time; help opens the user guide in the same language.
 - 🌗 Light and dark theme following Windows.
 - 💾 Remembers folders, name pattern, options, language and theme.
-- 📦 Single portable Native AOT executable for `win-x64` and `win-arm64`; no installation, works offline.
+- 📦 One portable executable each for `win-x64` and `win-arm64` (self-contained, about 22 MB); no installation, works offline.
 - 📖 User guides in English and German with screenshots and diagrams.
 
 ### Security
 - Untrusted metadata can never create folders or write outside the target folder (sanitising + path guard).
-- Pinned, locked and audited dependencies; SBOM, checksums and build provenance attestation for every release.
+- Pinned, locked and audited dependencies; SBOM and SHA-256 checksums for every release.
 
 [Unreleased]: https://github.com/jannikjordan/snapdate/commits/main

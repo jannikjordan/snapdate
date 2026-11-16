@@ -185,6 +185,60 @@ public sealed class MainWindowTests(HeadlessSession headless)
         Assert.Equal(vm.L.ProblemTargetInsideSource, vm.StatusTitle);
     });
 
+    [Theory]
+    [InlineData("en-US", 1180, 780)]
+    [InlineData("de-DE", 1180, 780)]
+    [InlineData("en-US", 980, 720)]
+    [InlineData("de-DE", 980, 720)]
+    public Task Left_column_fits_without_scrolling(string culture, int width, int height) => RunOnUi(async () =>
+    {
+        using var temp = new TempFolder();
+        temp.Photo("camera/a.jpg", new DateTime(2024, 1, 1));
+        var vm = new TestServices().CreateViewModel(culture);
+        var window = new MainWindow { DataContext = vm, Width = width, Height = height };
+        window.Show();
+        vm.SourceFolder = temp.Combine("camera");
+        await vm.ScanCompletion;
+        vm.TargetFolder = temp.Combine("sorted");
+        Directory.CreateDirectory(vm.TargetFolder);
+
+        // A long pattern that wraps the pill row is the tallest realistic state.
+        vm.Pattern.Text = "{YYYY}/{MM}/{YYYY}-{MM}-{DD}_{HH}-{mm}-{ss} {name}";
+        Dispatcher.UIThread.RunJobs();
+        window.UpdateLayout();
+
+        var left = window.GetLogicalDescendants().OfType<ScrollViewer>().First();
+        Assert.True(
+            left.Extent.Height <= left.Viewport.Height + 0.5,
+            $"Left column needs {left.Extent.Height:0} px but only {left.Viewport.Height:0} px are visible.");
+        window.Close();
+    });
+
+    [Theory]
+    [InlineData("en-US", "Copy 1 photo", "Ready: 1 photo", "1 photo")]
+    [InlineData("de-DE", "1 Foto kopieren", "Bereit: 1 Foto", "1 Foto")]
+    public Task A_single_photo_uses_singular_wording(string culture, string button, string status, string count) => RunOnUi(async () =>
+    {
+        using var temp = new TempFolder();
+        temp.Photo("camera/a.jpg", new DateTime(2024, 1, 1));
+        var vm = new TestServices().CreateViewModel(culture);
+        vm.SourceFolder = temp.Combine("camera");
+        await vm.ScanCompletion;
+        vm.TargetFolder = temp.Combine("sorted");
+        Directory.CreateDirectory(vm.TargetFolder);
+
+        Assert.Equal(button, vm.RunButtonText);
+        Assert.Equal(status, vm.StatusTitle);
+        Assert.Equal(count, vm.PhotosCountText);
+    });
+
+    [Fact]
+    public Task Run_button_has_no_zero_count_before_photos_are_found() => RunOnUi(() =>
+    {
+        Assert.Equal("Copy photos", new TestServices().CreateViewModel().RunButtonText);
+        Assert.Equal("Fotos kopieren", new TestServices().CreateViewModel("de-DE").RunButtonText);
+    });
+
     [Fact]
     public Task Settings_are_saved_without_forcing_a_language() => RunOnUi(() =>
     {

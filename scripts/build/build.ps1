@@ -17,11 +17,6 @@
 .PARAMETER Runtime
     One or more runtime identifiers to publish. Default: win-x64, win-arm64.
 
-.PARAMETER Mode
-    Aot (default) needs the MSVC linker (Visual Studio "Desktop development with C++").
-    SingleFile produces a self-contained single-file exe without native compilation.
-    Auto uses Aot when the linker is found, otherwise SingleFile.
-
 .EXAMPLE
     pwsh scripts/build/build.ps1 -Target Test
 .EXAMPLE
@@ -33,8 +28,6 @@ param(
     [string] $Target = 'Test',
     [string] $Version,
     [string[]] $Runtime = @('win-x64', 'win-arm64'),
-    [ValidateSet('Auto', 'Aot', 'SingleFile')]
-    [string] $Mode = 'Auto',
     [string] $Configuration = 'Release'
 )
 
@@ -65,13 +58,6 @@ function Get-ProjectVersion {
     $prefix = $props.Project.PropertyGroup | ForEach-Object { $_.VersionPrefix } | Where-Object { $_ } | Select-Object -First 1
     if (-not $prefix) { throw 'VersionPrefix not found in Directory.Build.props.' }
     return $prefix
-}
-
-function Test-MsvcLinker {
-    $vswhere = Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio' 'Installer' 'vswhere.exe'
-    if (-not (Test-Path $vswhere)) { return $false }
-    $path = & $vswhere -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
-    return [bool] $path
 }
 
 function Invoke-Clean {
@@ -107,38 +93,55 @@ function Invoke-Test {
 
 function Invoke-Publish {
     $ver = Get-ProjectVersion
-    $useAot = switch ($Mode) {
-        'Aot' { $true }
-        'SingleFile' { $false }
-        default { Test-MsvcLinker }
-    }
-    if ($Mode -eq 'Auto' -and -not $useAot) {
-        Write-Warning 'MSVC linker not found: falling back to self-contained single-file publish (no Native AOT).'
-    }
 
     foreach ($rid in $Runtime) {
-        Write-Step "Publish $rid ($(if ($useAot) { 'Native AOT' } else { 'single-file' }))"
+        Write-Step "Publish $rid (self-contained single file)"
         $out = Join-Path $PublishDir $rid
         if (Test-Path $out) { Remove-Item $out -Recurse -Force }
 
-        # --no-restore: the locked restore (Invoke-Restore) already covers every runtime
-        # identifier, including the ILCompiler packs, so nothing unpinned is pulled here.
-        $common = @(
-            $AppProject, '-c', $Configuration, '-r', $rid, '-o', $out, '--no-restore',
-            "-p:Version=$ver", '-p:DebugType=none'
-        )
-        if ($useAot) {
-            dotnet publish @common
-        }
-        else {
-            dotnet publish @common -p:PublishAot=false --self-contained true `
-                -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true `
-                -p:EnableCompressionInSingleFile=true -p:PublishTrimmed=true -p:TrimMode=partial
-        }
+        # One exe that contains the .NET runtime, all assemblies and the native libraries
+        # (Skia, HarfBuzz, ANGLE). Native libraries are extracted to a per-user folder and
+        # loaded from there only, never from PATH. See ADR 0003.
+        dotnet publish $AppProject -c $Configuration -r $rid -o $out `
+            -p:Version=$ver -p:DebugType=none -p:RestoreLockedMode=true `
+            --self-contained true `
+            -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true `
+            -p:EnableCompressionInSingleFile=true
 
-        # Only the exe ships; drop doc XML and native debug symbols that packages copy along.
+        $files = @(Get-ChildItem $out -File | Where-Object Extension -notin '.xml', '.pdb')
+        if ($files.Count -ne 1 -or $files[0].Name -ne 'Snapdate.exe') {
+            throw "Publish for $rid must produce exactly Snapdate.exe, got: $($files.Name -join ', ')"
+        }
         Get-ChildItem $out -File | Where-Object Extension -in '.xml', '.pdb' | Remove-Item -Force
-        if (-not (Test-Path (Join-Path $out 'Snapdate.exe'))) { throw "Publish for $rid produced no Snapdate.exe." }
+
+        Invoke-SelfTest (Join-Path $out 'Snapdate.exe') $rid
+    }
+}
+
+function Invoke-SelfTest([string] $Exe, [string] $Rid) {
+    $hostRid = if ([Runtime.InteropServices.RuntimeInformation]::OSArchitecture -eq 'Arm64') { 'win-arm64' } else { 'win-x64' }
+    if ($Rid -ne $hostRid) {
+        Write-Warning "Skipping self-test for $Rid on a $hostRid machine."
+        return
+    }
+
+    Write-Step "Self-test $Rid (start platform, load views, both languages)"
+    # Run from an empty folder so no stray DLL next to the working directory can be picked up.
+    $sandbox = Join-Path ([IO.Path]::GetTempPath()) "snapdate-selftest-$([guid]::NewGuid().ToString('N'))"
+    New-Item -ItemType Directory -Path $sandbox | Out-Null
+    try {
+        $copy = Join-Path $sandbox 'Snapdate.exe'
+        Copy-Item $Exe $copy
+        $process = Start-Process -FilePath $copy -ArgumentList '--self-test' -WorkingDirectory $sandbox `
+            -PassThru -Wait -RedirectStandardError (Join-Path $sandbox 'stderr.txt')
+        if ($process.ExitCode -ne 0) {
+            Get-Content (Join-Path $sandbox 'stderr.txt') -ErrorAction SilentlyContinue | Write-Host
+            throw "Self-test of $Rid failed with exit code $($process.ExitCode)."
+        }
+        Write-Host "Self-test passed." -ForegroundColor Green
+    }
+    finally {
+        Remove-Item $sandbox -Recurse -Force -ErrorAction SilentlyContinue
     }
 }
 

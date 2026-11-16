@@ -28,7 +28,7 @@ timestamp) using a user-built placeholder pattern. UI in English and German.
 
 .NET 10 LTS (SDK pinned in `global.json`) · C# · Avalonia 12 · CommunityToolkit.Mvvm ·
 MetadataExtractor · xUnit v3 (Microsoft Testing Platform) · Avalonia.Headless for UI
-tests and screenshots · Native AOT publish (`win-x64`, `win-arm64`).
+tests and screenshots · self-contained single-file publish (`win-x64`, `win-arm64`).
 
 ## Architecture rules
 

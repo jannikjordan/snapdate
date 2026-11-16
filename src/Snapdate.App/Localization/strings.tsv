@@ -3,7 +3,7 @@ LanguageGroup	Language	Sprache
 ThemeToggle	Switch light / dark	Hell / Dunkel umschalten
 HelpButton	Help	Hilfe
 About	About Snapdate	Über Snapdate
-AboutBody	Snapdate gives your photos clear names based on the day they were taken. It works completely offline: no account, no tracking, nothing leaves your computer.	Snapdate gibt Ihren Fotos klare Namen nach dem Aufnahmetag. Es arbeitet komplett offline: kein Konto, kein Tracking, nichts verlässt Ihren Computer.
+AboutBody	Snapdate gives your photos clear names based on the day they were taken. Everything runs offline: no account, no tracking, nothing leaves your computer.	Snapdate gibt Ihren Fotos klare Namen nach dem Tag der Aufnahme. Alles läuft offline: kein Konto, kein Tracking, nichts verlässt Ihren Computer.
 AboutVersion	Version {0}	Version {0}
 AboutLicense	Free and open source (MIT licence).	Kostenlos und quelloffen (MIT-Lizenz).
 AboutWebsite	Project website	Projektseite
@@ -13,8 +13,9 @@ SourceLabel	Photos from	Fotos aus
 TargetLabel	Save renamed photos to	Umbenannte Fotos speichern in
 NotSelected	Click to choose a folder	Klicken, um einen Ordner zu wählen
 PickSourceTitle	Where are your photos?	Wo sind Ihre Fotos?
-PickTargetTitle	Where should the renamed photos go?	Wohin sollen die umbenannten Fotos?
+PickTargetTitle	Where should the renamed photos be saved?	Wo sollen die umbenannten Fotos gespeichert werden?
 DropHint	Tip: you can also drag a folder onto this box.	Tipp: Sie können einen Ordner auch auf dieses Feld ziehen.
+PreviewDropHint	Tip: you can also drag a folder onto the boxes on the left.	Tipp: Sie können einen Ordner auch auf die Felder links ziehen.
 IncludeSubfolders	Include sub-folders	Unterordner einbeziehen
 Step2Title	Build the file name	Dateinamen gestalten
 Reset	Reset	Zurücksetzen
@@ -40,13 +41,13 @@ TokCounter	Counter	Zähler
 SepSpace	Space	Leerzeichen
 SepFolder	New folder	Neuer Ordner
 LeadingZeros	Leading zero (07 instead of 7)	Führende Null (07 statt 7)
-PillToggle	Click to switch to “{0}”	Klicken, um zu „{0}“ zu wechseln
+PillToggle	Click to switch to “{0}”	Klicken, um auf „{0}“ umzuschalten
 PillRemove	Remove	Entfernen
-Presets	Quick picks:	Vorlagen:
+Presets	Quick picks	Vorlagen
 ExampleLabel	Example	Beispiel
 ExtensionNote	The file type (.jpg, .png, .heic …) is kept automatically.	Der Dateityp (.jpg, .png, .heic …) bleibt automatisch erhalten.
 ErrEmpty	Add at least one block or some text.	Fügen Sie mindestens einen Baustein oder etwas Text hinzu.
-ErrUnknownPlaceholder	“{0}” is not a known block. Check the spelling, including upper and lower case.	„{0}“ ist kein bekannter Baustein. Prüfen Sie die Schreibweise inklusive Groß- und Kleinschreibung.
+ErrUnknownPlaceholder	“{0}” is not a known block. Check the spelling, including capital letters.	„{0}“ ist kein bekannter Baustein. Prüfen Sie die Schreibweise, auch die Groß- und Kleinschreibung.
 ErrUnclosedBrace	A “{{” is missing its closing “}}”.	Zu einer „{{“ fehlt die schließende „}}“.
 ErrUnexpectedClosingBrace	There is a “}}” without an opening “{{”.	Es gibt eine „}}“ ohne öffnende „{{“.
 ErrInvalidCharacter	The character “{0}” is not allowed in file names.	Das Zeichen „{0}“ ist in Dateinamen nicht erlaubt.
@@ -55,52 +56,64 @@ Step3Title	What should happen?	Was soll passieren?
 CopyTitle	Copy	Kopieren
 CopyHint	Originals stay untouched (recommended)	Originale bleiben unverändert (empfohlen)
 MoveTitle	Move	Verschieben
-MoveHint	Originals are moved after a safe copy	Originale werden nach sicherer Kopie verschoben
+MoveHint	Originals are moved, each after a verified copy	Originale werden verschoben, jeweils nach geprüfter Kopie
 NeverOverwrite	Existing files are never overwritten.	Vorhandene Dateien werden niemals überschrieben.
 PreviewTitle	Preview	Vorschau
 PhotosCount	{0} photos	{0} Fotos
+PhotosCountOne	{0} photo	{0} Foto
 PreviewEmptyTitle	No photos yet	Noch keine Fotos
 PreviewEmptyBody	Choose the folder with your photos to see them here.	Wählen Sie den Ordner mit Ihren Fotos, um sie hier zu sehen.
-ScanningTitle	Looking for photos …	Suche Fotos …
+ScanningTitle	Looking for photos …	Suche nach Fotos …
 ScanningBody	{0} found so far	Bisher {0} gefunden
 NoPhotosTitle	No photos found	Keine Fotos gefunden
-NoPhotosBody	This folder contains no supported photos or videos. Try “Include sub-folders”.	Dieser Ordner enthält keine unterstützten Fotos oder Videos. Versuchen Sie „Unterordner einbeziehen“.
+NoPhotosBody	This folder contains no supported photos or videos. If they are in sub-folders, tick “Include sub-folders”.	Dieser Ordner enthält keine unterstützten Fotos oder Videos. Liegen sie in Unterordnern, setzen Sie das Häkchen bei „Unterordner einbeziehen“.
 FilterAll	All	Alle
 FilterCamera	Camera date	Aufnahmedatum
 FilterFile	File date	Dateidatum
 FilterRenamed	Numbered	Nummeriert
-BadgeCamera	Camera	Kamera
+BadgeCamera	Camera date	Aufnahmedatum
 BadgeFile	File date	Dateidatum
 BadgeRenamed	Numbered	Nummeriert
-TipCamera	The date comes from the photo itself (camera data).	Das Datum stammt aus dem Foto selbst (Kameradaten).
-TipFile	This file has no date inside, so the date of the file was used.	Diese Datei enthält kein Datum, daher wurde das Datum der Datei verwendet.
+TipCamera	The date comes from the photo itself (saved by the camera).	Das Datum stammt aus dem Foto selbst (von der Kamera gespeichert).
+TipFile	This file has no date stored inside, so its file date was used.	In dieser Datei ist kein Aufnahmedatum gespeichert, daher wurde ihr Dateidatum verwendet.
 TipRenamed	Another photo already has this name, so a number was added.	Ein anderes Foto hat bereits diesen Namen, daher wurde eine Nummer ergänzt.
 ProblemSourceMissing	Choose the folder with your photos	Wählen Sie den Ordner mit Ihren Fotos
 ProblemSourceNotFound	The photo folder cannot be found	Der Fotoordner wurde nicht gefunden
-ProblemTargetMissing	Now choose where the renamed photos should go	Wählen Sie nun, wohin die umbenannten Fotos sollen
+ProblemTargetMissing	Now choose where to save the renamed photos	Wählen Sie jetzt, wo die umbenannten Fotos gespeichert werden
 ProblemTargetInsideSource	The target folder is inside the photo folder	Der Zielordner liegt im Fotoordner
 ProblemTargetInsideSourceHint	Choose another target, or turn off “Include sub-folders”.	Wählen Sie ein anderes Ziel oder schalten Sie „Unterordner einbeziehen“ aus.
 ProblemSourceInsideTarget	The photo folder is inside the target folder	Der Fotoordner liegt im Zielordner
 ProblemSourceInsideTargetHint	Please choose a different target folder.	Bitte wählen Sie einen anderen Zielordner.
 ProblemPattern	Please check the file name first	Bitte prüfen Sie zuerst den Dateinamen
+ProblemPatternHint	The red message in step 2 explains what to change.	Die rote Meldung in Schritt 2 erklärt, was zu ändern ist.
 ProblemNoPhotos	There is nothing to do yet	Es gibt noch nichts zu tun
-StatusNothingChanged	Nothing is changed until you press the button.	Nichts wird verändert, bevor Sie den Knopf drücken.
+StatusNothingChanged	Nothing changes until you press the button.	Bis Sie auf den Knopf drücken, wird nichts verändert.
 ReadyTitle	Ready: {0} photos	Bereit: {0} Fotos
-ReadySubCopy	Your originals stay untouched.	Ihre Originale bleiben unverändert.
-ReadySubMove	Originals are moved, each one only after a verified copy.	Originale werden verschoben, jedes erst nach geprüfter Kopie.
+ReadyTitleOne	Ready: {0} photo	Bereit: {0} Foto
+ReadySubCopy	Originals stay untouched · nothing is overwritten.	Originale bleiben unverändert · nichts wird überschrieben.
+ReadySubMove	Each original is moved only after a verified copy.	Jedes Original wird erst nach geprüfter Kopie verschoben.
 RunCopy	Copy {0} photos	{0} Fotos kopieren
+RunCopyOne	Copy {0} photo	{0} Foto kopieren
+RunCopyNone	Copy photos	Fotos kopieren
 RunMove	Move {0} photos	{0} Fotos verschieben
+RunMoveOne	Move {0} photo	{0} Foto verschieben
+RunMoveNone	Move photos	Fotos verschieben
 RunningCopy	Copying photos …	Fotos werden kopiert …
 RunningMove	Moving photos …	Fotos werden verschoben …
 Cancel	Cancel	Abbrechen
 DoneCopy	{0} photos copied	{0} Fotos kopiert
+DoneCopyOne	{0} photo copied	{0} Foto kopiert
 DoneMove	{0} photos moved	{0} Fotos verschoben
+DoneMoveOne	{0} photo moved	{0} Foto verschoben
 DoneSub	A log file was saved in the target folder.	Eine Protokolldatei liegt im Zielordner.
 DoneFailed	{0} files could not be processed. Details are in the log file.	{0} Dateien konnten nicht verarbeitet werden. Details stehen in der Protokolldatei.
-DoneCancelled	Stopped. Files not yet processed were left alone.	Abgebrochen. Noch nicht bearbeitete Dateien blieben unverändert.
+DoneFailedOne	{0} file could not be processed. Details are in the log file.	{0} Datei konnte nicht verarbeitet werden. Details stehen in der Protokolldatei.
+DoneCancelled	Stopped. Files that were not processed yet are unchanged.	Abgebrochen. Noch nicht bearbeitete Dateien sind unverändert.
 OpenFolder	Open folder	Ordner öffnen
 ShowLog	Show log	Protokoll anzeigen
-StartOver	Start over	Neu starten
+StartOver	Start over	Neu beginnen
 ConfirmMoveTitle	Move the original photos?	Originalfotos verschieben?
-ConfirmMoveBody	Your {0} photos will be moved to the target folder with their new names. Afterwards they are no longer in the original folder.	Ihre {0} Fotos werden mit neuen Namen in den Zielordner verschoben. Danach sind sie nicht mehr im ursprünglichen Ordner.
+ConfirmMoveBody	Your {0} photos will be moved to the target folder with their new names. Afterwards they are no longer in the original folder.	Ihre {0} Fotos werden mit ihren neuen Namen in den Zielordner verschoben. Danach sind sie nicht mehr im ursprünglichen Ordner.
+ConfirmMoveBodyOne	Your photo will be moved to the target folder with its new name. Afterwards it is no longer in the original folder.	Ihr Foto wird mit neuem Namen in den Zielordner verschoben. Danach ist es nicht mehr im ursprünglichen Ordner.
 ConfirmMoveYes	Yes, move them	Ja, verschieben
+ConfirmMoveYesOne	Yes, move it	Ja, verschieben

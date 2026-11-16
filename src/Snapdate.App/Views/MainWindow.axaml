@@ -9,7 +9,7 @@
         x:DataType="vm:MainWindowViewModel"
         Title="Snapdate"
         Icon="avares://Snapdate/Assets/app.ico"
-        Width="1180" Height="780" MinWidth="980" MinHeight="660"
+        Width="1180" Height="780" MinWidth="980" MinHeight="720"
         WindowStartupLocation="CenterScreen"
         ExtendClientAreaToDecorationsHint="True"
         ExtendClientAreaTitleBarHeightHint="48">
@@ -57,13 +57,13 @@
         </Grid>
       </Border>
 
-      <!-- ============ Action bar (76 px) ============ -->
-      <Border DockPanel.Dock="Bottom" Height="76" Padding="20,0"
+      <!-- ============ Action bar (68 px) ============ -->
+      <Border DockPanel.Dock="Bottom" Height="68" Padding="20,0"
               Background="{DynamicResource SdSurfaceBrush}"
               BorderBrush="{DynamicResource SdBorderBrush}" BorderThickness="0,1,0,0">
         <Panel>
           <!-- Idle: status + run button -->
-          <Grid ColumnDefinitions="Auto,*,Auto" VerticalAlignment="Center" IsVisible="{Binding IsIdle}">
+          <Grid ColumnDefinitions="Auto,*,Auto,Auto" VerticalAlignment="Center" IsVisible="{Binding IsIdle}">
             <Panel Width="32" Height="32">
               <Border CornerRadius="16" Background="{DynamicResource SdPrimarySoftBrush}" IsVisible="{Binding IsStatusInfo}">
                 <PathIcon Data="{StaticResource IconInfo}" Width="18" Height="18" Foreground="{DynamicResource SdPrimaryBrush}" />
@@ -76,10 +76,34 @@
               </Border>
             </Panel>
             <StackPanel Grid.Column="1" Margin="12,0" VerticalAlignment="Center">
-              <TextBlock Text="{Binding StatusTitle}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
-              <TextBlock Text="{Binding StatusSubtitle}" Classes="muted" FontSize="12" TextTrimming="CharacterEllipsis" />
+              <TextBlock Text="{Binding StatusTitle}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding StatusTitle}" />
+              <TextBlock Text="{Binding StatusSubtitle}" Classes="muted" FontSize="12" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding StatusSubtitle}" />
             </StackPanel>
-            <Button Grid.Column="2" Classes="primary" Command="{Binding RunCommand}"
+            <!-- Step 3: copy or move, right where the decision is made -->
+            <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="10" Margin="0,0,14,0" VerticalAlignment="Center"
+                        IsEnabled="{Binding CanEdit}">
+              <Border Classes="stepNumber"><TextBlock Text="3" /></Border>
+              <Border Classes="segmented" Padding="3" AutomationProperties.Name="{Binding L.Step3Title}"
+                      ToolTip.Tip="{Binding L.NeverOverwrite}">
+                <StackPanel Orientation="Horizontal" Spacing="2">
+                  <RadioButton Classes="mode" GroupName="mode" IsChecked="{Binding IsCopyMode}"
+                               ToolTip.Tip="{Binding L.CopyHint}" AutomationProperties.Name="{Binding L.CopyTitle}">
+                    <StackPanel Orientation="Horizontal" Spacing="7">
+                      <PathIcon Data="{StaticResource IconCopy}" Width="14" Height="14" />
+                      <TextBlock Text="{Binding L.CopyTitle}" VerticalAlignment="Center" />
+                    </StackPanel>
+                  </RadioButton>
+                  <RadioButton Classes="mode" GroupName="mode" IsChecked="{Binding IsMoveMode}"
+                               ToolTip.Tip="{Binding L.MoveHint}" AutomationProperties.Name="{Binding L.MoveTitle}">
+                    <StackPanel Orientation="Horizontal" Spacing="7">
+                      <PathIcon Data="{StaticResource IconFolderOut}" Width="14" Height="14" />
+                      <TextBlock Text="{Binding L.MoveTitle}" VerticalAlignment="Center" />
+                    </StackPanel>
+                  </RadioButton>
+                </StackPanel>
+              </Border>
+            </StackPanel>
+            <Button Grid.Column="3" Classes="primary" Command="{Binding RunCommand}"
                     AutomationProperties.Name="{Binding RunButtonText}">
               <StackPanel Orientation="Horizontal" Spacing="10">
                 <TextBlock Text="{Binding RunButtonText}" VerticalAlignment="Center" />
@@ -112,7 +136,7 @@
             </Panel>
             <StackPanel Grid.Column="1" Margin="12,0" VerticalAlignment="Center">
               <TextBlock Text="{Binding DoneTitle}" FontWeight="SemiBold" />
-              <TextBlock Text="{Binding DoneSubtitle}" Classes="muted" FontSize="12" TextTrimming="CharacterEllipsis" />
+              <TextBlock Text="{Binding DoneSubtitle}" Classes="muted" FontSize="12" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding DoneSubtitle}" />
             </StackPanel>
             <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8">
               <Button Classes="secondary" Command="{Binding ShowLogCommand}" IsVisible="{Binding HasLog}">
@@ -127,7 +151,7 @@
                   <TextBlock Text="{Binding L.StartOver}" VerticalAlignment="Center" />
                 </StackPanel>
               </Button>
-              <Button Classes="primary" Height="44" Command="{Binding OpenTargetFolderCommand}">
+              <Button Classes="primary" Command="{Binding OpenTargetFolderCommand}">
                 <StackPanel Orientation="Horizontal" Spacing="10">
                   <PathIcon Data="{StaticResource IconFolder}" Width="16" Height="16" Foreground="White" />
                   <TextBlock Text="{Binding L.OpenFolder}" VerticalAlignment="Center" />
@@ -139,13 +163,13 @@
       </Border>
 
       <!-- ============ Body ============ -->
-      <Grid ColumnDefinitions="430,16,*" Margin="16">
+      <Grid ColumnDefinitions="470,16,*" Margin="16,12">
         <ScrollViewer Grid.Column="0" VerticalScrollBarVisibility="Auto" IsEnabled="{Binding CanEdit}">
-          <StackPanel Spacing="12" Margin="0,0,14,0">
+          <StackPanel Spacing="8" Margin="0,0,12,0">
 
             <!-- Step 1: folders -->
             <Border Classes="card">
-              <StackPanel Spacing="10">
+              <StackPanel Spacing="6">
                 <StackPanel Orientation="Horizontal" Spacing="10">
                   <Border Classes="stepNumber"><TextBlock Text="1" /></Border>
                   <TextBlock Classes="h2" Text="{Binding L.Step1Title}" VerticalAlignment="Center" />
@@ -186,15 +210,46 @@
 
             <!-- Step 2: file name -->
             <Border Classes="card">
-              <StackPanel Spacing="10">
-                <Grid ColumnDefinitions="Auto,*,Auto">
+              <StackPanel Spacing="6">
+                <Grid ColumnDefinitions="Auto,Auto,Auto,*,Auto,Auto,Auto">
                   <Border Classes="stepNumber"><TextBlock Text="2" /></Border>
                   <TextBlock Grid.Column="1" Classes="h2" Text="{Binding L.Step2Title}" VerticalAlignment="Center" Margin="10,0,0,0" />
-                  <Button Grid.Column="2" Classes="link" Content="{Binding L.Reset}" Command="{Binding Pattern.ResetCommand}" />
+                  <PathIcon Grid.Column="2" Data="{StaticResource IconInfo}" Width="14" Height="14" Margin="6,0,0,0"
+                            Foreground="{DynamicResource SdMutedBrush}" Background="Transparent"
+                            ToolTip.Tip="{Binding L.PatternHint}" />
+                  <ToggleButton Grid.Column="4" Classes="zero" IsChecked="{Binding Pattern.LeadingZeros}"
+                                ToolTip.Tip="{Binding L.LeadingZeros}" AutomationProperties.Name="{Binding L.LeadingZeros}">
+                    <Panel>
+                      <TextBlock Text="07" IsVisible="{Binding Pattern.LeadingZeros}" />
+                      <TextBlock Text="7" IsVisible="{Binding !Pattern.LeadingZeros}" />
+                    </Panel>
+                  </ToggleButton>
+                  <Button Grid.Column="5" Classes="link" AutomationProperties.Name="{Binding L.Presets}">
+                    <StackPanel Orientation="Horizontal" Spacing="4">
+                      <TextBlock Text="{Binding L.Presets}" />
+                      <PathIcon Data="{StaticResource IconChevronDown}" Width="9" Height="9" />
+                    </StackPanel>
+                    <Button.Flyout>
+                      <Flyout Placement="BottomEdgeAlignedRight">
+                        <ItemsControl ItemsSource="{Binding Pattern.Presets}">
+                          <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="vm:PresetViewModel">
+                              <Button Classes="presetItem" Command="{Binding ApplyCommand}"
+                                      ToolTip.Tip="{Binding Pattern}" AutomationProperties.Name="{Binding Label}">
+                                <TextBlock Text="{Binding Label}" Classes="mono" />
+                              </Button>
+                            </DataTemplate>
+                          </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                      </Flyout>
+                    </Button.Flyout>
+                  </Button>
+                  <Button Grid.Column="6" Classes="link" Content="{Binding L.Reset}" Command="{Binding Pattern.ResetCommand}" />
                 </Grid>
 
                 <TextBox Classes="pattern" Classes.invalid="{Binding Pattern.HasError}"
                          Text="{Binding Pattern.Text}" CaretIndex="{Binding Pattern.CaretIndex}"
+                         ToolTip.Tip="{Binding L.PatternHint}"
                          AutomationProperties.Name="{Binding L.Step2Title}" />
 
                 <TextBlock Text="{Binding Pattern.ErrorMessage}" IsVisible="{Binding Pattern.HasError}"
@@ -226,13 +281,11 @@
                   </ItemsControl.ItemTemplate>
                 </ItemsControl>
 
-                <TextBlock Classes="muted" FontSize="11.5" TextWrapping="Wrap" Text="{Binding L.PatternHint}" />
-
                 <ItemsControl ItemsSource="{Binding Pattern.ChipGroups}">
                   <ItemsControl.ItemTemplate>
                     <DataTemplate x:DataType="vm:ChipGroupViewModel">
-                      <Grid ColumnDefinitions="76,*">
-                        <TextBlock Text="{Binding Title}" Classes="label" FontSize="11" Margin="0,6,0,0" />
+                      <Grid ColumnDefinitions="68,*">
+                        <TextBlock Text="{Binding Title}" Classes="label" FontSize="11" Margin="0,5,0,0" />
                         <ItemsControl Grid.Column="1" ItemsSource="{Binding Chips}">
                           <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate>
@@ -251,63 +304,14 @@
                   </ItemsControl.ItemTemplate>
                 </ItemsControl>
 
-                <CheckBox IsChecked="{Binding Pattern.LeadingZeros}" Content="{Binding L.LeadingZeros}" />
-
-                <StackPanel Spacing="4">
-                  <TextBlock Classes="label" Text="{Binding L.Presets}" />
-                  <ItemsControl ItemsSource="{Binding Pattern.Presets}">
-                    <ItemsControl.ItemsPanel>
-                      <ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate>
-                    </ItemsControl.ItemsPanel>
-                    <ItemsControl.ItemTemplate>
-                      <DataTemplate x:DataType="vm:PresetViewModel">
-                        <Button Classes="preset" Command="{Binding ApplyCommand}"
-                                ToolTip.Tip="{Binding Pattern}" AutomationProperties.Name="{Binding Label}">
-                                  <TextBlock Text="{Binding Label}" />
-                                </Button>
-                      </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                  </ItemsControl>
-                </StackPanel>
-
-                <Border Background="{DynamicResource SdSurface2Brush}" CornerRadius="{StaticResource SdRadiusMedium}" Padding="12,8">
-                  <StackPanel Spacing="2">
-                    <TextBlock Classes="label" Text="{Binding L.ExampleLabel}" />
-                    <TextBlock Classes="mono" Text="{Binding ExampleName}" FontSize="13" FontWeight="SemiBold" TextWrapping="Wrap" />
-                    <TextBlock Classes="muted" Text="{Binding L.ExtensionNote}" FontSize="11.5" TextWrapping="Wrap" />
-                  </StackPanel>
+                <Border Background="{DynamicResource SdSurface2Brush}" CornerRadius="{StaticResource SdRadiusMedium}" Padding="12,7"
+                        ToolTip.Tip="{Binding L.ExtensionNote}">
+                  <Grid ColumnDefinitions="Auto,*">
+                    <TextBlock Classes="label" Text="{Binding L.ExampleLabel}" VerticalAlignment="Center" Margin="0,0,10,0" />
+                    <TextBlock Grid.Column="1" Classes="mono" Text="{Binding ExampleName}" FontSize="13" FontWeight="SemiBold"
+                               TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                  </Grid>
                 </Border>
-              </StackPanel>
-            </Border>
-
-            <!-- Step 3: copy or move -->
-            <Border Classes="card">
-              <StackPanel Spacing="10">
-                <StackPanel Orientation="Horizontal" Spacing="10">
-                  <Border Classes="stepNumber"><TextBlock Text="3" /></Border>
-                  <TextBlock Classes="h2" Text="{Binding L.Step3Title}" VerticalAlignment="Center" />
-                </StackPanel>
-                <Grid ColumnDefinitions="*,8,*">
-                  <RadioButton Classes="option" GroupName="mode" IsChecked="{Binding IsCopyMode}"
-                               AutomationProperties.Name="{Binding L.CopyTitle}">
-                    <StackPanel Spacing="2">
-                      <TextBlock Text="{Binding L.CopyTitle}" FontWeight="SemiBold" />
-                      <TextBlock Classes="muted" Text="{Binding L.CopyHint}" FontSize="11.5" TextWrapping="Wrap" />
-                    </StackPanel>
-                  </RadioButton>
-                  <RadioButton Grid.Column="2" Classes="option" GroupName="mode" IsChecked="{Binding IsMoveMode}"
-                               AutomationProperties.Name="{Binding L.MoveTitle}">
-                    <StackPanel Spacing="2">
-                      <TextBlock Text="{Binding L.MoveTitle}" FontWeight="SemiBold" />
-                      <TextBlock Classes="muted" Text="{Binding L.MoveHint}" FontSize="11.5" TextWrapping="Wrap" />
-                    </StackPanel>
-                  </RadioButton>
-                </Grid>
-                <StackPanel Orientation="Horizontal" Spacing="8">
-                  <PathIcon Data="{StaticResource IconShieldCheck}" Width="16" Height="16"
-                            Foreground="{DynamicResource SdSuccessBrush}" />
-                  <TextBlock Classes="muted" Text="{Binding L.NeverOverwrite}" FontSize="12" />
-                </StackPanel>
               </StackPanel>
             </Border>
           </StackPanel>
@@ -318,13 +322,13 @@
           <DockPanel>
             <Border DockPanel.Dock="Top" Padding="20,16,20,12"
                     BorderBrush="{DynamicResource SdBorderBrush}" BorderThickness="0,0,0,1">
-              <StackPanel Spacing="10">
+              <StackPanel Spacing="6">
                 <Grid ColumnDefinitions="*,Auto">
                   <TextBlock Classes="h2" Text="{Binding L.PreviewTitle}" />
                   <TextBlock Grid.Column="1" Classes="muted" Text="{Binding PhotosCountText}" IsVisible="{Binding ShowList}"
                              VerticalAlignment="Center" />
                 </Grid>
-                <StackPanel Orientation="Horizontal" IsVisible="{Binding ShowList}">
+                <WrapPanel IsVisible="{Binding ShowList}">
                   <RadioButton Classes="tab" GroupName="filter" IsChecked="{Binding IsFilterAll}">
                     <TextBlock><Run Text="{Binding L.FilterAll}" /><Run Text="  " /><Run Text="{Binding CountAll}" /></TextBlock>
                   </RadioButton>
@@ -337,7 +341,7 @@
                   <RadioButton Classes="tab" GroupName="filter" IsChecked="{Binding IsFilterRenamed}">
                     <TextBlock><Run Text="● " Foreground="{DynamicResource SdWarningBrush}" /><Run Text="{Binding L.FilterRenamed}" /><Run Text="  " /><Run Text="{Binding CountRenamed}" /></TextBlock>
                   </RadioButton>
-                </StackPanel>
+                </WrapPanel>
               </StackPanel>
             </Border>
 
@@ -350,7 +354,7 @@
                 </Border>
                 <TextBlock Classes="h2" Text="{Binding L.PreviewEmptyTitle}" HorizontalAlignment="Center" />
                 <TextBlock Classes="muted" Text="{Binding L.PreviewEmptyBody}" TextWrapping="Wrap" TextAlignment="Center" />
-                <TextBlock Classes="muted" Text="{Binding L.DropHint}" TextWrapping="Wrap" TextAlignment="Center" FontSize="12" Opacity="0.8" />
+                <TextBlock Classes="muted" Text="{Binding L.PreviewDropHint}" TextWrapping="Wrap" TextAlignment="Center" FontSize="12" Opacity="0.8" />
               </StackPanel>
 
               <!-- Scanning -->
@@ -387,12 +391,13 @@
                         </Panel>
                       </Border>
                       <StackPanel Grid.Column="1" Margin="12,0" VerticalAlignment="Center">
-                        <TextBlock Text="{Binding OriginalName}" Classes="muted" FontSize="12" TextTrimming="CharacterEllipsis" />
-                        <StackPanel Orientation="Horizontal" Spacing="6">
-                          <PathIcon Data="{StaticResource IconArrowRight}" Width="13" Height="13"
+                        <TextBlock Text="{Binding OriginalName}" Classes="muted" FontSize="12" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding OriginalName}" />
+                        <Grid ColumnDefinitions="Auto,*">
+                          <PathIcon Data="{StaticResource IconArrowRight}" Width="13" Height="13" Margin="0,0,6,0"
                                     Foreground="{DynamicResource SdPrimaryBrush}" />
-                          <TextBlock Text="{Binding NewName}" Classes="mono" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
-                        </StackPanel>
+                          <TextBlock Grid.Column="1" Text="{Binding NewName}" Classes="mono" FontWeight="SemiBold"
+                                     TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding NewName}" />
+                        </Grid>
                       </StackPanel>
                       <Border Grid.Column="2" Classes="badge" Classes.warn="{Binding IsWarningBadge}"
                               ToolTip.Tip="{Binding BadgeTip}">
@@ -419,7 +424,7 @@
           <TextBlock Text="{Binding ConfirmMoveText}" TextWrapping="Wrap" Classes="muted" />
           <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right" Margin="0,8,0,0">
             <Button Classes="secondary" Content="{Binding L.Cancel}" Command="{Binding CancelMoveCommand}" IsCancel="True" />
-            <Button Classes="primary" Height="44" Content="{Binding L.ConfirmMoveYes}" Command="{Binding ConfirmMoveCommand}" />
+            <Button Classes="primary" Height="44" Content="{Binding ConfirmMoveYesText}" Command="{Binding ConfirmMoveCommand}" />
           </StackPanel>
         </StackPanel>
       </Border>

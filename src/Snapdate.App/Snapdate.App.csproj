@@ -7,16 +7,15 @@
     <ApplicationIcon Condition="Exists('Assets\app.ico')">Assets\app.ico</ApplicationIcon>
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
     <BuiltInComInteropSupport>false</BuiltInComInteropSupport>
-    <!-- Native AOT is the release format. Declared here (not only at publish time) so the
-         locked restore already contains the ILCompiler packs. -->
-    <PublishAot>true</PublishAot>
-    <OptimizationPreference>Size</OptimizationPreference>
 
-    <!-- Trimming/AOT: everything must be statically analysable. -->
+    <!-- Trimming/AOT: everything must be statically analysable (releases are trimmed; see ADR 0003). -->
     <IsTrimmable>true</IsTrimmable>
     <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
     <EnableAotAnalyzer>true</EnableAotAnalyzer>
     <EnableSingleFileAnalyzer>true</EnableSingleFileAnalyzer>
+    <!-- Releases are trimmed. Declared here so the locked restore contains the trimmer package. -->
+    <PublishTrimmed>true</PublishTrimmed>
+    <TrimMode>partial</TrimMode>
 
     <!-- Hardening / size -->
     <InvariantGlobalization>false</InvariantGlobalization>
@@ -51,15 +50,10 @@
     <InternalsVisibleTo Include="Snapdate.AssetGen" />
   </ItemGroup>
   <!-- Avalonia.DesignerSupport is only used by the IDE previewer, is not referenced at
-       runtime and is not trim/AOT-safe: keep it out of every published build. -->
+       runtime and is not trim-safe: keep it out of every published build. -->
   <Target Name="ExcludeDesignerSupportFromPublish" AfterTargets="ComputeResolvedFilesToPublishList">
     <ItemGroup>
       <ResolvedFileToPublish Remove="@(ResolvedFileToPublish)" Condition="'%(Filename)' == 'Avalonia.DesignerSupport'" />
-    </ItemGroup>
-  </Target>
-  <Target Name="ExcludeDesignerSupportFromAot" BeforeTargets="PrepareForILLink;SetupOSSpecificProps" Condition="'$(PublishAot)' == 'true'">
-    <ItemGroup>
-      <IlcReference Remove="@(IlcReference)" Condition="'%(Filename)' == 'Avalonia.DesignerSupport'" />
     </ItemGroup>
   </Target>
 </Project>

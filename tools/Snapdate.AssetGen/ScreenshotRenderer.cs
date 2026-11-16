@@ -58,7 +58,17 @@ internal static class ScreenshotRenderer
         }
     }
 
-    public static void Run(string repoRoot)
+    private static int _width = 1180;
+    private static int _height = 780;
+
+    /// <summary>Renders every state at the given window size into outputRoot/{en,de} (review use).</summary>
+    public static void RunReview(string repoRoot, string outputRoot, int width, int height)
+    {
+        (_width, _height) = (width, height);
+        Run(repoRoot, outputRoot);
+    }
+
+    public static void Run(string repoRoot, string? outputRoot = null)
     {
         if (Directory.Exists(DemoRoot))
         {
@@ -73,7 +83,7 @@ internal static class ScreenshotRenderer
         {
             foreach (var (folder, culture) in Languages)
             {
-                var dir = Path.Combine(repoRoot, "docs", "images", folder);
+                var dir = Path.Combine(outputRoot ?? Path.Combine(repoRoot, "docs", "images"), folder);
                 Directory.CreateDirectory(dir);
                 var ci = CultureInfo.GetCultureInfo(culture);
 
@@ -116,12 +126,13 @@ internal static class ScreenshotRenderer
                     vm.TargetFolder = target;
                     vm.Pattern.Text = "{YYYY}-{MM}-{DD} {hour}";
                 });
-                Shoot(dir, "06-options-light", ci, thumbnails, vm =>
+                Shoot(dir, "06-move-light", ci, thumbnails, vm =>
                 {
                     vm.SourceFolder = source;
                     Wait(vm.ScanCompletion);
                     vm.TargetFolder = target;
-                }, scrollLeftToEnd: true);
+                    vm.IsMoveMode = true;
+                });
                 Shoot(dir, "07-confirm-move-light", ci, thumbnails, vm =>
                 {
                     vm.SourceFolder = source;
@@ -160,7 +171,7 @@ internal static class ScreenshotRenderer
             TimeProvider.System,
             thumbnails);
         var vm = new MainWindowViewModel(services, culture);
-        var window = new MainWindow { DataContext = vm, Width = 1180, Height = 780 };
+        var window = new MainWindow { DataContext = vm, Width = _width, Height = _height };
         window.Show();
         arrange(vm);
 
@@ -182,7 +193,7 @@ internal static class ScreenshotRenderer
         var path = Path.Combine(dir, name + ".png");
         frame.Save(path, PngBitmapEncoderOptions.Default);
         window.Close();
-        Console.WriteLine($"wrote docs/images/{Path.GetFileName(dir)}/{name}.png");
+        Console.WriteLine($"wrote {Path.GetFileName(dir)}/{name}.png");
     }
 
     private static void Wait(Task task)

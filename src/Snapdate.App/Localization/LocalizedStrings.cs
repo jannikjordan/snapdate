@@ -48,6 +48,8 @@ public sealed class LocalizedStrings(CultureInfo culture)
 
     public string DropHint => Get(nameof(DropHint));
 
+    public string PreviewDropHint => Get(nameof(PreviewDropHint));
+
     public string IncludeSubfolders => Get(nameof(IncludeSubfolders));
 
     public string Step2Title => Get(nameof(Step2Title));
@@ -136,6 +138,8 @@ public sealed class LocalizedStrings(CultureInfo culture)
 
     public string PhotosCount => Get(nameof(PhotosCount));
 
+    public string PhotosCountOne => Get(nameof(PhotosCountOne));
+
     public string PreviewEmptyTitle => Get(nameof(PreviewEmptyTitle));
 
     public string PreviewEmptyBody => Get(nameof(PreviewEmptyBody));
@@ -184,11 +188,15 @@ public sealed class LocalizedStrings(CultureInfo culture)
 
     public string ProblemPattern => Get(nameof(ProblemPattern));
 
+    public string ProblemPatternHint => Get(nameof(ProblemPatternHint));
+
     public string ProblemNoPhotos => Get(nameof(ProblemNoPhotos));
 
     public string StatusNothingChanged => Get(nameof(StatusNothingChanged));
 
     public string ReadyTitle => Get(nameof(ReadyTitle));
+
+    public string ReadyTitleOne => Get(nameof(ReadyTitleOne));
 
     public string ReadySubCopy => Get(nameof(ReadySubCopy));
 
@@ -196,7 +204,15 @@ public sealed class LocalizedStrings(CultureInfo culture)
 
     public string RunCopy => Get(nameof(RunCopy));
 
+    public string RunCopyOne => Get(nameof(RunCopyOne));
+
+    public string RunCopyNone => Get(nameof(RunCopyNone));
+
     public string RunMove => Get(nameof(RunMove));
+
+    public string RunMoveOne => Get(nameof(RunMoveOne));
+
+    public string RunMoveNone => Get(nameof(RunMoveNone));
 
     public string RunningCopy => Get(nameof(RunningCopy));
 
@@ -206,11 +222,17 @@ public sealed class LocalizedStrings(CultureInfo culture)
 
     public string DoneCopy => Get(nameof(DoneCopy));
 
+    public string DoneCopyOne => Get(nameof(DoneCopyOne));
+
     public string DoneMove => Get(nameof(DoneMove));
+
+    public string DoneMoveOne => Get(nameof(DoneMoveOne));
 
     public string DoneSub => Get(nameof(DoneSub));
 
     public string DoneFailed => Get(nameof(DoneFailed));
+
+    public string DoneFailedOne => Get(nameof(DoneFailedOne));
 
     public string DoneCancelled => Get(nameof(DoneCancelled));
 
@@ -224,11 +246,19 @@ public sealed class LocalizedStrings(CultureInfo culture)
 
     public string ConfirmMoveBody => Get(nameof(ConfirmMoveBody));
 
+    public string ConfirmMoveBodyOne => Get(nameof(ConfirmMoveBodyOne));
+
     public string ConfirmMoveYes => Get(nameof(ConfirmMoveYes));
+
+    public string ConfirmMoveYesOne => Get(nameof(ConfirmMoveYesOne));
 
     /// <summary>Looks up a key; falls back to the key itself so missing strings are visible, not fatal.</summary>
     public string Get(string key) => Resources.GetString(key, Culture) ?? key;
 
     /// <summary>Formats a string that contains placeholders such as {0}.</summary>
     public string Format(string key, params object?[] args) => string.Format(Culture, Get(key), args);
+
+    /// <summary>Formats a count, using the "keyOne" variant for exactly one when it exists.</summary>
+    public string Plural(string key, int count) =>
+        count == 1 && Resources.GetString(key + "One", Culture) is not null ? Format(key + "One", count) : Format(key, count);
 }

@@ -30,4 +30,10 @@ if (what is "screenshots" or "all")
     ScreenshotRenderer.Run(repoRoot);
 }
 
+// review: every state at the minimum window size, into artifacts/review (not committed)
+if (what is "review")
+{
+    ScreenshotRenderer.RunReview(repoRoot, Path.Combine(repoRoot, "artifacts", "review"), 980, 720);
+}
+
 return 0;
