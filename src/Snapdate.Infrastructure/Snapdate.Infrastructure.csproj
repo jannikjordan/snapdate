@@ -2,6 +2,8 @@
   <!-- Adapters for ports: metadata, file system, settings. -->
   <PropertyGroup>
     <RootNamespace>Snapdate.Infrastructure</RootNamespace>
+    <!-- Required by the source-generated P/Invokes in Updates/NativePaths.cs (no reflection-based marshalling). -->
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\Snapdate.Application\Snapdate.Application.csproj" />

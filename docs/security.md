@@ -12,6 +12,7 @@ To report a vulnerability, see [SECURITY.md](../SECURITY.md).
 | The application process | Crash or code execution while parsing | Malformed or hostile image/video files |
 | The user's privacy | Data leaving the computer | Telemetry, crash reporters; the update check is the only network access and sends no identifiers |
 | The update check | Spoofed or hostile "latest release" answer, redirect to another host, oversized response, tracking | Network attacker, compromised redirect, hostile server |
+| The in-app updater | Running a tampered, wrong-architecture, older or attacker-supplied installer; redirect to another host; partial or oversized download; forged install marker; file swapped after verification | Network attacker, compromised CDN link, local process writing next to the exe or into the update folder |
 | The release binary | Tampered or vulnerable exe | Compromised dependency, CI or download; a replaced file that the updater would run (update signatures) |
 
 ## Mitigations
@@ -76,11 +77,62 @@ Decision and rationale: [ADR 0004](adr/0004-update-check-and-in-app-update.md).
   asset names are restricted to safe characters and exclude Windows reserved device names. Drafts, pre-releases, equal or older versions are
   ignored. Any failure (offline, 403/429 rate limit, malformed data) is silent.
 - **No code is run or downloaded by the check.** Portable builds only link to the release page.
-  The installer download of Installed builds (issue #3) requires signature verification
-  (issue #4) and will be documented here when it exists.
+  The installer download of Installed builds is described in the next section.
 - Threats considered: spoofed/man-in-the-middle answer (TLS, host allow-list (`api.github.com` only),
   link validation, no automatic execution), malicious redirect (rejected), oversized or hostile JSON
   (cap, source-generated parser, size/time limits), tracking (no identifiers), API rate limiting (once a day).
+
+### In-app updater (installed builds only)
+Decision and details: [ADR 0004](adr/0004-update-check-and-in-app-update.md), signatures:
+[ADR 0005](adr/0005-update-signatures.md). Started by the user (the banner's *Update now*), never automatically.
+- **Download hosts** (https, default port, no user info; checked for the start URL and every redirect hop, max. 5):
+  `github.com`, `objects.githubusercontent.com`, `release-assets.githubusercontent.com`. The start URL must be exactly
+  `https://github.com/jannikjordan/snapdate/releases/download/<tag>/<name>`. Redirects are never followed automatically.
+- **No identifiers**: only `User-Agent: Snapdate/<version>` and `Accept`; no cookies or credentials.
+- **Size**: must equal the size announced by the release and is enforced on the bytes read; caps 300 MB (installer),
+  1 KB (`.sig`); timeouts and cancellation.
+- **Signature first**: the installer is verified (ECDSA P-256, key compiled into the app) from the open read handle; a
+  failure deletes the files and nothing is run. The same handle is held (no writers, renamers or deleters) until the
+  installer process has exited (also covering Setup relaunching itself elevated for all-users updates). The app does
+  not exit by itself while it waits; Setup closes it through the Restart Manager.
+- **Private folder**: a random sub-folder of `%LOCALAPPDATA%\Snapdate\updates`; the file name is the validated
+  asset name and the path is checked to stay inside the folder. The update root, its parent and the run folder must not
+  be junctions or symbolic links, and the held file's final path (`GetFinalPathNameByHandle`) must equal the expected
+  path. Stale folders are removed at startup (wired up by the UI task).
+- **No self-elevation**: Snapdate runs as the normal user and starts only the verified installer (`UseShellExecute`, no `runas`);
+  for all-users installs Setup asks for administrator rights itself and relaunches itself elevated. A declined prompt
+  ends Setup with a non-zero exit code, which the app reports.
+- **Install kind is cross-checked**: the marker file must be confirmed by the installer's uninstall registry entry
+  (`InstallLocation` equals the exe folder); otherwise the silent path is not offered.
+
+| Threat | Mitigation |
+|---|---|
+| Tampered installer or `.sig` (CDN, MITM, compromised release) | Signature check against the key in the app; failure deletes the file and never runs it |
+| MITM, redirect to another host, downgrade to http | TLS, host allow-list on every hop, https and default port only, max. 5 hops, manual redirects |
+| Downgrade to an older release | Only strictly newer stable versions are accepted and the asset name and tag folder embed the version; Setup itself refuses to install over a newer installed version (silent: error exit code). See the residual risk below |
+| Wrong architecture | Exact `win-x64` / `win-arm64` asset for the process architecture; no fallback |
+| Forged install marker (portable copy claims to be installed) | Registry `InstallLocation` must match the exe folder; otherwise release page only |
+| Disk full, partial or oversized download | Exact size match on received bytes, hard caps, write errors mean failure; folder deleted |
+| File swapped between check and run | Verified from a held read handle that denies writers, renamers and deleters until the installer (including its elevated relaunch) has exited |
+| Junction or symlink redirecting the update folder | Root, parent and run folder must not be reparse points; the held handle's final path must equal the expected path; stale cleanup ignores reparse points |
+| Declined administrator prompt | Setup exits non-zero, the app stays open and reports it (`InstallerFailed`); it does not vanish |
+| Installer reaches another tag folder | The `<tag>` segment of both download URLs must be `v<Version>` of the release |
+| Hostile asset name / path traversal | Safe-character names unchanged by `FileNameSanitizer`; `PathGuard` keeps the path in the random folder |
+| Leftovers of crashed runs | Stale-folder cleanup at startup |
+
+Residual risks, stated honestly:
+- **Replayed older installer.** The signature covers the bytes only, not the version or the file name. Someone who
+  can upload release assets could publish an older, genuinely signed installer under a newer name. The release
+  account is therefore a trusted component (protect it, see ADR 0005 and the release process). The checks on version,
+  asset name and tag folder do not stop that; the cheap extra defence is Setup refusing to install over a newer
+  installed version.
+- **Same-user attacker.** A process that already runs as the same user can do anything the user can, including
+  replacing the Snapdate exe itself; the updater does not claim to defend against that. For **per-user** installs this
+  is also the limit of the install-marker/registry cross-check. For **all-users** installs the exe and the registry
+  entry sit in places a normal user cannot change, and the verified installer is protected by the held handle during
+  the whole run including the elevated relaunch (while Snapdate is alive the lock is held; when the Restart Manager
+  closes Snapdate, the elevated Setup is already running from the verified, now locked, image). The junction and
+  final-path checks cover the update folder in the user's profile.
 
 ### Process hardening
 - Runs as the normal user (`asInvoker` manifest), never asks for admin rights.

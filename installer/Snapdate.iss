@@ -82,6 +82,9 @@ Name: "de"; MessagesFile: "compiler:Languages\German.isl"
 en.RemoveSettingsPrompt=Do you also want to delete your Snapdate settings (remembered folders, file name pattern, language)?%n%nChoose No to keep them, for example if you want to install Snapdate again later.
 de.RemoveSettingsPrompt=Möchten Sie auch Ihre Snapdate-Einstellungen löschen (gemerkte Ordner, Dateinamen-Muster, Sprache)?%n%nWählen Sie Nein, um sie zu behalten, zum Beispiel wenn Sie Snapdate später erneut installieren möchten.
 
+en.NewerInstalled=A newer version of Snapdate (%1) is already installed. This installer contains the older version %2 and will not replace it.
+de.NewerInstalled=Es ist bereits eine neuere Version von Snapdate (%1) installiert. Dieses Installationsprogramm enthält die ältere Version %2 und ersetzt sie nicht.
+
 [Tasks]
 ; Checked by default; Setup remembers the choice for upgrades.
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"
@@ -140,6 +143,84 @@ begin
   if not SaveStringToFile(ExpandConstant('{app}\' + MarkerFileName),
     '[Install]' + #13#10 + 'Scope=' + Scope + #13#10, False) then
     Log('Could not write the install marker.');
+end;
+
+{ Reads "1.2.3" (a -suffix is ignored) into three numbers; False when the text is not a version. }
+function ParseVersion(const S: String; var Parts: array of Integer): Boolean;
+var
+  I, P, Value: Integer;
+  Rest, Part: String;
+begin
+  Result := False;
+  Rest := S;
+  P := Pos('-', Rest);
+  if P > 0 then
+    Rest := Copy(Rest, 1, P - 1);
+  for I := 0 to 2 do
+  begin
+    if I < 2 then
+    begin
+      P := Pos('.', Rest);
+      if P = 0 then
+        Exit;
+      Part := Copy(Rest, 1, P - 1);
+      Delete(Rest, 1, P);
+    end
+    else
+      Part := Rest;
+    Value := StrToIntDef(Part, -1);
+    if Value < 0 then
+      Exit;
+    Parts[I] := Value;
+  end;
+  Result := True;
+end;
+
+{ True when Installed is a strictly newer x.y.z than Mine (pre-release suffixes are ignored, so an rc
+  can be replaced by the final release of the same number). }
+function IsNewerVersion(const Installed, Mine: String): Boolean;
+var
+  A, B: array of Integer;
+  I: Integer;
+begin
+  Result := False;
+  SetArrayLength(A, 3);
+  SetArrayLength(B, 3);
+  if not (ParseVersion(Installed, A) and ParseVersion(Mine, B)) then
+    Exit;
+  for I := 0 to 2 do
+  begin
+    if A[I] > B[I] then
+    begin
+      Result := True;
+      Exit;
+    end;
+    if A[I] < B[I] then
+      Exit;
+  end;
+end;
+
+{ Defence in depth for the in-app updater: never install over a NEWER installed version, so a signed but older
+  installer (replayed under a newer name) cannot downgrade an existing installation. Silent runs exit with an
+  error code (Setup returns 1) without any dialog; interactive runs explain why. }
+function InitializeSetup: Boolean;
+var
+  Installed: String;
+begin
+  Result := True;
+  Installed := '';
+  if not RegQueryStringValue(HKCU, 'Software\Microsoft\Windows\CurrentVersion\Uninstall\{D5F11F70-E97E-44D0-8573-E15843FA60B3}_is1',
+    'DisplayVersion', Installed) then
+    if not RegQueryStringValue(HKLM, 'Software\Microsoft\Windows\CurrentVersion\Uninstall\{D5F11F70-E97E-44D0-8573-E15843FA60B3}_is1',
+      'DisplayVersion', Installed) then
+      Installed := '';
+  if (Installed <> '') and IsNewerVersion(Installed, '{#AppVersion}') then
+  begin
+    Log('Refusing to downgrade from ' + Installed + ' to {#AppVersion}.');
+    SuppressibleMsgBox(FmtMessage(CustomMessage('NewerInstalled'), [Installed, '{#AppVersion}']),
+      mbError, MB_OK, IDOK);
+    Result := False;
+  end;
 end;
 
 procedure CurStepChanged(CurStep: TSetupStep);

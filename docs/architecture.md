@@ -27,6 +27,7 @@ flowchart TB
         I2[LocalFileSystem]
         I3[JsonSettingsStore]
         I4[GitHubReleaseFeed]
+        I5[HttpUpdateDownloader · ProcessInstallerLauncher · RegistryInstallLocationCheck]
     end
     VM --> UC1 & UC2 & UC3
     Application --> Domain
@@ -86,6 +87,20 @@ malformed file (wrong section, unknown or duplicate `Scope`, stray lines) means
 portable, and it never throws. The marker is a hint for the UI (for example
 which update path to offer), not a security boundary; downloaded updates are
 signature-verified regardless.
+
+## In-app update (core)
+
+`InstallUpdateUseCase` (Application, no UI) turns a `ReleaseInfo` into a started installer:
+`IsApplicable` (Installed marker, confirmed by `IInstallLocationCheck` against the uninstall registry key; newer stable
+release; supported `IProcessArchitecture`) → pick `Snapdate-Setup-v<ver>-win-<arch>.exe` and its `.sig` →
+`IUpdateDownloader.DownloadAsync` (progress as `UpdateProgress`) → `IUpdateSignatureVerifier.Verify` on the held
+`IDownloadedFile.Content` → `IInstallerLauncher.Launch(path, scope)`. The result is an `UpdateInstallResult`
+(`Completed`, `InstallerRunning`, `NotApplicable`, `AssetMissing`, `DownloadFailed`, `VerificationFailed`,
+`LaunchFailed`, `InstallerFailed`, `Cancelled`). After starting the installer the use case waits for its exit (or the
+app's shutdown token) while holding the verified file; the app must not exit by itself meanwhile. No
+exceptions reach the UI. Adapters live in Infrastructure (`HttpUpdateDownloader`, `ProcessInstallerLauncher`,
+`RegistryInstallLocationCheck`, `ProcessArchitecture`). Rules and threat model: [security.md](security.md),
+[ADR 0004](adr/0004-update-check-and-in-app-update.md).
 
 ## Key decisions
 
