@@ -98,10 +98,14 @@ Decision and details: [ADR 0004](adr/0004-update-check-and-in-app-update.md), si
 - **Private folder**: a random sub-folder of `%LOCALAPPDATA%\Snapdate\updates`; the file name is the validated
   asset name and the path is checked to stay inside the folder. The update root, its parent and the run folder must not
   be junctions or symbolic links, and the held file's final path (`GetFinalPathNameByHandle`) must equal the expected
-  path. Stale folders are removed at startup (wired up by the UI task).
+  path. Stale folders are removed at every start (in the background, best effort).
 - **No self-elevation**: Snapdate runs as the normal user and starts only the verified installer (`UseShellExecute`, no `runas`);
   for all-users installs Setup asks for administrator rights itself and relaunches itself elevated. A declined prompt
-  ends Setup with a non-zero exit code, which the app reports.
+  ends Setup with a non-zero exit code, which the app reports (to be verified manually on an all-users install:
+  not testable unattended).
+- **Redirected profiles**: if `%LOCALAPPDATA%` itself sits behind a `subst` drive, junction or symbolic link, the
+  update folder checks fail and the in-app update reports a failed download. That is by design (the release page is the
+  fallback).
 - **Install kind is cross-checked**: the marker file must be confirmed by the installer's uninstall registry entry
   (`InstallLocation` equals the exe folder); otherwise the silent path is not offered.
 
@@ -125,13 +129,14 @@ Residual risks, stated honestly:
   can upload release assets could publish an older, genuinely signed installer under a newer name. The release
   account is therefore a trusted component (protect it, see ADR 0005 and the release process). The checks on version,
   asset name and tag folder do not stop that; the cheap extra defence is Setup refusing to install over a newer
-  installed version.
+  installed version (per-user and all-users entries are both checked). That check compares x.y.z only and ignores a
+  `-suffix`, so a release-candidate installer can replace the final release of the same number.
 - **Same-user attacker.** A process that already runs as the same user can do anything the user can, including
   replacing the Snapdate exe itself; the updater does not claim to defend against that. For **per-user** installs this
   is also the limit of the install-marker/registry cross-check. For **all-users** installs the exe and the registry
   entry sit in places a normal user cannot change, and the verified installer is protected by the held handle during
   the whole run including the elevated relaunch (while Snapdate is alive the lock is held; when the Restart Manager
-  closes Snapdate, the elevated Setup is already running from the verified, now locked, image). The junction and
+  closes Snapdate, the elevated Setup is already running from the verified file, which cannot be written meanwhile). The junction and
   final-path checks cover the update folder in the user's profile.
 
 ### Process hardening

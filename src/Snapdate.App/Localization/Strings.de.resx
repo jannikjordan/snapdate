@@ -143,4 +143,17 @@
   <data name="UpdateChecking" xml:space="preserve"><value>Prüfe …</value></data>
   <data name="UpdateUpToDate" xml:space="preserve"><value>Sie sind auf dem neuesten Stand (Version {0})</value></data>
   <data name="UpdateCheckFailed" xml:space="preserve"><value>Prüfung gerade nicht möglich — sind Sie offline?</value></data>
+  <data name="UpdateDownloading" xml:space="preserve"><value>Update wird heruntergeladen …</value></data>
+  <data name="UpdateProgressPercent" xml:space="preserve"><value>{0} %</value></data>
+  <data name="UpdateVerifying" xml:space="preserve"><value>Download wird überprüft …</value></data>
+  <data name="UpdateInstalling" xml:space="preserve"><value>Das Update wird installiert. Windows fragt eventuell nach einer Berechtigung. Snapdate startet danach automatisch neu.</value></data>
+  <data name="UpdateCancel" xml:space="preserve"><value>Abbrechen</value></data>
+  <data name="UpdateOpenReleasePage" xml:space="preserve"><value>Download-Seite öffnen</value></data>
+  <data name="UpdateTryAgain" xml:space="preserve"><value>Erneut versuchen</value></data>
+  <data name="UpdateFailedTitle" xml:space="preserve"><value>Das Update hat nicht geklappt</value></data>
+  <data name="UpdateFailedDownload" xml:space="preserve"><value>Der Download ist fehlgeschlagen. Prüfen Sie Ihre Internetverbindung und versuchen Sie es erneut, oder laden Sie die neue Version von der Download-Seite.</value></data>
+  <data name="UpdateFailedVerify" xml:space="preserve"><value>Der Download konnte nicht überprüft werden und wurde deshalb nicht installiert. Bitte laden Sie die neue Version von der Download-Seite.</value></data>
+  <data name="UpdateFailedMissing" xml:space="preserve"><value>Diese Version hat kein Installationsprogramm für Ihren PC. Bitte laden Sie sie von der Download-Seite.</value></data>
+  <data name="UpdateFailedStart" xml:space="preserve"><value>Das Installationsprogramm konnte nicht gestartet werden. Bitte laden Sie die neue Version von der Download-Seite.</value></data>
+  <data name="UpdateFailedInstaller" xml:space="preserve"><value>Das Setup wurde beendet, ohne etwas zu installieren. Es wurde nichts verändert.</value></data>
 </root>

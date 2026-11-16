@@ -27,14 +27,34 @@ public partial class App : Avalonia.Application
             Window? window = null;
             var settings = new JsonSettingsStore(JsonSettingsStore.DefaultPath);
             var desktopServices = new AvaloniaDesktopServices(() => window);
+            var installInfo = FileInstallInfo.ForCurrentProcess();
 
-            // The update check is off (silently) when the running version is not a valid version number.
+            // The update check and the in-app update are off (silently) when the running version is not a valid
+            // version number.
             GitHubReleaseFeed? feed = null;
             UpdateCheckService? updateCheck = null;
+            HttpUpdateDownloader? downloader = null;
+            EcdsaUpdateSignatureVerifier? verifier = null;
+            InAppUpdateInstaller? updateInstaller = null;
             if (RunningVersion.Parsed is { } running)
             {
                 feed = new GitHubReleaseFeed(running);
                 updateCheck = new UpdateCheckService(feed, settings, new SystemClock(), running);
+
+                downloader = new HttpUpdateDownloader(running);
+                verifier = EcdsaUpdateSignatureVerifier.CreateDefault();
+                updateInstaller = new InAppUpdateInstaller(new InstallUpdateUseCase(
+                    running,
+                    installInfo,
+                    new RegistryInstallLocationCheck(),
+                    new ProcessArchitecture(),
+                    downloader,
+                    verifier,
+                    new ProcessInstallerLauncher()));
+
+                // Leftovers of earlier update attempts; best effort, never throws, never blocks start-up.
+                var stale = downloader;
+                _ = Task.Run(stale.CleanUpStaleDownloads);
             }
 
             var services = new AppServices(
@@ -46,12 +66,24 @@ public partial class App : Avalonia.Application
                 TimeProvider.System,
                 new ThumbnailLoader(),
                 updateCheck,
-                FileInstallInfo.ForCurrentProcess(),
-                new OpenReleasePageUpdateInstaller(desktopServices));
+                installInfo,
+                updateInstaller,
+                new AvaloniaAppExit(desktop));
 
-            window = new MainWindow { DataContext = new MainWindowViewModel(services, CultureInfo.CurrentUICulture) };
+            var viewModel = new MainWindowViewModel(services, CultureInfo.CurrentUICulture);
+            window = new MainWindow { DataContext = viewModel };
             desktop.MainWindow = window;
-            desktop.Exit += (_, _) => feed?.Dispose();
+
+            // Setup closes a running Snapdate through Windows' Restart Manager, and Windows may end the session:
+            // either way the app is asked to shut down, which must end the wait for a running installer. (The
+            // window's Closing handler does the same and also saves the settings.)
+            desktop.ShutdownRequested += (_, _) => viewModel.Update.NotifyShutdownRequested();
+            desktop.Exit += (_, _) =>
+            {
+                feed?.Dispose();
+                downloader?.Dispose();
+                verifier?.Dispose();
+            };
         }
 
         base.OnFrameworkInitializationCompleted();

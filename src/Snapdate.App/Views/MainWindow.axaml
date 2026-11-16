@@ -77,11 +77,43 @@
           <Grid ColumnDefinitions="Auto,*,Auto" VerticalAlignment="Center">
             <PathIcon Data="{StaticResource IconRefresh}" Width="18" Height="18" Margin="0,0,12,0"
                       Foreground="{DynamicResource SdPrimaryBrush}" />
-            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+            <StackPanel Grid.Column="1" VerticalAlignment="Center" IsVisible="{Binding Update.IsOffering}">
               <TextBlock Text="{Binding Update.BannerTitle}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
               <TextBlock Text="{Binding Update.BannerSubtitle}" Classes="muted" FontSize="12" TextTrimming="CharacterEllipsis" />
             </StackPanel>
-            <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6" Margin="12,0,0,0" VerticalAlignment="Center">
+            <!-- In-app update running: step text, progress bar (determinate while downloading) and percent -->
+            <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="4" IsVisible="{Binding Update.IsBusy}">
+              <TextBlock Text="{Binding Update.StatusText}" FontWeight="SemiBold" TextWrapping="Wrap" />
+              <Grid ColumnDefinitions="*,Auto">
+                <ProgressBar Classes="brand" Minimum="0" Maximum="1" Value="{Binding Update.Progress}"
+                             IsIndeterminate="{Binding !Update.IsDownloading}"
+                             AutomationProperties.Name="{Binding Update.StatusText}" />
+                <TextBlock Grid.Column="1" Margin="10,0,0,0" FontSize="12" Classes="muted"
+                           Text="{Binding Update.ProgressText}" IsVisible="{Binding Update.IsDownloading}" />
+              </Grid>
+            </StackPanel>
+            <!-- In-app update failed: short message, the release page is the fallback -->
+            <StackPanel Grid.Column="1" VerticalAlignment="Center" IsVisible="{Binding Update.IsFailed}">
+              <TextBlock Text="{Binding L.UpdateFailedTitle}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+              <TextBlock Text="{Binding Update.FailureText}" Classes="muted" FontSize="12" TextWrapping="Wrap" />
+            </StackPanel>
+            <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6" Margin="12,0,0,0" VerticalAlignment="Center"
+                        IsVisible="{Binding Update.IsBusy}">
+              <Button Classes="secondary" Content="{Binding L.UpdateCancel}" Command="{Binding Update.CancelUpdateCommand}"
+                      IsVisible="{Binding Update.CanCancel}" AutomationProperties.Name="{Binding L.UpdateCancel}" />
+            </StackPanel>
+            <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6" Margin="12,0,0,0" VerticalAlignment="Center"
+                        IsVisible="{Binding Update.IsFailed}">
+              <Button Classes="primary" Content="{Binding L.UpdateTryAgain}" Command="{Binding Update.UpdateNowCommand}"
+                      IsVisible="{Binding Update.CanRetry}" />
+              <Button Classes="primary" Content="{Binding L.UpdateOpenReleasePage}" Command="{Binding Update.WhatsNewCommand}"
+                      IsVisible="{Binding !Update.CanRetry}" />
+              <Button Classes="secondary" Content="{Binding L.UpdateOpenReleasePage}" Command="{Binding Update.WhatsNewCommand}"
+                      IsVisible="{Binding Update.CanRetry}" />
+              <Button Classes="link" Content="{Binding L.UpdateLater}" Command="{Binding Update.LaterCommand}" />
+            </StackPanel>
+            <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6" Margin="12,0,0,0" VerticalAlignment="Center"
+                        IsVisible="{Binding Update.IsOffering}">
               <!-- Installed: Update now + What's new -->
               <Button Classes="primary" Content="{Binding L.UpdateNow}" Command="{Binding Update.UpdateNowCommand}"
                       IsVisible="{Binding Update.IsInstalled}" />

@@ -37,7 +37,7 @@ in der richtigen Reihenfolge, in jedem Ordner, auf jedem Computer.
 ## 🚀 1. Los geht's
 
 1. Laden Sie den Installer `Snapdate-Setup-vX.Y.Z-win-x64.exe` von der
-   [Release-Seite](https://github.com/jannikjordan/snapdate/releases/latest) herunter.
+   [Download-Seite](https://github.com/jannikjordan/snapdate/releases/latest) herunter.
    (Auf ARM-Geräten wie Surface Pro X oder Copilot+ PCs: `win-arm64`.)
 2. Doppelklick darauf und den Schritten folgen — Einzelheiten unter
    [Installation](#-10-installation). Starten Sie **Snapdate** danach über das Startmenü.
@@ -317,7 +317,7 @@ wenn alles verschwinden soll.
 
 Die portable Version **aktualisiert sich nicht selbst**. Gibt es eine neue
 Version, zeigt sie einen Hinweis mit dem Knopf **Herunterladen**, der die
-Release-Seite öffnet — dort laden Sie die neue Datei erneut herunter (siehe
+Download-Seite öffnet — dort laden Sie die neue Datei erneut herunter (siehe
 [Updates](#-12-updates)).
 
 ---
@@ -343,16 +343,21 @@ verschwindet der Hinweis ebenfalls.
 
 | Knopf | Was er tut |
 |---|---|
-| **Jetzt aktualisieren** | Nur bei der installierten Version. Lädt den neuen Installer von GitHub herunter, prüft seine Signatur und installiert ihn. Bei einer Installation „für alle Benutzer“ fragt Windows zuerst nach der Zustimmung eines Administrators. Danach startet Snapdate neu. |
+| **Jetzt aktualisieren** | Nur bei der installierten Version. Der Hinweis zeigt den Fortschritt des Downloads (mit **Abbrechen**), danach prüft Snapdate die Signatur des Downloads und startet das Installationsprogramm. Bei einer Installation „für alle Benutzer“ fragt Windows zuerst nach der Zustimmung eines Administrators (dafür dürfen Sie sich beliebig Zeit lassen). Snapdate schließt sich dann selbst und startet in der neuen Version neu. Lehnen Sie die Zustimmung ab, bleibt alles unverändert. |
 | **Was ist neu** | Öffnet die Versionshinweise im Browser. |
 | **Später** | Blendet den Hinweis bis zum nächsten Start aus; bei der nächsten automatischen Prüfung erscheint er wieder. |
 | **Diese Version überspringen** | Keine automatischen Erinnerungen mehr für diese Version. Eine neuere wird wieder gemeldet. **Jetzt prüfen** (siehe unten) zeigt eine übersprungene Version trotzdem an. |
 
-Schlägt der Download oder die Prüfung der Signatur fehl, wird **nichts
-installiert**, und Snapdate bietet stattdessen die Release-Seite an.
+Schlägt der Download, die Prüfung der Signatur oder die Installation fehl (oder
+lehnen Sie die Zustimmung ab), wird **nichts
+installiert**; der Hinweis sagt das kurz und bietet **Erneut versuchen** (wo das helfen kann) und **Download-Seite öffnen** an.
+
+![Update-Hinweis während des Downloads](images/de/15-update-downloading-light.png)
+
+![Update-Hinweis nach einem fehlgeschlagenen Update](images/de/16-update-failed-light.png)
 
 **Portable Version:** Statt *Jetzt aktualisieren* gibt es den Knopf
-**Herunterladen**. Er öffnet die neueste Release-Seite, wo Sie die neue portable
+**Herunterladen**. Er öffnet die neueste Download-Seite, wo Sie die neue portable
 Datei erneut herunterladen.
 
 ![Update-Hinweis, portable Version](images/de/11-update-portable-light.png)

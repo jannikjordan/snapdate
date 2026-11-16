@@ -90,20 +90,32 @@ installer that matches the process architecture. Core (no UI) in `InstallUpdateU
   relaunches itself elevated. So the launcher returns the started process (`IStartedInstaller`) and the use case
   **keeps the verified handle open and waits** until the installer exits or the app is shut down: exit code 0 gives
   `Completed`, a non-zero code (declined administrator prompt, Setup refusing a downgrade) gives `InstallerFailed` and
-  the files are removed. Therefore the lock also covers the elevated relaunch. Contract for the UI (part B): **the app
+  the files are removed. Therefore the lock also covers the elevated relaunch. Contract for the UI: **the app
   must not exit by itself after starting the update.** It stays open (progress/"installing" state) because Setup closes
   it through the Restart Manager when it needs the exe. When Snapdate is asked to close, the app signals the
   `appShutdown` token passed to `ExecuteAsync`, the call ends with `InstallerRunning`, the files are kept and the
   process exit releases the lock. The download token cancels only download/verification, never a started installer.
-- **Cleanup.** `CleanUpStaleDownloads()` (to be called once at startup by the UI wiring, part B) deletes update
+  The wait has **no time limit** (the user may take long to answer the administrator prompt), so the window stays
+  closable throughout. On `Completed` the new version has already been started by Setup (`/RESTARTAPP`), so the app
+  **exits immediately**; it never exits by itself in any other case.
+- **Cleanup.** `CleanUpStaleDownloads()` (called once at every start, in the background, by the composition root) deletes update
   folders (32 hex characters, no reparse points) whose newest write time is older than one hour; failures are ignored.
+  Closing the window during a download leaves that folder (a partial file) until the cleanup at a start more than an
+  hour later; so does a started installer's folder.
+- **Last chance to stop.** The use case checks the download token and the app-shutdown token after the downloads, before
+  verification, and again right before launching; if either is signalled it returns `Cancelled` and the files are
+  deleted, so nothing starts once the user cancelled or the app began to close. The banner's Cancel button disappears
+  when the download is complete (verification starts), so the check is a safety net.
+- **Shutdown tokens in the UI.** Each run has its own shutdown token. The window's closing handler cancels it (and
+  everything else); `ShutdownRequested` (Restart Manager, sign-out) cancels only that token. If the app is still alive
+  afterwards and the result is `InstallerRunning`, the banner is hidden and later update checks keep working.
 - **Installer refuses downgrades.** As cheap defence in depth `installer/Snapdate.iss` (`InitializeSetup`) refuses to
   install over a **newer** installed version (uninstall key `DisplayVersion` in HKCU or HKLM, compared as x.y.z; a
   pre-release suffix is ignored): silent runs exit with Setup's error code (so the updater reports `InstallerFailed`),
   interactive runs show a message (EN/DE).
 - **Results, no exceptions** to the UI: `Completed`, `InstallerRunning`, `NotApplicable`, `AssetMissing`,
   `DownloadFailed`, `VerificationFailed`, `LaunchFailed`, `InstallerFailed`, `Cancelled` (cancellation of the download
-  phase is caught inside the use case). The banner's *Update now* button is part B (UI wiring).
+  phase is caught inside the use case). The banner's *Update now* drives it (progress, Cancel, failure message with the release page button; part B).
 - Layering: ports `IUpdateDownloader`, `IDownloadedFile`, `IInstallerLauncher`, `IInstallLocationCheck`,
   `IStartedInstaller`, `IProcessArchitecture` and `InstallUpdateUseCase` in Application; `HttpUpdateDownloader`, `ProcessInstallerLauncher`,
   `RegistryInstallLocationCheck`, `ProcessArchitecture` in Infrastructure. No new packages (the registry API is part

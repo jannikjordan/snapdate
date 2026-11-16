@@ -126,7 +126,7 @@ public sealed class InstallUpdateEndToEndTests : IDisposable
             downloader,
             verifier,
             new Launcher(_launches));
-        return await useCase.ExecuteAsync(release, null, token);
+        return await useCase.ExecuteAsync(release, null, null, token);
     }
 
     private void AssertCleanAndNotLaunched()

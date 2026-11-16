@@ -15,4 +15,5 @@ public sealed record AppServices(
     ThumbnailLoader? Thumbnails,
     UpdateCheckService? UpdateCheck = null,
     IInstallInfo? Install = null,
-    IUpdateInstaller? UpdateInstaller = null);
+    IUpdateInstaller? UpdateInstaller = null,
+    IAppExit? AppExit = null);

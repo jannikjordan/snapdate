@@ -137,3 +137,16 @@ UpdateCheckNow	Check now	Jetzt prüfen
 UpdateChecking	Checking…	Prüfe …
 UpdateUpToDate	You're up to date (version {0})	Sie sind auf dem neuesten Stand (Version {0})
 UpdateCheckFailed	Couldn't check right now — are you offline?	Prüfung gerade nicht möglich — sind Sie offline?
+UpdateDownloading	Downloading the update…	Update wird heruntergeladen …
+UpdateProgressPercent	{0} %	{0} %
+UpdateVerifying	Checking the download…	Download wird überprüft …
+UpdateInstalling	Installing the update. Windows may ask for permission. Snapdate restarts by itself afterwards.	Das Update wird installiert. Windows fragt eventuell nach einer Berechtigung. Snapdate startet danach automatisch neu.
+UpdateCancel	Cancel	Abbrechen
+UpdateOpenReleasePage	Open download page	Download-Seite öffnen
+UpdateTryAgain	Try again	Erneut versuchen
+UpdateFailedTitle	The update did not work	Das Update hat nicht geklappt
+UpdateFailedDownload	The download failed. Check your internet connection and try again, or get the new version from the download page.	Der Download ist fehlgeschlagen. Prüfen Sie Ihre Internetverbindung und versuchen Sie es erneut, oder laden Sie die neue Version von der Download-Seite.
+UpdateFailedVerify	The download could not be verified, so it was not installed. Please get the new version from the download page.	Der Download konnte nicht überprüft werden und wurde deshalb nicht installiert. Bitte laden Sie die neue Version von der Download-Seite.
+UpdateFailedMissing	This release has no installer for your PC. Please get the new version from the download page.	Diese Version hat kein Installationsprogramm für Ihren PC. Bitte laden Sie sie von der Download-Seite.
+UpdateFailedStart	The installer could not be started. Please get the new version from the download page.	Das Installationsprogramm konnte nicht gestartet werden. Bitte laden Sie die neue Version von der Download-Seite.
+UpdateFailedInstaller	Setup ended without installing. Nothing was changed.	Das Setup wurde beendet, ohne etwas zu installieren. Es wurde nichts verändert.

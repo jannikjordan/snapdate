@@ -1,4 +1,3 @@
-using Snapdate.App.Services;
 using Snapdate.App.Tests.Support;
 using Snapdate.App.ViewModels;
 using Snapdate.Application.Installation;
@@ -112,35 +111,6 @@ public sealed class UpdateViewModelTests
         var next = services.CreateViewModel();
         await next.Update.AutomaticCheckCompletion;
         Assert.False(next.Update.IsBannerVisible);
-    }
-
-    [Fact]
-    public async Task Installed_build_offers_update_now_through_the_installer_seam_and_whats_new()
-    {
-        var services = WithNewerRelease(InstallKind.Installed);
-        var vm = services.CreateViewModel();
-        await vm.Update.AutomaticCheckCompletion;
-
-        Assert.True(vm.Update.IsInstalled);
-        Assert.False(vm.Update.IsPortable);
-
-        await vm.Update.UpdateNowCommand.ExecuteAsync(null);
-        await vm.Update.WhatsNewCommand.ExecuteAsync(null);
-
-        Assert.Single(services.Installer.Started);
-        Assert.Equal("1.1.0", services.Installer.Started[0].Version.ToString());
-        Assert.Equal([services.Installer.Started[0].PageUrl], services.Desktop.OpenedUrls);
-    }
-
-    [Fact]
-    public void Default_update_now_opens_the_release_page()
-    {
-        var desktop = new FakeDesktop();
-        var release = FakeFeed.Release("1.1.0");
-
-        new OpenReleasePageUpdateInstaller(desktop).UpdateNowAsync(release, InstallInfo.Portable);
-
-        Assert.Equal([release.PageUrl], desktop.OpenedUrls);
     }
 
     [Fact]

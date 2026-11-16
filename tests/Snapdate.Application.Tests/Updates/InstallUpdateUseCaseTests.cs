@@ -78,9 +78,12 @@ public sealed class InstallUpdateUseCaseTests
     {
         public string? SeenSignature { get; private set; }
 
+        public Action? OnVerify { get; set; }
+
         public bool Verify(Stream content, string? signatureText)
         {
             SeenSignature = signatureText;
+            OnVerify?.Invoke();
             return result;
         }
     }
@@ -131,6 +134,8 @@ public sealed class InstallUpdateUseCaseTests
 
         public bool Launches { get; set; } = true;
 
+        public Action? OnVerify { get; set; }
+
         public int ExitCode { get; set; }
 
         public bool Hang { get; set; }
@@ -146,7 +151,7 @@ public sealed class InstallUpdateUseCaseTests
         public InstallUpdateUseCase Build()
         {
             Launcher = new FakeLauncher(Launches, ExitCode, Hang);
-            Verifier = new FakeVerifier(Verified);
+            Verifier = new FakeVerifier(Verified) { OnVerify = OnVerify };
             Location = new FakeLocation(LocationOk);
             return new InstallUpdateUseCase(Current, new FakeInstallInfo(Install), Location, new FakeArch(Arch), Downloader, Verifier, Launcher);
         }
@@ -174,7 +179,7 @@ public sealed class InstallUpdateUseCaseTests
         var disposedWhileWaiting = true;
         f.Launcher.OnWait += () => disposedWhileWaiting = f.Downloader.Files[1].Disposed;
 
-        var result = await useCase.ExecuteAsync(Release(), null, CancellationToken.None);
+        var result = await useCase.ExecuteAsync(Release(), null, null, CancellationToken.None);
 
         Assert.Equal(UpdateInstallResult.Completed, result);
         var call = Assert.Single(f.Launcher.Calls);
@@ -195,7 +200,7 @@ public sealed class InstallUpdateUseCaseTests
     public async Task Arm64_process_selects_the_arm64_installer()
     {
         var f = new Fixture { Arch = UpdateArchitecture.Arm64 };
-        Assert.Equal(UpdateInstallResult.Completed, await f.Build().ExecuteAsync(Release(), null, CancellationToken.None));
+        Assert.Equal(UpdateInstallResult.Completed, await f.Build().ExecuteAsync(Release(), null, null, CancellationToken.None));
         Assert.Equal("Snapdate-Setup-v0.2.0-win-arm64.exe", Assert.Single(f.Launcher.Calls).Path);
     }
 
@@ -205,7 +210,7 @@ public sealed class InstallUpdateUseCaseTests
         var f = new Fixture { Arch = UpdateArchitecture.Arm64 };
         var release = Release(names: ["Snapdate-Setup-v0.2.0-win-x64.exe", "Snapdate-Setup-v0.2.0-win-x64.exe.sig"]);
 
-        Assert.Equal(UpdateInstallResult.AssetMissing, await f.Build().ExecuteAsync(release, null, CancellationToken.None));
+        Assert.Equal(UpdateInstallResult.AssetMissing, await f.Build().ExecuteAsync(release, null, null, CancellationToken.None));
         Assert.Empty(f.Downloader.Requests);
         Assert.Empty(f.Launcher.Calls);
     }
@@ -215,7 +220,7 @@ public sealed class InstallUpdateUseCaseTests
     {
         var f = new Fixture();
         var release = Release(names: ["Snapdate-Setup-v0.2.0-win-x64.exe"]);
-        Assert.Equal(UpdateInstallResult.AssetMissing, await f.Build().ExecuteAsync(release, null, CancellationToken.None));
+        Assert.Equal(UpdateInstallResult.AssetMissing, await f.Build().ExecuteAsync(release, null, null, CancellationToken.None));
         Assert.Empty(f.Downloader.Requests);
     }
 
@@ -223,14 +228,14 @@ public sealed class InstallUpdateUseCaseTests
     public async Task Unsupported_architecture_is_not_applicable()
     {
         var f = new Fixture { Arch = UpdateArchitecture.Unsupported };
-        Assert.Equal(UpdateInstallResult.NotApplicable, await f.Build().ExecuteAsync(Release(), null, CancellationToken.None));
+        Assert.Equal(UpdateInstallResult.NotApplicable, await f.Build().ExecuteAsync(Release(), null, null, CancellationToken.None));
     }
 
     [Fact]
     public async Task Portable_is_not_applicable()
     {
         var f = new Fixture { Install = InstallInfo.Portable };
-        Assert.Equal(UpdateInstallResult.NotApplicable, await f.Build().ExecuteAsync(Release(), null, CancellationToken.None));
+        Assert.Equal(UpdateInstallResult.NotApplicable, await f.Build().ExecuteAsync(Release(), null, null, CancellationToken.None));
         Assert.Empty(f.Downloader.Requests);
     }
 
@@ -238,7 +243,7 @@ public sealed class InstallUpdateUseCaseTests
     public async Task Marker_not_confirmed_by_the_registry_is_not_applicable()
     {
         var f = new Fixture { LocationOk = false };
-        Assert.Equal(UpdateInstallResult.NotApplicable, await f.Build().ExecuteAsync(Release(), null, CancellationToken.None));
+        Assert.Equal(UpdateInstallResult.NotApplicable, await f.Build().ExecuteAsync(Release(), null, null, CancellationToken.None));
         Assert.Empty(f.Downloader.Requests);
         Assert.Empty(f.Launcher.Calls);
     }
@@ -249,7 +254,7 @@ public sealed class InstallUpdateUseCaseTests
     public async Task Same_or_older_version_is_not_applicable(string version)
     {
         var f = new Fixture();
-        var result = await f.Build().ExecuteAsync(Release(AppVersion.Parse(version)), null, CancellationToken.None);
+        var result = await f.Build().ExecuteAsync(Release(AppVersion.Parse(version)), null, null, CancellationToken.None);
         Assert.Equal(UpdateInstallResult.NotApplicable, result);
         Assert.Empty(f.Downloader.Requests);
     }
@@ -259,16 +264,16 @@ public sealed class InstallUpdateUseCaseTests
     {
         var f = new Fixture();
         var useCase = f.Build();
-        Assert.Equal(UpdateInstallResult.NotApplicable, await useCase.ExecuteAsync(Release(draft: true), null, CancellationToken.None));
-        Assert.Equal(UpdateInstallResult.NotApplicable, await useCase.ExecuteAsync(Release(pre: true), null, CancellationToken.None));
-        Assert.Equal(UpdateInstallResult.NotApplicable, await useCase.ExecuteAsync(Release(AppVersion.Parse("0.2.0-rc.1")), null, CancellationToken.None));
+        Assert.Equal(UpdateInstallResult.NotApplicable, await useCase.ExecuteAsync(Release(draft: true), null, null, CancellationToken.None));
+        Assert.Equal(UpdateInstallResult.NotApplicable, await useCase.ExecuteAsync(Release(pre: true), null, null, CancellationToken.None));
+        Assert.Equal(UpdateInstallResult.NotApplicable, await useCase.ExecuteAsync(Release(AppVersion.Parse("0.2.0-rc.1")), null, null, CancellationToken.None));
     }
 
     [Fact]
     public async Task Failed_verification_never_launches_and_removes_the_files()
     {
         var f = new Fixture { Verified = false };
-        var result = await f.Build().ExecuteAsync(Release(), null, CancellationToken.None);
+        var result = await f.Build().ExecuteAsync(Release(), null, null, CancellationToken.None);
 
         Assert.Equal(UpdateInstallResult.VerificationFailed, result);
         Assert.Empty(f.Launcher.Calls);
@@ -280,7 +285,7 @@ public sealed class InstallUpdateUseCaseTests
     {
         var f = new Fixture();
         f.Downloader.Behavior = _ => throw new UpdateDownloadException("boom");
-        Assert.Equal(UpdateInstallResult.DownloadFailed, await f.Build().ExecuteAsync(Release(), null, CancellationToken.None));
+        Assert.Equal(UpdateInstallResult.DownloadFailed, await f.Build().ExecuteAsync(Release(), null, null, CancellationToken.None));
         Assert.Empty(f.Launcher.Calls);
     }
 
@@ -290,7 +295,7 @@ public sealed class InstallUpdateUseCaseTests
         var f = new Fixture();
         var release = Release();
         var big = release.Assets.Select(a => a.Name.EndsWith("x64.exe", StringComparison.Ordinal) ? a with { Size = InstallUpdateUseCase.MaxInstallerBytes + 1 } : a).ToList();
-        var result = await f.Build().ExecuteAsync(release with { Assets = big }, null, CancellationToken.None);
+        var result = await f.Build().ExecuteAsync(release with { Assets = big }, null, null, CancellationToken.None);
         Assert.Equal(UpdateInstallResult.DownloadFailed, result);
         Assert.Empty(f.Downloader.Requests);
     }
@@ -301,7 +306,7 @@ public sealed class InstallUpdateUseCaseTests
     public async Task Installer_exiting_non_zero_for_example_declined_uac_is_reported_and_files_are_removed(int exitCode)
     {
         var f = new Fixture { ExitCode = exitCode, Install = new(InstallKind.Installed, InstallScope.AllUsers) };
-        var result = await f.Build().ExecuteAsync(Release(), null, CancellationToken.None);
+        var result = await f.Build().ExecuteAsync(Release(), null, null, CancellationToken.None);
 
         Assert.Equal(UpdateInstallResult.InstallerFailed, result);
         Assert.All(f.Downloader.Files, file => Assert.True(file.Disposed && !file.Kept));
@@ -315,7 +320,7 @@ public sealed class InstallUpdateUseCaseTests
         var useCase = f.Build();
         f.Launcher.OnWait = () => shutdown.CancelAfter(50);
 
-        var result = await useCase.ExecuteAsync(Release(), null, CancellationToken.None, shutdown.Token);
+        var result = await useCase.ExecuteAsync(Release(), null, null, CancellationToken.None, shutdown.Token);
 
         Assert.Equal(UpdateInstallResult.InstallerRunning, result);
         Assert.True(f.Downloader.Files[1].Kept);
@@ -335,7 +340,7 @@ public sealed class InstallUpdateUseCaseTests
             shutdown.CancelAfter(50);
         };
 
-        var result = await useCase.ExecuteAsync(Release(), null, download.Token, shutdown.Token);
+        var result = await useCase.ExecuteAsync(Release(), null, null, download.Token, shutdown.Token);
         Assert.Equal(UpdateInstallResult.InstallerRunning, result);
     }
 
@@ -351,15 +356,63 @@ public sealed class InstallUpdateUseCaseTests
             .Select(a => a with { DownloadUrl = new Uri($"https://github.com/jannikjordan/snapdate/releases/download/{tag}/{a.Name}") })
             .ToList();
 
-        Assert.Equal(UpdateInstallResult.AssetMissing, await f.Build().ExecuteAsync(release with { Assets = moved }, null, CancellationToken.None));
+        Assert.Equal(UpdateInstallResult.AssetMissing, await f.Build().ExecuteAsync(release with { Assets = moved }, null, null, CancellationToken.None));
         Assert.Empty(f.Downloader.Requests);
+    }
+
+    [Fact]
+    public async Task App_shutdown_during_verification_never_launches_and_removes_the_files()
+    {
+        using var shutdown = new CancellationTokenSource();
+        var f = new Fixture { OnVerify = shutdown.Cancel };
+
+        var result = await f.Build().ExecuteAsync(Release(), null, null, CancellationToken.None, shutdown.Token);
+
+        Assert.Equal(UpdateInstallResult.Cancelled, result);
+        Assert.Empty(f.Launcher.Calls);
+        Assert.All(f.Downloader.Files, file => Assert.True(file.Disposed && !file.Kept));
+    }
+
+    [Fact]
+    public async Task Download_cancellation_during_verification_never_launches_and_removes_the_files()
+    {
+        using var cancel = new CancellationTokenSource();
+        var f = new Fixture { OnVerify = cancel.Cancel };
+
+        var result = await f.Build().ExecuteAsync(Release(), null, null, cancel.Token);
+
+        Assert.Equal(UpdateInstallResult.Cancelled, result);
+        Assert.Empty(f.Launcher.Calls);
+        Assert.All(f.Downloader.Files, file => Assert.True(file.Disposed && !file.Kept));
+    }
+
+    [Fact]
+    public async Task Shutdown_before_verification_starts_skips_verification_and_launch()
+    {
+        using var shutdown = new CancellationTokenSource();
+        var f = new Fixture();
+        f.Downloader.Behavior = async asset =>
+        {
+            if (!asset.Name.EndsWith(".sig", StringComparison.Ordinal))
+            {
+                await shutdown.CancelAsync(); // the window starts closing right after the download finished
+            }
+
+            return new FakeFile(asset.Name, "sig"u8.ToArray());
+        };
+
+        var result = await f.Build().ExecuteAsync(Release(), null, null, CancellationToken.None, shutdown.Token);
+
+        Assert.Equal(UpdateInstallResult.Cancelled, result);
+        Assert.Null(f.Verifier.SeenSignature);
+        Assert.Empty(f.Launcher.Calls);
     }
 
     [Fact]
     public async Task Launch_failure_removes_the_files()
     {
         var f = new Fixture { Launches = false };
-        var result = await f.Build().ExecuteAsync(Release(), null, CancellationToken.None);
+        var result = await f.Build().ExecuteAsync(Release(), null, null, CancellationToken.None);
         Assert.Equal(UpdateInstallResult.LaunchFailed, result);
         Assert.All(f.Downloader.Files, file => Assert.False(file.Kept));
     }
@@ -380,7 +433,7 @@ public sealed class InstallUpdateUseCaseTests
             return new FakeFile(asset.Name, "sig"u8.ToArray());
         };
 
-        var result = await f.Build().ExecuteAsync(Release(), null, cts.Token);
+        var result = await f.Build().ExecuteAsync(Release(), null, null, cts.Token);
         Assert.Equal(UpdateInstallResult.Cancelled, result);
         Assert.Empty(f.Launcher.Calls);
     }

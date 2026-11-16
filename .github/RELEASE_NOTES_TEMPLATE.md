@@ -38,9 +38,9 @@ Snapdate erscheint im Startmenü (auf Wunsch auch auf dem Desktop). Installierte
 | 📱 ARM PCs | `Snapdate-v{{VERSION}}-win-arm64-portable.exe` |
 
 A single exe: download, double-click, nothing is installed. It does not update itself: when a new version is out,
-Snapdate shows a link to the release page so you can download the new file again.
+Snapdate shows a link to the download page so you can download the new file again.
 *Eine einzelne exe: herunterladen, doppelklicken, nichts wird installiert. Sie aktualisiert sich nicht selbst: Gibt es eine neue Version,
-zeigt Snapdate einen Link zur Release-Seite, damit Sie die neue Datei erneut herunterladen.*
+zeigt Snapdate einen Link zur Download-Seite, damit Sie die neue Datei erneut herunterladen.*
 
 > ⚠️ **Windows SmartScreen may warn** (“Windows protected your PC”) because Snapdate is new and not yet code-signed:
 > choose **More info → Run anyway**. ·

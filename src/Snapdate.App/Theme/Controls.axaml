@@ -413,11 +413,15 @@
     <Setter Property="Height" Value="34" />
     <Setter Property="Padding" Value="14,0" />
     <Setter Property="FontSize" Value="13" />
+    <Setter Property="VerticalAlignment" Value="Center" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
   </Style>
   <Style Selector="Border.banner Button.link">
     <Setter Property="FontSize" Value="13" />
     <Setter Property="Height" Value="34" />
     <Setter Property="Padding" Value="10,0" />
+    <Setter Property="VerticalAlignment" Value="Center" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
   </Style>
 
   <!-- Dialog overlay -->

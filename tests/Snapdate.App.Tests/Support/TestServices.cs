@@ -84,7 +84,9 @@ internal sealed class TestServices
 
     public AppVersion CurrentVersion { get; init; } = AppVersion.Parse("1.0.0");
 
-    public RecordingUpdateInstaller Installer { get; } = new();
+    public FakeUpdateInstaller Installer { get; } = new();
+
+    public RecordingAppExit AppExit { get; } = new();
 
     public MainWindowViewModel CreateViewModel(string culture = "en-US") =>
         new(
@@ -98,7 +100,8 @@ internal sealed class TestServices
                 null,
                 Feed is null ? null : new UpdateCheckService(Feed, Settings, Clock, CurrentVersion),
                 new FakeInstall(InstallKind),
-                Installer),
+                Installer,
+                AppExit),
             CultureInfo.GetCultureInfo(culture));
 }
 
@@ -135,15 +138,85 @@ internal sealed class FakeInstall(InstallKind kind) : IInstallInfo
     public InstallInfo Current { get; } = new(kind, kind == InstallKind.Installed ? InstallScope.CurrentUser : InstallScope.None);
 }
 
-internal sealed class RecordingUpdateInstaller : IUpdateInstaller
+/// <summary>A scripted in-app updater: reports the given steps, then waits for <see cref="Gate"/> (if any) and returns <see cref="Result"/>.</summary>
+internal sealed class FakeUpdateInstaller : IUpdateInstaller
 {
+    public bool CanInstall { get; set; } = true;
+
+    public UpdateInstallResult Result { get; set; } = UpdateInstallResult.Completed;
+
     public List<ReleaseInfo> Started { get; } = [];
 
-    public Task UpdateNowAsync(ReleaseInfo release, InstallInfo install)
+    /// <summary>Reports happen first, in order, before the gate.</summary>
+    public List<UpdateProgress> Progress { get; } = [];
+
+    public List<UpdatePhase> Phases { get; } = [];
+
+    public TaskCompletionSource? Gate { get; set; }
+
+    public Exception? Throw { get; set; }
+
+    public CancellationToken SeenCancellation { get; private set; }
+
+    public CancellationToken SeenShutdown { get; private set; }
+
+    public bool CanInstallInApp(ReleaseInfo release) => CanInstall;
+
+    public async Task<UpdateInstallResult> InstallAsync(
+        ReleaseInfo release,
+        IProgress<UpdateProgress> progress,
+        IProgress<UpdatePhase> phase,
+        CancellationToken cancellationToken,
+        CancellationToken appShutdown)
     {
         Started.Add(release);
-        return Task.CompletedTask;
+        SeenCancellation = cancellationToken;
+        SeenShutdown = appShutdown;
+        foreach (var p in Phases.Where(p => p == UpdatePhase.Downloading))
+        {
+            phase.Report(p);
+        }
+
+        foreach (var p in Progress)
+        {
+            progress.Report(p);
+        }
+
+        foreach (var p in Phases.Where(p => p != UpdatePhase.Downloading))
+        {
+            phase.Report(p);
+        }
+
+        if (Throw is not null)
+        {
+            throw Throw;
+        }
+
+        if (Gate is not null)
+        {
+            using var both = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, appShutdown);
+            try
+            {
+                await Gate.Task.WaitAsync(both.Token);
+            }
+            catch (OperationCanceledException)
+            {
+                // As the real use case: a shutdown after the installer started ends the wait with InstallerRunning.
+                return appShutdown.IsCancellationRequested && Phases.Contains(UpdatePhase.Installing)
+                    ? UpdateInstallResult.InstallerRunning
+                    : UpdateInstallResult.Cancelled;
+            }
+        }
+
+        return Result;
     }
+}
+
+internal sealed class RecordingAppExit : IAppExit
+{
+    public int Exits { get; private set; }
+
+    public void CloseApp() => Exits++;
 }
 
 /// <summary>A unique temporary folder that is deleted after the test.</summary>

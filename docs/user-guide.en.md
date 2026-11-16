@@ -297,7 +297,7 @@ it, simply delete the file. Your settings stay in `%APPDATA%\Snapdate` (see the
 questions at the end); delete that folder too if you want everything gone.
 
 The portable version **does not update itself**. When a new version is out, it
-shows a banner with a **Download** button that opens the release page, so you
+shows a banner with a **Download** button that opens the download page, so you
 can download the new file again (see [Updates](#-12-updates)).
 
 ---
@@ -321,16 +321,21 @@ switch the automatic check off in the meantime, the notice disappears too.
 
 | Button | What it does |
 |---|---|
-| **Update now** | Installed version only. Downloads the new installer from GitHub, checks its signature and installs it. For an “all users” install, Windows asks for administrator approval first. Snapdate restarts afterwards. |
+| **Update now** | Installed version only. The banner shows the download progress (with **Cancel**), then Snapdate checks the signature of the download and starts the installer. For an “all users” installation, Windows asks for administrator approval first (this can take as long as you need). Snapdate then closes by itself and starts again in the new version. If you decline the approval, nothing changes. |
 | **What's new** | Opens the release notes in your browser. |
 | **Later** | Hides the banner until the next start; it returns at the next automatic check. |
 | **Skip this version** | Stops the automatic reminders for this version. A newer one is announced again. **Check now** (see below) still shows a skipped version. |
 
-If the download or the check of the signature fails, **nothing is installed**
-and Snapdate offers the release page instead.
+If the download, the check of the signature or the installation fails (or the
+approval is declined), **nothing is installed**;
+the banner says so briefly and offers **Try again** (where that can help) and **Open download page**.
+
+![Update banner while downloading](images/en/15-update-downloading-light.png)
+
+![Update banner after a failed update](images/en/16-update-failed-light.png)
 
 **Portable version:** the banner has a **Download** button instead of
-*Update now*. It opens the latest release page, where you download the new
+*Update now*. It opens the latest download page, where you download the new
 portable file again.
 
 ![Update banner, portable version](images/en/11-update-portable-light.png)

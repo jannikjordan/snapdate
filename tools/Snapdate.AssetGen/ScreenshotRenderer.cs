@@ -78,7 +78,31 @@ internal static class ScreenshotRenderer
     }
 
     /// <summary>How the update check behaves in a screenshot.</summary>
-    private sealed record UpdateShot(bool NewerVersion = false, InstallKind Kind = InstallKind.Installed, bool NoticeShown = true);
+    private sealed record UpdateShot(bool NewerVersion = false, InstallKind Kind = InstallKind.Installed, bool NoticeShown = true, IUpdateInstaller? Installer = null);
+
+    /// <summary>A frozen in-app update: reports 42 % and never finishes, or fails at once.</summary>
+    private sealed class ScriptedInstaller(UpdateInstallResult? failure) : IUpdateInstaller
+    {
+        public bool CanInstallInApp(ReleaseInfo release) => true;
+
+        public async Task<UpdateInstallResult> InstallAsync(
+            ReleaseInfo release,
+            IProgress<UpdateProgress> progress,
+            IProgress<UpdatePhase> phase,
+            CancellationToken cancellationToken,
+            CancellationToken appShutdown)
+        {
+            phase.Report(UpdatePhase.Downloading);
+            progress.Report(new UpdateProgress(42, 100));
+            if (failure is { } result)
+            {
+                return result;
+            }
+
+            await Task.Delay(Timeout.Infinite, cancellationToken).ConfigureAwait(false);
+            return UpdateInstallResult.Cancelled;
+        }
+    }
 
     private static int _width = 1180;
     private static int _height = 780;
@@ -143,6 +167,16 @@ internal static class ScreenshotRenderer
                         vm.IsAboutOpen = true;
                         Wait(vm.Update.CheckNowCommand.ExecuteAsync(null));
                     });
+                    Shoot(dir, $"15-update-downloading-{suffix}", ci, thumbnails, vm =>
+                    {
+                        ArrangePreview(vm);
+                        _ = vm.Update.UpdateNowCommand.ExecuteAsync(null);
+                    }, update: new UpdateShot(NewerVersion: true, Installer: new ScriptedInstaller(null)));
+                    Shoot(dir, $"16-update-failed-{suffix}", ci, thumbnails, vm =>
+                    {
+                        ArrangePreview(vm);
+                        Wait(vm.Update.UpdateNowCommand.ExecuteAsync(null));
+                    }, update: new UpdateShot(NewerVersion: true, Installer: new ScriptedInstaller(UpdateInstallResult.InstallerFailed)));
                     Shoot(dir, $"13-first-start-notice-{suffix}", ci, thumbnails, ArrangePreview, update: new UpdateShot(NoticeShown: false));
                 }
 
@@ -219,7 +253,8 @@ internal static class ScreenshotRenderer
             TimeProvider.System,
             thumbnails,
             new UpdateCheckService(new FixedFeed(latest), settings, new FixedClock(), running),
-            new FixedInstall(update.Kind));
+            new FixedInstall(update.Kind),
+            update.Installer);
         var vm = new MainWindowViewModel(services, culture);
         Wait(vm.Update.AutomaticCheckCompletion);
         var window = new MainWindow { DataContext = vm, Width = _width, Height = _height };

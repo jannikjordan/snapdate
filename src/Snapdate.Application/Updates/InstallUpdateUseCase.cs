@@ -24,6 +24,9 @@ namespace Snapdate.Application.Updates;
 /// call finish; the process exit then releases the lock. A declined administrator prompt ends the installer with a
 /// non-zero code and yields <see cref="UpdateInstallResult.InstallerFailed"/>, so the user is told instead of the app
 /// silently vanishing. Cancelling <c>cancellationToken</c> only affects download and verification, never a started installer.
+/// The wait has <b>no time limit</b> (the user may take a while to answer the administrator prompt), so the window must
+/// stay closable meanwhile. On <see cref="UpdateInstallResult.Completed"/> the new version has already been started by
+/// Setup (<c>/RESTARTAPP</c>), so the UI exits <b>immediately</b>; it never exits by itself in any other case.
 /// </para>
 /// </remarks>
 public sealed class InstallUpdateUseCase
@@ -83,9 +86,11 @@ public sealed class InstallUpdateUseCase
     /// <param name="progress">Download progress of the installer.</param>
     /// <param name="cancellationToken">Cancels download and verification (not a started installer).</param>
     /// <param name="appShutdown">Signalled by the app when it is being closed; ends the wait for the started installer.</param>
+    /// <param name="phase">Reports <see cref="UpdatePhase.Downloading"/>, <see cref="UpdatePhase.Verifying"/> and <see cref="UpdatePhase.Installing"/> as they begin.</param>
     public async Task<UpdateInstallResult> ExecuteAsync(
         ReleaseInfo release,
         IProgress<UpdateProgress>? progress,
+        IProgress<UpdatePhase>? phase,
         CancellationToken cancellationToken,
         CancellationToken appShutdown = default)
     {
@@ -120,6 +125,7 @@ public sealed class InstallUpdateUseCase
             cancellationToken.ThrowIfCancellationRequested();
 
             string signatureText;
+            phase?.Report(UpdatePhase.Downloading);
             using (var signatureFile = await _downloader.DownloadAsync(signature, MaxSignatureBytes, null, cancellationToken).ConfigureAwait(false))
             {
                 signatureText = ReadText(signatureFile.Content);
@@ -127,11 +133,23 @@ public sealed class InstallUpdateUseCase
 
             installerFile = await _downloader.DownloadAsync(installer, MaxInstallerBytes, progress, cancellationToken).ConfigureAwait(false);
 
+            if (IsStopRequested(cancellationToken, appShutdown))
+            {
+                return UpdateInstallResult.Cancelled;
+            }
+
+            phase?.Report(UpdatePhase.Verifying);
             // Verified from the very handle that stays open (read-shared only) until the process is started,
             // so the bytes that were checked are the bytes that run.
             if (!_verifier.Verify(installerFile.Content, signatureText))
             {
                 return UpdateInstallResult.VerificationFailed;
+            }
+
+            // Last chance to stop: nothing may start after the user cancelled or the app began to close.
+            if (IsStopRequested(cancellationToken, appShutdown))
+            {
+                return UpdateInstallResult.Cancelled;
             }
 
             started = _launcher.Launch(installerFile.Path, scope);
@@ -140,6 +158,7 @@ public sealed class InstallUpdateUseCase
                 return UpdateInstallResult.LaunchFailed;
             }
 
+            phase?.Report(UpdatePhase.Installing);
             // From here on the installer runs from the file we keep locked; wait for it (or for our own shutdown).
             int exitCode;
             try
@@ -181,6 +200,9 @@ public sealed class InstallUpdateUseCase
         var segments = url.Segments;
         return segments.Length == 7 && Uri.UnescapeDataString(segments[5].TrimEnd('/')) == "v" + version;
     }
+
+    private static bool IsStopRequested(CancellationToken cancellationToken, CancellationToken appShutdown) =>
+        cancellationToken.IsCancellationRequested || appShutdown.IsCancellationRequested;
 
     private static string ReadText(Stream stream)
     {

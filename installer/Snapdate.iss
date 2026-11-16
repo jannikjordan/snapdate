@@ -203,21 +203,30 @@ end;
 { Defence in depth for the in-app updater: never install over a NEWER installed version, so a signed but older
   installer (replayed under a newer name) cannot downgrade an existing installation. Silent runs exit with an
   error code (Setup returns 1) without any dialog; interactive runs explain why. }
-function InitializeSetup: Boolean;
+function NewerInstalledVersion(const RootKey: Integer): String;
 var
   Installed: String;
 begin
-  Result := True;
-  Installed := '';
-  if not RegQueryStringValue(HKCU, 'Software\Microsoft\Windows\CurrentVersion\Uninstall\{D5F11F70-E97E-44D0-8573-E15843FA60B3}_is1',
+  Result := '';
+  if RegQueryStringValue(RootKey, 'Software\Microsoft\Windows\CurrentVersion\Uninstall\{D5F11F70-E97E-44D0-8573-E15843FA60B3}_is1',
     'DisplayVersion', Installed) then
-    if not RegQueryStringValue(HKLM, 'Software\Microsoft\Windows\CurrentVersion\Uninstall\{D5F11F70-E97E-44D0-8573-E15843FA60B3}_is1',
-      'DisplayVersion', Installed) then
-      Installed := '';
-  if (Installed <> '') and IsNewerVersion(Installed, '{#AppVersion}') then
+    if IsNewerVersion(Installed, '{#AppVersion}') then
+      Result := Installed;
+end;
+
+{ Both the per-user (HKCU) and the all-users (HKLM) entry are checked: a newer copy in either one blocks Setup. }
+function InitializeSetup: Boolean;
+var
+  Newer: String;
+begin
+  Result := True;
+  Newer := NewerInstalledVersion(HKCU);
+  if Newer = '' then
+    Newer := NewerInstalledVersion(HKLM);
+  if Newer <> '' then
   begin
-    Log('Refusing to downgrade from ' + Installed + ' to {#AppVersion}.');
-    SuppressibleMsgBox(FmtMessage(CustomMessage('NewerInstalled'), [Installed, '{#AppVersion}']),
+    Log('Refusing to downgrade from ' + Newer + ' to {#AppVersion}.');
+    SuppressibleMsgBox(FmtMessage(CustomMessage('NewerInstalled'), [Newer, '{#AppVersion}']),
       mbError, MB_OK, IDOK);
     Result := False;
   end;
