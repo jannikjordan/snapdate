@@ -205,7 +205,7 @@ Images are **untrusted input**; folder names and metadata end up in paths.
 | Malformed / hostile image files (parser bugs, decompression bombs) | MetadataExtractor reads metadata only (no pixel decoding); per-file size cap and timeout; all exceptions caught → file-date fallback. Thumbnails decoded at reduced size via Avalonia `DecodeToWidth`. |
 | Supply chain | Few dependencies, exact pins, `packages.lock.json` with `--locked-mode` in CI, NuGet audit (`NuGetAudit=true`, `NuGetAuditMode=all`, fail on high), Dependabot, GitHub Actions pinned by SHA, SBOM (CycloneDX) per release, SHA-256 checksums published. |
 | Tampered binaries | Release built only in GitHub Actions; artefact attestation (`actions/attest-build-provenance`); Authenticode signing hook in build script (cert supplied via secret, optional). |
-| Privacy | No network, no telemetry, no crash upload. Settings stored locally only. |
+| Privacy | No telemetry, no crash upload. The only network access is the opt-out update check ([ADR 0004](adr/0004-update-check-and-in-app-update.md)). Settings stored locally only. |
 | Hardening | Bundled native libraries loaded only from the app folder (no DLL planting), self-test of every build; `TreatWarningsAsErrors`, .NET analyzers at `latest-recommended`. |
 
 ---

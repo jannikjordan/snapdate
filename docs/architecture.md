@@ -11,19 +11,22 @@ flowchart TB
         VM --> S[Desktop services<br/>folder picker · launcher · thumbnails]
     end
     subgraph Application["Snapdate.Application"]
-        UC1[ScanSourceUseCase] --> P[(Ports<br/>IFileSystem · IMetadataReader · ISettingsStore)]
+        UC1[ScanSourceUseCase] --> P[(Ports<br/>IFileSystem · IMetadataReader · ISettingsStore<br/>IReleaseFeed · IClock)]
         UC2[BuildPlanUseCase] --> P
         UC3[ExecutePlanUseCase] --> P
+        UC4[UpdateCheckService] --> P
     end
     subgraph Domain["Snapdate.Domain (no dependencies)"]
         D1[NamePattern · TokenCatalog]
         D2[FileNameSanitizer · PathGuard]
         D3[UniqueNameResolver · CaptureDate]
+        D4[AppVersion · SemVer]
     end
     subgraph Infra["Snapdate.Infrastructure"]
         I1[MetadataExtractorReader]
         I2[LocalFileSystem]
         I3[JsonSettingsStore]
+        I4[GitHubReleaseFeed]
     end
     VM --> UC1 & UC2 & UC3
     Application --> Domain
@@ -37,9 +40,9 @@ The dependency rules are enforced by `tests/Snapdate.Architecture.Tests`.
 
 | Project | Responsibility |
 |---|---|
-| `Snapdate.Domain` | Pattern parsing/rendering, placeholder catalogue, sanitising, path guard, duplicate-free names. No package references. |
-| `Snapdate.Application` | Use cases (scan → plan → execute), ports, folder checks, settings model, UI language rules. |
-| `Snapdate.Infrastructure` | MetadataExtractor adapter, safe local file system, JSON settings store. |
+| `Snapdate.Domain` | Pattern parsing/rendering, placeholder catalogue, sanitising, path guard, duplicate-free names, `AppVersion` (SemVer). No package references. |
+| `Snapdate.Application` | Use cases (scan → plan → execute, update check), ports, folder checks, settings model, UI language rules. |
+| `Snapdate.Infrastructure` | MetadataExtractor adapter, safe local file system, JSON settings store, GitHub release feed (the only network code). |
 | `Snapdate.App` | Avalonia UI: MVVM with CommunityToolkit source generators, compiled bindings, design tokens, EN/DE resources, composition root in `App.axaml.cs`. |
 | `tools/Snapdate.AssetGen` | Developer tool: renders `app.ico` and the documentation screenshots headlessly from the real views. |
 

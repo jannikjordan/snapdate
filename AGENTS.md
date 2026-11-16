@@ -68,7 +68,14 @@ tests and screenshots · self-contained single-file publish (`win-x64`, `win-arm
 - Every generated path goes through `FileNameSanitizer` and must resolve
   inside the destination root (`Path.GetFullPath` check).
 - Never overwrite files. Never delete a source before the copy is verified.
-- No network access, telemetry, or auto-update code.
+- No network access, telemetry, or auto-update code — with exactly two exceptions,
+  both defined in [ADR 0004](docs/adr/0004-update-check-and-in-app-update.md): (1) the opt-out
+  update check, a single `GET` to the GitHub releases API on `api.github.com` with no identifiers;
+  (2) the signature-verified installer update of Installed builds, which may additionally contact
+  the GitHub release-asset download hosts once ADR 0004 names them. Hosts are an explicit
+  allow-list kept in that ADR; no other host, purpose or data leaves the machine, and anything
+  else needs an ADR change. Network code lives only in
+  `Snapdate.Infrastructure`.
 - New dependencies need a justification in the PR and an ADR if non-trivial;
   pin exact versions in `Directory.Packages.props`; keep `packages.lock.json`
   updated; NuGet audit must pass.

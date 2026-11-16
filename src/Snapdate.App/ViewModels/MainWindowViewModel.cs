@@ -8,7 +8,6 @@ using Snapdate.Application.Execution;
 using Snapdate.Application.Localization;
 using Snapdate.Application.Planning;
 using Snapdate.Application.Scanning;
-using Snapdate.Application.Settings;
 using Snapdate.Domain.Planning;
 
 namespace Snapdate.App.ViewModels;
@@ -415,9 +414,12 @@ public sealed partial class MainWindowViewModel : ObservableObject
     [RelayCommand]
     private void ToggleAbout() => IsAboutOpen = !IsAboutOpen;
 
-    /// <summary>Persists the current choices. Called when running and when the window closes.</summary>
+    /// <summary>
+    /// Persists the current choices and keeps settings the UI does not own (update-check state).
+    /// Called when running and when the window closes.
+    /// </summary>
     public void SaveSettings() =>
-        _services.Settings.Save(new AppSettings
+        _services.Settings.Save(_services.Settings.Load() with
         {
             SourceFolder = SourceFolder,
             TargetFolder = TargetFolder,

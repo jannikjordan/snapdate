@@ -10,7 +10,8 @@ To report a vulnerability, see [SECURITY.md](../SECURITY.md).
 | The user's photos | Lost, overwritten, half-copied | Bugs, crashes, power loss, disk full, name collisions |
 | The user's file system | Files written outside the chosen folder | Hostile metadata (e.g. a camera model `..\..\Windows`) |
 | The application process | Crash or code execution while parsing | Malformed or hostile image/video files |
-| The user's privacy | Data leaving the computer | Telemetry, update checks, crash reporters |
+| The user's privacy | Data leaving the computer | Telemetry, crash reporters; the update check is the only network access and sends no identifiers |
+| The update check | Spoofed or hostile "latest release" answer, redirect to another host, oversized response, tracking | Network attacker, compromised redirect, hostile server |
 | The release binary | Tampered or vulnerable exe | Compromised dependency, CI or download |
 
 ## Mitigations
@@ -50,10 +51,31 @@ To report a vulnerability, see [SECURITY.md](../SECURITY.md).
   `System.Text.Json`; corrupt settings fall back to defaults.
 
 ### Privacy
-- No network code apart from opening our own **https** documentation links in
-  the browser when the user clicks *Help* or *Project website*.
-- No telemetry, no update checks, no crash upload. Settings stay in
+- Network use is limited to (a) opening our own **https** documentation links in
+  the browser when the user clicks *Help* or *Project website* and (b) the
+  **update check** described below.
+- No telemetry, no crash upload. Settings stay in
   `%APPDATA%\Snapdate\settings.json`.
+
+### Update check (network surface)
+Decision and rationale: [ADR 0004](adr/0004-update-check-and-in-app-update.md).
+- **Only one request**: `GET https://api.github.com/repos/jannikjordan/snapdate/releases/latest`,
+  made from `Snapdate.Infrastructure` (`GitHubReleaseFeed`) only. Scheme, host and port are
+  hard-checked; redirects are followed manually and only to the same host (max. 3).
+- **Nothing identifying is sent**: `User-Agent: Snapdate/<version>` and `Accept`; no cookies,
+  tokens, machine or user ids. GitHub sees the IP address like for any web request.
+- **Opt-out, rare**: on by default, can be switched off; automatic checks at most once per day.
+- **The response is untrusted**: 10 s timeout, 1 MB cap, source-generated JSON parsing, version
+  must be valid SemVer, page links must be `https://github.com/jannikjordan/snapdate/…` (no `.`/`..` path segments), asset
+  links must be exactly `…/releases/download/<tag>/<name>` with `<name>` equal to the asset name, and
+  asset names are restricted to safe characters and exclude Windows reserved device names. Drafts, pre-releases, equal or older versions are
+  ignored. Any failure (offline, 403/429 rate limit, malformed data) is silent.
+- **No code is run or downloaded by the check.** Portable builds only link to the release page.
+  The installer download of Installed builds (issue #3) requires signature verification
+  (issue #4) and will be documented here when it exists.
+- Threats considered: spoofed/man-in-the-middle answer (TLS, host allow-list (`api.github.com` only),
+  link validation, no automatic execution), malicious redirect (rejected), oversized or hostile JSON
+  (cap, source-generated parser, size/time limits), tracking (no identifiers), API rate limiting (once a day).
 
 ### Process hardening
 - Runs as the normal user (`asInvoker` manifest), never asks for admin rights.

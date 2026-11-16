@@ -255,4 +255,22 @@ public sealed class MainWindowTests(HeadlessSession headless)
         vm.SaveSettings();
         Assert.Equal(UiLanguage.English, services.Settings.Current.Language);
     });
+
+    [Fact]
+    public Task Saving_ui_settings_preserves_update_check_state() => RunOnUi(() =>
+    {
+        // Regression: SaveSettings used to build a fresh AppSettings and reset these fields.
+        var checkedAt = new DateTimeOffset(2026, 6, 1, 12, 0, 0, TimeSpan.Zero);
+        var services = new TestServices
+        {
+            Settings = new MemorySettings(new AppSettings { AutoUpdateCheck = false, LastUpdateCheckUtc = checkedAt, SkippedVersion = "0.2.0" }),
+        };
+        var vm = services.CreateViewModel("de-DE");
+
+        vm.SaveSettings();
+
+        Assert.False(services.Settings.Current.AutoUpdateCheck);
+        Assert.Equal(checkedAt, services.Settings.Current.LastUpdateCheckUtc);
+        Assert.Equal("0.2.0", services.Settings.Current.SkippedVersion);
+    });
 }
