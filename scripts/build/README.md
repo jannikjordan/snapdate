@@ -19,7 +19,8 @@ pwsh scripts/build/build.ps1 -Target All -Version 0.1.0
 | `Publish` | `win-x64` + `win-arm64` single-file exe into `artifacts/publish/<rid>`, plus self-test |
 | `Package` | Release exe/zip, `SHA256SUMS.txt`, SBOM into `artifacts/release/` |
 | `Sign` | Authenticode signing — skipped unless `SNAPDATE_SIGN_PFX` is set |
-| `All` | Clean → Restore → Audit → Test → Publish → Sign → Package |
+| `SignRelease` | Detached update signatures (`<file>.sig`) for every file in `artifacts/release`, verified right away. Key from `SNAPDATE_UPDATE_SIGNING_KEY` or `-SigningKeyPath`; skipped with a warning when missing (fails on a CI tag build). See [ADR 0005](../../docs/adr/0005-update-signatures.md) |
+| `All` | Clean → Restore → Audit → Test → Publish → Sign → Package → SignRelease (`-SkipUpdateSignature` omits the last step) |
 
 `Publish` produces exactly one self-contained `Snapdate.exe` per runtime and
 starts it with `--self-test` from an empty folder (on the matching CPU

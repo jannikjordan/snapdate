@@ -10,6 +10,10 @@
     <PackageReference Include="MetadataExtractor" />
   </ItemGroup>
   <ItemGroup>
+    <!-- Public keys that update signatures are checked against; build.ps1 -Target SignRelease verifies with the same files. -->
+    <EmbeddedResource Include="Updates\Keys\*.pub.pem" />
+  </ItemGroup>
+  <ItemGroup>
     <InternalsVisibleTo Include="Snapdate.Infrastructure.Tests" />
   </ItemGroup>
 </Project>

@@ -17,8 +17,6 @@ jobs:
     timeout-minutes: 45
     permissions:
       contents: read
-      id-token: write        # build provenance attestation
-      attestations: write
     env:
       TAG: ${{ github.ref_name }}
     steps:
@@ -46,16 +44,16 @@ jobs:
         env:
           SNAPDATE_SIGN_PFX: ${{ secrets.SNAPDATE_SIGN_PFX }}
           SNAPDATE_SIGN_PASSWORD: ${{ secrets.SNAPDATE_SIGN_PASSWORD }}
-        run: ./scripts/build/build.ps1 -Target All -Version $env:TAG
+        # The update signature is a separate step below so the private key never reaches the build.
+        run: ./scripts/build/build.ps1 -Target All -Version $env:TAG -SkipUpdateSignature
 
-      # GitHub offers artifact attestations only for public (or organisation) repositories.
-      - name: Attest build provenance
-        if: ${{ !github.event.repository.private }}
-        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
-        with:
-          subject-path: |
-            artifacts/release/*.exe
-            artifacts/release/*.zip
+      # Detached ECDSA signatures (<file>.sig) that the app's updater verifies (ADR 0005). Only this
+      # step sees the private key; the script verifies every signature against the key in the repo.
+      - name: Sign release files for update verification
+        shell: pwsh
+        env:
+          SNAPDATE_UPDATE_SIGNING_KEY: ${{ secrets.SNAPDATE_UPDATE_SIGNING_KEY }}
+        run: ./scripts/build/build.ps1 -Target SignRelease -Version $env:TAG
 
       - name: Release notes from template
         shell: pwsh
@@ -67,13 +65,21 @@ jobs:
           ./scripts/build/New-ReleaseNotes.ps1 @notesArgs
 
       # Hand the finished files to the draft-release job, which only runs after the arm64 self-test.
+      # Two artefacts with a single path each, so the layout after download is unambiguous:
+      # release-files holds the files (exe, zip, SHA256SUMS, SBOM and their .sig) at its root.
       - name: Upload release files
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: release-files
-          path: |
-            artifacts/release
-            artifacts/release-notes.md
+          path: artifacts/release
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Upload release notes
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: release-notes
+          path: artifacts/release-notes.md
           if-no-files-found: error
           retention-days: 7
 
@@ -86,6 +92,8 @@ jobs:
           retention-days: 1
 
   # The x64 runner cannot start the arm64 exe, so it is started on a real ARM64 Windows machine.
+  # Keep the self-test step in sync with Invoke-SelfTest in scripts/build/build.ps1 and with the
+  # same job in ci.yml.
   self-test-arm64:
     needs: release
     runs-on: windows-11-arm
@@ -116,14 +124,32 @@ jobs:
     timeout-minutes: 10
     permissions:
       contents: write        # create the draft GitHub Release
+      id-token: write        # build provenance attestation
+      attestations: write
     env:
       TAG: ${{ github.ref_name }}
       GH_REPO: ${{ github.repository }}
     steps:
+      # Layout after download: artifacts/release/<files> and artifacts/release-notes.md.
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: release-files
+          path: artifacts/release
+
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: release-notes
           path: artifacts
+
+      # Attested here, after the ARM64 self-test gate, so only files that passed it get provenance.
+      # GitHub offers artifact attestations only for public (or organisation) repositories.
+      - name: Attest build provenance
+        if: ${{ !github.event.repository.private }}
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
+          subject-path: |
+            artifacts/release/*.exe
+            artifacts/release/*.zip
 
       - name: Create draft GitHub Release
         shell: pwsh

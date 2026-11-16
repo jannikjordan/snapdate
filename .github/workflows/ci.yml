@@ -57,7 +57,8 @@ jobs:
           retention-days: 14
 
   # Starts the arm64 exe on a real ARM64 Windows machine. Only on push to main to save runner
-  # minutes; release.yml runs the same check on every tag.
+  # minutes; release.yml runs the same check on every tag. Keep the self-test step in sync with
+  # Invoke-SelfTest in scripts/build/build.ps1 and with the same job in release.yml.
   self-test-arm64:
     if: github.event_name == 'push'
     needs: build-test

@@ -12,7 +12,7 @@ To report a vulnerability, see [SECURITY.md](../SECURITY.md).
 | The application process | Crash or code execution while parsing | Malformed or hostile image/video files |
 | The user's privacy | Data leaving the computer | Telemetry, crash reporters; the update check is the only network access and sends no identifiers |
 | The update check | Spoofed or hostile "latest release" answer, redirect to another host, oversized response, tracking | Network attacker, compromised redirect, hostile server |
-| The release binary | Tampered or vulnerable exe | Compromised dependency, CI or download |
+| The release binary | Tampered or vulnerable exe | Compromised dependency, CI or download; a replaced file that the updater would run (update signatures) |
 
 ## Mitigations
 
@@ -101,8 +101,15 @@ Decision and rationale: [ADR 0004](adr/0004-update-check-and-in-app-update.md).
 - Releases are built only in GitHub Actions and ship with **SHA-256 checksums**,
   a **CycloneDX SBOM** and — once the repository is public — **build provenance attestations**
   (`gh attestation verify <file> --repo jannikjordan/snapdate`).
-- Optional Authenticode signing is wired into the build script.
-
+- **Update signatures**: every release file gets a detached ECDSA P-256 / SHA-256
+  signature (`<file>.sig`) made in the release workflow with a private key that
+  only the signing step can read (secret `SNAPDATE_UPDATE_SIGNING_KEY`). The
+  matching public key is compiled into the app, so a future in-app updater only
+  runs files that we signed. The build verifies every signature right after
+  signing. Details and key rotation: [ADR 0005](adr/0005-update-signatures.md).
+- Authenticode (code signing certificate) is **not** used yet; optional signing
+  is wired into the build script, and SignPath Foundation is planned once the
+  repository is public.
 ## Verifying a download
 
 ```powershell

@@ -18,6 +18,7 @@ Desktop.ini
 
 ## Claude local settings
 .claude/settings.local.json
+.claude/worktrees/
 
 ## Local secrets (GitHub PAT etc.) — never commit
 .secrets/

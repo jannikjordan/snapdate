@@ -7,9 +7,11 @@
     Developer and CI entry point. Produces release artefacts in artifacts/release:
       Snapdate-v<ver>-win-<arch>.exe, Snapdate-v<ver>-win-<arch>.zip,
       SHA256SUMS.txt and sbom.cdx.json (when the CycloneDX tool is available).
+    SignRelease then adds a detached update signature (<file>.sig) for each of them
+    (ECDSA P-256 / SHA-256, see docs/adr/0005-update-signatures.md).
 
 .PARAMETER Target
-    Clean | Restore | Audit | Test | Publish | Package | Sign | All
+    Clean | Restore | Audit | Test | Publish | Package | Sign | SignRelease | All
 
 .PARAMETER Version
     Overrides the version from Directory.Build.props (e.g. from a git tag "v0.1.0").
@@ -17,18 +19,34 @@
 .PARAMETER Runtime
     One or more runtime identifiers to publish. Default: win-x64, win-arm64.
 
+.PARAMETER SigningKeyPath
+    SignRelease only: path to a PKCS#8 PEM private key (for local tests with a throwaway key).
+    Without it the key is read from the environment variable SNAPDATE_UPDATE_SIGNING_KEY.
+
+.PARAMETER PublicKeyDir
+    SignRelease only: folder with the public key(s) (*.pem) that every signature is verified
+    against. Default: the keys embedded in the app. Only override it for local tests.
+
+.PARAMETER SkipUpdateSignature
+    -Target All only: do not run SignRelease (CI runs it as a separate step so that the
+    private key is never exposed to the build).
+
 .EXAMPLE
     pwsh scripts/build/build.ps1 -Target Test
+
 .EXAMPLE
     pwsh scripts/build/build.ps1 -Target All -Version 0.1.0
 #>
 [CmdletBinding()]
 param(
-    [ValidateSet('Clean', 'Restore', 'Audit', 'Test', 'Publish', 'Package', 'Sign', 'All')]
+    [ValidateSet('Clean', 'Restore', 'Audit', 'Test', 'Publish', 'Package', 'Sign', 'SignRelease', 'All')]
     [string] $Target = 'Test',
     [string] $Version,
     [string[]] $Runtime = @('win-x64', 'win-arm64'),
-    [string] $Configuration = 'Release'
+    [string] $Configuration = 'Release',
+    [string] $SigningKeyPath,
+    [string] $PublicKeyDir,
+    [switch] $SkipUpdateSignature
 )
 
 Set-StrictMode -Version Latest
@@ -209,6 +227,82 @@ function Invoke-Sign {
     }
 }
 
+function Invoke-SignRelease {
+    Write-Step 'Sign release files (update signatures)'
+    if (-not (Test-Path $ReleaseDir)) { throw "Missing $ReleaseDir - run -Target Package first." }
+
+    $keyDir = if ($PublicKeyDir) { $PublicKeyDir } else { Join-Path $Root 'src' 'Snapdate.Infrastructure' 'Updates' 'Keys' }
+    $publicKeys = @(Get-ChildItem $keyDir -Filter '*.pem' -File -ErrorAction SilentlyContinue)
+    if ($publicKeys.Count -eq 0) { throw "No public key (*.pem) found in $keyDir." }
+
+    $pem = $null
+    if ($SigningKeyPath) {
+        if (-not (Test-Path $SigningKeyPath)) { throw "Signing key file not found: $SigningKeyPath" }
+        $pem = Get-Content $SigningKeyPath -Raw
+    }
+    elseif ($env:SNAPDATE_UPDATE_SIGNING_KEY) {
+        $pem = $env:SNAPDATE_UPDATE_SIGNING_KEY
+    }
+
+    if (-not $pem) {
+        if ($env:GITHUB_ACTIONS -eq 'true' -and $env:GITHUB_REF_TYPE -eq 'tag') {
+            throw 'SNAPDATE_UPDATE_SIGNING_KEY is not set: a tag build must not produce unsigned release files.'
+        }
+        Write-Warning 'No update signing key (SNAPDATE_UPDATE_SIGNING_KEY or -SigningKeyPath) - skipping update signatures.'
+        return
+    }
+
+    $files = @(Get-ChildItem $ReleaseDir -File | Where-Object Extension -ne '.sig' | Sort-Object Name)
+    if ($files.Count -eq 0) { throw "No files to sign in $ReleaseDir." }
+    Get-ChildItem $ReleaseDir -File -Filter '*.sig' | Remove-Item -Force
+
+    $format = [Security.Cryptography.DSASignatureFormat]::IeeeP1363FixedFieldConcatenation
+    $sha256 = [Security.Cryptography.HashAlgorithmName]::SHA256
+    $signer = [Security.Cryptography.ECDsa]::Create()
+    $verifiers = @()
+    $completed = $false
+    try {
+        try { $signer.ImportFromPem($pem) }
+        catch { throw 'The update signing key is not a valid PEM private key.' }
+        if ($signer.KeySize -ne 256) { throw 'The update signing key must be an ECDSA P-256 key.' }
+
+        foreach ($key in $publicKeys) {
+            $v = [Security.Cryptography.ECDsa]::Create()
+            $v.ImportFromPem((Get-Content $key.FullName -Raw))
+            $verifiers += $v
+        }
+
+        foreach ($file in $files) {
+            $bytes = [IO.File]::ReadAllBytes($file.FullName)
+            $signature = $signer.SignData($bytes, $sha256, $format)
+            if ($signature.Length -ne 64) { throw "Unexpected signature length for $($file.Name)." }
+            $sigPath = "$($file.FullName).sig"
+            [IO.File]::WriteAllText($sigPath, [Convert]::ToBase64String($signature) + "`n", [Text.Encoding]::ASCII)
+
+            # Verify straight away against the public key(s) shipped in the app.
+            $ok = $false
+            foreach ($v in $verifiers) {
+                if ($v.VerifyData($bytes, $signature, $sha256, $format)) { $ok = $true; break }
+            }
+            if (-not $ok) {
+                throw "Signature of $($file.Name) does not verify against the public key(s) in $keyDir - wrong private key?"
+            }
+            Write-Host ("signed + verified  {0}" -f $file.Name)
+        }
+        $completed = $true
+    }
+    finally {
+        # Never leave a half-signed folder behind: on any failure remove every .sig made in this run.
+        if (-not $completed) {
+            Get-ChildItem $ReleaseDir -File -Filter '*.sig' -ErrorAction SilentlyContinue | Remove-Item -Force
+        }
+        $signer.Dispose()
+        foreach ($v in $verifiers) { $v.Dispose() }
+        $pem = $null
+        $env:SNAPDATE_UPDATE_SIGNING_KEY = $null
+    }
+}
+
 Push-Location $Root
 try {
     switch ($Target) {
@@ -219,6 +313,7 @@ try {
         'Publish' { Invoke-Restore; Invoke-Publish }
         'Package' { Invoke-Package }
         'Sign' { Invoke-Sign }
+        'SignRelease' { Invoke-SignRelease }
         'All' {
             Invoke-Clean
             Invoke-Restore
@@ -227,6 +322,7 @@ try {
             Invoke-Publish
             Invoke-Sign
             Invoke-Package
+            if (-not $SkipUpdateSignature) { Invoke-SignRelease }
         }
     }
     Write-Host ""

@@ -23,5 +23,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
 - Untrusted metadata can never create folders or write outside the target folder (sanitising + path guard).
 - Pinned, locked and audited dependencies; SBOM and SHA-256 checksums for every release.
+- Release files now carry a detached ECDSA P-256 signature (`<file>.sig`) that the app can verify with a public key built into it, so a future in-app updater only runs files we signed.
 
 [Unreleased]: https://github.com/jannikjordan/snapdate/commits/main

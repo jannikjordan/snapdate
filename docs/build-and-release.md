@@ -46,7 +46,7 @@ See [scripts/build/README.md](../scripts/build/README.md) for every build target
    GitHub's ARM64 Windows runner (`windows-11-arm`), which starts
    `Snapdate.exe --self-test` from an empty folder. The **draft** GitHub release
    (zips, checksums, SBOM, and provenance attestations once the repository is
-   public) is only created if that ARM64 self-test succeeds.
+   public) is only created if that ARM64 self-test succeeds. Provenance is\n   attested in that same job, so only files that passed the gate get it.
 6. Review the draft on GitHub and press **Publish release**.
 
 ## Continuous integration
@@ -78,3 +78,38 @@ pwsh scripts/build/New-ReleaseNotes.ps1 -Version 0.1.0
 | `Snapdate-vX.Y.Z-win-*.zip` | Exe plus README, CHANGELOG, LICENSE. |
 | `SHA256SUMS.txt` | Checksums of all files. |
 | `sbom.cdx.json` | CycloneDX software bill of materials. |
+
+## Update signatures
+
+Every file in `artifacts/release` gets a detached signature `<file>.sig`
+(base64 of an ECDSA P-256 / SHA-256 signature, see
+[ADR 0005](adr/0005-update-signatures.md)). The in-app updater verifies it with
+the public key compiled into the app (`src/Snapdate.Infrastructure/Updates/Keys/`);
+`build.ps1 -Target SignRelease` verifies every signature again right after
+signing with those same files.
+
+- **In CI** the private key is the Actions secret `SNAPDATE_UPDATE_SIGNING_KEY`
+  (PKCS#8 PEM). The release workflow passes it only to the step
+  "Sign release files for update verification"; the build step runs with
+  `-SkipUpdateSignature`. A tag build without the secret fails.
+- **Locally**, without a key `SignRelease` only prints a warning and skips.
+  To try it with a throwaway key (never use the real key on a dev machine):
+
+  ```powershell
+  $k = [Security.Cryptography.ECDsa]::Create([Security.Cryptography.ECCurve+NamedCurves]::nistP256)
+  New-Item -ItemType Directory -Force "$env:TEMP/test-key/pub" | Out-Null
+  $k.ExportPkcs8PrivateKeyPem() | Set-Content "$env:TEMP/test-key/private.pem"
+  $k.ExportSubjectPublicKeyInfoPem() | Set-Content "$env:TEMP/test-key/pub/test.pub.pem"
+  ```
+
+  ```powershell
+  pwsh scripts/build/build.ps1 -Target Publish
+  pwsh scripts/build/build.ps1 -Target Package
+  pwsh scripts/build/build.ps1 -Target SignRelease -SigningKeyPath "$env:TEMP/test-key/private.pem" -PublicKeyDir "$env:TEMP/test-key/pub"
+  ```
+
+  `-PublicKeyDir` makes the script verify against the test public key instead of
+  the embedded production key (without it, a throwaway key correctly fails the
+  verification).
+- **Rotating the key**: see ADR 0005. In short, ship the new public key in the
+  app one release before signing with the new private key.
