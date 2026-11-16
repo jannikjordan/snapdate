@@ -75,7 +75,11 @@ installed fonts. Monospace for file names: **Cascadia Mono** (ships with Windows
 
 Window: default **1180 × 780**, minimum **980 × 720** (fits 1366 × 768 laptops). Custom title bar
 (Avalonia `ExtendClientAreaToDecorationsHint`) keeping native min/max/close
-and snap layouts.
+and snap layouts. The bar is marked `WindowDecorationProperties.ElementRole="TitleBar"` (Windows
+reports it as caption: drag, double-click, snap layouts); the language, theme, help and About controls
+are marked `ElementRole="User"` so they stay clickable. Avalonia draws the caption buttons itself but they
+report native hit-test codes, so snap layouts work. Avalonia also draws the window title over the bar;
+`App.axaml` hides it (`Panel#PART_TitleTextPanel`, opacity 0) while `Title` stays for Alt-Tab, taskbar and screen readers.
 
 **Rule: the left column must fit without scrolling at the default and the minimum size**
 (guarded by UI tests in both languages). Long names are shortened with “…”

@@ -4,6 +4,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:vm="using:Snapdate.App.ViewModels"
         xmlns:c="using:Snapdate.App.Controls"
+        xmlns:chrome="using:Avalonia.Controls.Chrome"
         mc:Ignorable="d"
         x:Class="Snapdate.App.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
@@ -16,8 +17,12 @@
 
   <Grid>
     <DockPanel>
-      <!-- ============ Title bar (48 px); native caption buttons sit on the right ============ -->
-      <Border DockPanel.Dock="Top" Height="48"
+      <!-- ============ Title bar (48 px) ============
+           ElementRole=TitleBar makes Windows report the bar as caption (drag, double-click, snap layouts);
+           ElementRole=User keeps the buttons clickable. Avalonia draws the caption buttons itself but they
+           report native hit-test codes. Its own title text is hidden in App.axaml. -->
+      <Border x:Name="TitleBar" DockPanel.Dock="Top" Height="48"
+              chrome:WindowDecorationProperties.ElementRole="TitleBar"
               Background="{DynamicResource SdSurfaceBrush}"
               BorderBrush="{DynamicResource SdBorderBrush}" BorderThickness="0,0,0,1">
         <Grid ColumnDefinitions="Auto,Auto,Auto,*,Auto,Auto,Auto,Auto,150" Margin="16,0,0,0">
@@ -31,6 +36,7 @@
           </Border>
 
           <Border Grid.Column="4" Classes="segmented" VerticalAlignment="Center"
+                  chrome:WindowDecorationProperties.ElementRole="User"
                   AutomationProperties.Name="{Binding L.LanguageGroup}">
             <StackPanel Orientation="Horizontal" Spacing="2">
               <ToggleButton Classes="segment" Content="EN" IsChecked="{Binding IsEnglish}"
@@ -39,17 +45,23 @@
                             ToolTip.Tip="Deutsch" AutomationProperties.Name="Deutsch" />
             </StackPanel>
           </Border>
-          <Button Grid.Column="5" Classes="flat" Margin="8,0,0,0" VerticalAlignment="Center"
+          <Button Grid.Column="5"
+                  chrome:WindowDecorationProperties.ElementRole="User"
+                  Classes="flat" Margin="8,0,0,0" VerticalAlignment="Center"
                   Command="{Binding ToggleThemeCommand}"
                   ToolTip.Tip="{Binding L.ThemeToggle}" AutomationProperties.Name="{Binding L.ThemeToggle}">
             <PathIcon Data="{StaticResource IconMoon}" Width="16" Height="16" />
           </Button>
-          <Button Grid.Column="6" Classes="flat" Margin="2,0,0,0" VerticalAlignment="Center"
+          <Button Grid.Column="6"
+                  chrome:WindowDecorationProperties.ElementRole="User"
+                  Classes="flat" Margin="2,0,0,0" VerticalAlignment="Center"
                   Command="{Binding OpenHelpCommand}"
                   ToolTip.Tip="{Binding L.HelpButton}" AutomationProperties.Name="{Binding L.HelpButton}">
             <PathIcon Data="{StaticResource IconHelp}" Width="17" Height="17" />
           </Button>
-          <Button Grid.Column="7" Classes="flat" Margin="2,0,0,0" VerticalAlignment="Center"
+          <Button Grid.Column="7"
+                  chrome:WindowDecorationProperties.ElementRole="User"
+                  Classes="flat" Margin="2,0,0,0" VerticalAlignment="Center"
                   Command="{Binding ToggleAboutCommand}"
                   ToolTip.Tip="{Binding L.About}" AutomationProperties.Name="{Binding L.About}">
             <PathIcon Data="{StaticResource IconInfo}" Width="16" Height="16" />

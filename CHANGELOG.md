@@ -20,6 +20,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 📦 One portable executable each for `win-x64` and `win-arm64` (self-contained, about 22 MB); no installation, works offline.
 - 📖 User guides in English and German with screenshots and diagrams.
 
+### Fixed
+- 🪟 The title bar now behaves like a normal Windows title bar: drag it to move the window, double-click to maximise or restore, and use snap layouts. The system window title no longer shows on top of the Snapdate logo.
+
 ### Security
 - Untrusted metadata can never create folders or write outside the target folder (sanitising + path guard).
 - Pinned, locked and audited dependencies; SBOM and SHA-256 checksums for every release.

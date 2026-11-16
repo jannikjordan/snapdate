@@ -1,6 +1,10 @@
+using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Chrome;
+using Avalonia.Input;
 using Avalonia.LogicalTree;
 using Avalonia.Threading;
+using Snapdate.App.Controls;
 using Snapdate.App.Services;
 using Snapdate.App.Tests.Support;
 using Snapdate.App.ViewModels;
@@ -272,5 +276,41 @@ public sealed class MainWindowTests(HeadlessSession headless)
         Assert.False(services.Settings.Current.AutoUpdateCheck);
         Assert.Equal(checkedAt, services.Settings.Current.LastUpdateCheckUtc);
         Assert.Equal("0.2.0", services.Settings.Current.SkippedVersion);
+    });
+
+    [Fact]
+    public Task Title_bar_is_the_caption_area_and_its_controls_are_not() => RunOnUi(() =>
+    {
+        var window = new MainWindow { DataContext = new TestServices().CreateViewModel() };
+        window.Show();
+        Dispatcher.UIThread.RunJobs();
+
+        // The window keeps its title for Alt-Tab, the taskbar and screen readers.
+        Assert.Equal("Snapdate", window.Title);
+
+        // The bar itself is what Windows reports as HTCAPTION: drag, double-click, snap layouts.
+        var titleBar = window.FindControl<Border>("TitleBar");
+        Assert.NotNull(titleBar);
+        Assert.Equal(WindowDecorationsElementRole.TitleBar, WindowDecorationProperties.GetElementRole(titleBar));
+
+        // Logo, name and version only decorate the bar and must not swallow the drag.
+        var passive = titleBar.GetLogicalDescendants()
+            .Where(c => c is BrandLogo || c is TextBlock { Text: "Snapdate" })
+            .OfType<InputElement>()
+            .ToList();
+        Assert.NotEmpty(passive);
+        Assert.All(passive, v => Assert.False(v.IsHitTestVisible));
+
+        // Every interactive control stays a client area (HTCLIENT) so it receives clicks.
+        var interactive = titleBar.GetLogicalDescendants().OfType<Button>().ToList();
+        Assert.Equal(5, interactive.Count); // EN, DE, theme, help, about
+        foreach (var control in interactive)
+        {
+            var owner = control.GetSelfAndLogicalAncestors().OfType<Visual>()
+                .First(v => WindowDecorationProperties.GetElementRole(v) != WindowDecorationsElementRole.None);
+            Assert.Equal(WindowDecorationsElementRole.User, WindowDecorationProperties.GetElementRole(owner));
+        }
+
+        window.Close();
     });
 }

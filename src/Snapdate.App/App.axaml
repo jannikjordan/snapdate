@@ -13,5 +13,7 @@
   <Application.Styles>
     <FluentTheme />
     <StyleInclude Source="avares://Snapdate/Theme/Controls.axaml" />
+    <!-- Avalonia draws the window title over our own title bar; the window keeps its Title for Alt-Tab, taskbar and screen readers. -->
+    <Style Selector="Panel#PART_TitleTextPanel"><Setter Property="Opacity" Value="0" /></Style>
   </Application.Styles>
 </Application>
