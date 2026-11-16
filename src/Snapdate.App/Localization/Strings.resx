@@ -7,15 +7,56 @@
   <data name="AppTagline" xml:space="preserve"><value>Sort your photos by the day they were taken.</value></data>
   <data name="LanguageGroup" xml:space="preserve"><value>Language</value></data>
   <data name="ThemeToggle" xml:space="preserve"><value>Switch light / dark</value></data>
+  <data name="HelpButton" xml:space="preserve"><value>Help</value></data>
   <data name="About" xml:space="preserve"><value>About Snapdate</value></data>
+  <data name="AboutBody" xml:space="preserve"><value>Snapdate gives your photos clear names based on the day they were taken. It works completely offline: no account, no tracking, nothing leaves your computer.</value></data>
+  <data name="AboutVersion" xml:space="preserve"><value>Version {0}</value></data>
+  <data name="AboutLicense" xml:space="preserve"><value>Free and open source (MIT licence).</value></data>
+  <data name="AboutWebsite" xml:space="preserve"><value>Project website</value></data>
+  <data name="Close" xml:space="preserve"><value>Close</value></data>
   <data name="Step1Title" xml:space="preserve"><value>Choose folders</value></data>
   <data name="SourceLabel" xml:space="preserve"><value>Photos from</value></data>
-  <data name="TargetLabel" xml:space="preserve"><value>Save renamed copies to</value></data>
+  <data name="TargetLabel" xml:space="preserve"><value>Save renamed photos to</value></data>
   <data name="NotSelected" xml:space="preserve"><value>Click to choose a folder</value></data>
+  <data name="PickSourceTitle" xml:space="preserve"><value>Where are your photos?</value></data>
+  <data name="PickTargetTitle" xml:space="preserve"><value>Where should the renamed photos go?</value></data>
+  <data name="DropHint" xml:space="preserve"><value>Tip: you can also drag a folder onto this box.</value></data>
   <data name="IncludeSubfolders" xml:space="preserve"><value>Include sub-folders</value></data>
   <data name="Step2Title" xml:space="preserve"><value>Build the file name</value></data>
+  <data name="Reset" xml:space="preserve"><value>Reset</value></data>
+  <data name="PatternHint" xml:space="preserve"><value>Click the blocks below to add them. You can also type your own text, like “Holiday ”, anywhere in the box.</value></data>
+  <data name="GroupDate" xml:space="preserve"><value>Date</value></data>
+  <data name="GroupTime" xml:space="preserve"><value>Time</value></data>
+  <data name="GroupFile" xml:space="preserve"><value>File</value></data>
+  <data name="GroupSeparator" xml:space="preserve"><value>Separator</value></data>
+  <data name="TokYear" xml:space="preserve"><value>Year</value></data>
+  <data name="TokYearShort" xml:space="preserve"><value>Year (2 digits)</value></data>
+  <data name="TokMonth" xml:space="preserve"><value>Month</value></data>
+  <data name="TokMonthName" xml:space="preserve"><value>Month name</value></data>
+  <data name="TokMonthNameLong" xml:space="preserve"><value>Month name (long)</value></data>
+  <data name="TokDay" xml:space="preserve"><value>Day</value></data>
+  <data name="TokWeekday" xml:space="preserve"><value>Weekday</value></data>
+  <data name="TokWeekdayLong" xml:space="preserve"><value>Weekday (long)</value></data>
+  <data name="TokHour" xml:space="preserve"><value>Hour</value></data>
+  <data name="TokMinute" xml:space="preserve"><value>Minute</value></data>
+  <data name="TokSecond" xml:space="preserve"><value>Second</value></data>
+  <data name="TokName" xml:space="preserve"><value>Original name</value></data>
+  <data name="TokCamera" xml:space="preserve"><value>Camera</value></data>
+  <data name="TokCounter" xml:space="preserve"><value>Counter</value></data>
+  <data name="SepSpace" xml:space="preserve"><value>Space</value></data>
+  <data name="SepFolder" xml:space="preserve"><value>New folder</value></data>
+  <data name="LeadingZeros" xml:space="preserve"><value>Leading zero (07 instead of 7)</value></data>
+  <data name="PillToggle" xml:space="preserve"><value>Click to switch to “{0}”</value></data>
+  <data name="PillRemove" xml:space="preserve"><value>Remove</value></data>
+  <data name="Presets" xml:space="preserve"><value>Quick picks:</value></data>
   <data name="ExampleLabel" xml:space="preserve"><value>Example</value></data>
   <data name="ExtensionNote" xml:space="preserve"><value>The file type (.jpg, .png, .heic …) is kept automatically.</value></data>
+  <data name="ErrEmpty" xml:space="preserve"><value>Add at least one block or some text.</value></data>
+  <data name="ErrUnknownPlaceholder" xml:space="preserve"><value>“{0}” is not a known block. Check the spelling, including upper and lower case.</value></data>
+  <data name="ErrUnclosedBrace" xml:space="preserve"><value>A “{{” is missing its closing “}}”.</value></data>
+  <data name="ErrUnexpectedClosingBrace" xml:space="preserve"><value>There is a “}}” without an opening “{{”.</value></data>
+  <data name="ErrInvalidCharacter" xml:space="preserve"><value>The character “{0}” is not allowed in file names.</value></data>
+  <data name="ErrEmptyFolderName" xml:space="preserve"><value>A folder name is empty. Check the “/” characters.</value></data>
   <data name="Step3Title" xml:space="preserve"><value>What should happen?</value></data>
   <data name="CopyTitle" xml:space="preserve"><value>Copy</value></data>
   <data name="CopyHint" xml:space="preserve"><value>Originals stay untouched (recommended)</value></data>
@@ -23,10 +64,50 @@
   <data name="MoveHint" xml:space="preserve"><value>Originals are moved after a safe copy</value></data>
   <data name="NeverOverwrite" xml:space="preserve"><value>Existing files are never overwritten.</value></data>
   <data name="PreviewTitle" xml:space="preserve"><value>Preview</value></data>
+  <data name="PhotosCount" xml:space="preserve"><value>{0} photos</value></data>
   <data name="PreviewEmptyTitle" xml:space="preserve"><value>No photos yet</value></data>
-  <data name="PreviewEmptyBody" xml:space="preserve"><value>Choose a source folder to see your photos here.</value></data>
-  <data name="StatusChooseFolders" xml:space="preserve"><value>Choose both folders to get started</value></data>
+  <data name="PreviewEmptyBody" xml:space="preserve"><value>Choose the folder with your photos to see them here.</value></data>
+  <data name="ScanningTitle" xml:space="preserve"><value>Looking for photos …</value></data>
+  <data name="ScanningBody" xml:space="preserve"><value>{0} found so far</value></data>
+  <data name="NoPhotosTitle" xml:space="preserve"><value>No photos found</value></data>
+  <data name="NoPhotosBody" xml:space="preserve"><value>This folder contains no supported photos or videos. Try “Include sub-folders”.</value></data>
+  <data name="FilterAll" xml:space="preserve"><value>All</value></data>
+  <data name="FilterCamera" xml:space="preserve"><value>Camera date</value></data>
+  <data name="FilterFile" xml:space="preserve"><value>File date</value></data>
+  <data name="FilterRenamed" xml:space="preserve"><value>Numbered</value></data>
+  <data name="BadgeCamera" xml:space="preserve"><value>Camera</value></data>
+  <data name="BadgeFile" xml:space="preserve"><value>File date</value></data>
+  <data name="BadgeRenamed" xml:space="preserve"><value>Numbered</value></data>
+  <data name="TipCamera" xml:space="preserve"><value>The date comes from the photo itself (camera data).</value></data>
+  <data name="TipFile" xml:space="preserve"><value>This file has no date inside, so the date of the file was used.</value></data>
+  <data name="TipRenamed" xml:space="preserve"><value>Another photo already has this name, so a number was added.</value></data>
+  <data name="ProblemSourceMissing" xml:space="preserve"><value>Choose the folder with your photos</value></data>
+  <data name="ProblemSourceNotFound" xml:space="preserve"><value>The photo folder cannot be found</value></data>
+  <data name="ProblemTargetMissing" xml:space="preserve"><value>Now choose where the renamed photos should go</value></data>
+  <data name="ProblemTargetInsideSource" xml:space="preserve"><value>The target folder is inside the photo folder</value></data>
+  <data name="ProblemTargetInsideSourceHint" xml:space="preserve"><value>Choose another target, or turn off “Include sub-folders”.</value></data>
+  <data name="ProblemSourceInsideTarget" xml:space="preserve"><value>The photo folder is inside the target folder</value></data>
+  <data name="ProblemSourceInsideTargetHint" xml:space="preserve"><value>Please choose a different target folder.</value></data>
+  <data name="ProblemPattern" xml:space="preserve"><value>Please check the file name first</value></data>
+  <data name="ProblemNoPhotos" xml:space="preserve"><value>There is nothing to do yet</value></data>
   <data name="StatusNothingChanged" xml:space="preserve"><value>Nothing is changed until you press the button.</value></data>
-  <data name="RunCopy" xml:space="preserve"><value>Copy photos</value></data>
-  <data name="RunMove" xml:space="preserve"><value>Move photos</value></data>
+  <data name="ReadyTitle" xml:space="preserve"><value>Ready: {0} photos</value></data>
+  <data name="ReadySubCopy" xml:space="preserve"><value>Your originals stay untouched.</value></data>
+  <data name="ReadySubMove" xml:space="preserve"><value>Originals are moved, each one only after a verified copy.</value></data>
+  <data name="RunCopy" xml:space="preserve"><value>Copy {0} photos</value></data>
+  <data name="RunMove" xml:space="preserve"><value>Move {0} photos</value></data>
+  <data name="RunningCopy" xml:space="preserve"><value>Copying photos …</value></data>
+  <data name="RunningMove" xml:space="preserve"><value>Moving photos …</value></data>
+  <data name="Cancel" xml:space="preserve"><value>Cancel</value></data>
+  <data name="DoneCopy" xml:space="preserve"><value>{0} photos copied</value></data>
+  <data name="DoneMove" xml:space="preserve"><value>{0} photos moved</value></data>
+  <data name="DoneSub" xml:space="preserve"><value>A log file was saved in the target folder.</value></data>
+  <data name="DoneFailed" xml:space="preserve"><value>{0} files could not be processed. Details are in the log file.</value></data>
+  <data name="DoneCancelled" xml:space="preserve"><value>Stopped. Files not yet processed were left alone.</value></data>
+  <data name="OpenFolder" xml:space="preserve"><value>Open folder</value></data>
+  <data name="ShowLog" xml:space="preserve"><value>Show log</value></data>
+  <data name="StartOver" xml:space="preserve"><value>Start over</value></data>
+  <data name="ConfirmMoveTitle" xml:space="preserve"><value>Move the original photos?</value></data>
+  <data name="ConfirmMoveBody" xml:space="preserve"><value>Your {0} photos will be moved to the target folder with their new names. Afterwards they are no longer in the original folder.</value></data>
+  <data name="ConfirmMoveYes" xml:space="preserve"><value>Yes, move them</value></data>
 </root>

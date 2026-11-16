@@ -48,12 +48,11 @@ public sealed class LocalizationTests
     [InlineData("de-DE")]
     public void Every_string_resolves_to_non_empty_text(string culture)
     {
-        var strings = new LocalizedStrings(CultureInfo.GetCultureInfo(culture));
+        var ci = CultureInfo.GetCultureInfo(culture);
         foreach (var key in TypedProperties())
         {
-            var value = strings.Get(key);
-            Assert.False(string.IsNullOrWhiteSpace(value), $"'{key}' is empty for {culture}.");
-            Assert.NotEqual(key, value);
+            var value = Resources.GetString(key, ci);
+            Assert.False(string.IsNullOrWhiteSpace(value), $"'{key}' is missing or empty for {culture}.");
         }
     }
 
@@ -65,5 +64,18 @@ public sealed class LocalizationTests
 
         Assert.Equal("Choose folders", en.Step1Title);
         Assert.Equal("Ordner wählen", de.Step1Title);
+    }
+
+    [Theory]
+    [InlineData("en-US")]
+    [InlineData("de-DE")]
+    public void Format_strings_are_valid_for_their_placeholders(string culture)
+    {
+        var strings = new LocalizedStrings(CultureInfo.GetCultureInfo(culture));
+        foreach (var key in TypedProperties())
+        {
+            var formatted = strings.Format(key, "X");
+            Assert.DoesNotContain("{0}", formatted, StringComparison.Ordinal);
+        }
     }
 }

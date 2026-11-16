@@ -8,4 +8,10 @@ public interface IThemeService
 
     /// <summary>Switches to the other theme.</summary>
     void Toggle();
+
+    /// <summary>Applies a remembered choice: "light", "dark" or null (follow Windows).</summary>
+    void Apply(string? theme);
+
+    /// <summary>The explicit choice to remember, or null when following Windows.</summary>
+    string? CurrentChoice { get; }
 }

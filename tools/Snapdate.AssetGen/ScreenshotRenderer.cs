@@ -1,57 +1,204 @@
 using System.Globalization;
+using Avalonia.Controls;
 using Avalonia.Headless;
+using Avalonia.Media.Imaging;
 using Avalonia.Styling;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
 using Snapdate.App.Services;
 using Snapdate.App.ViewModels;
 using Snapdate.App.Views;
+using Snapdate.Application.Ports;
+using Snapdate.Application.Settings;
+using Snapdate.Infrastructure.FileSystem;
+using Snapdate.Infrastructure.Metadata;
 
 namespace Snapdate.AssetGen;
 
 /// <summary>Renders documentation screenshots from the real views, per language and theme.</summary>
 internal static class ScreenshotRenderer
 {
+    // A neutral location so screenshots never show a personal user folder.
+    private const string DemoRoot = @"C:\SnapdateDemo";
+
+    private static readonly (string Folder, string Culture)[] Languages = [("en", "en-US"), ("de", "de-DE")];
+
     private sealed class FixedTheme : IThemeService
     {
         public bool IsDark => false;
 
+        public string? CurrentChoice => null;
+
         public void Toggle()
         {
         }
+
+        public void Apply(string? theme)
+        {
+        }
     }
 
-    private static readonly (string Folder, string Culture)[] Languages = [("en", "en-US"), ("de", "de-DE")];
+    private sealed class NoDesktop : IDesktopServices
+    {
+        public Task<string?> PickFolderAsync(string title, string? startFolder) => Task.FromResult<string?>(null);
+
+        public Task OpenUrlAsync(Uri url) => Task.CompletedTask;
+
+        public Task OpenFolderAsync(string path) => Task.CompletedTask;
+
+        public Task OpenFileAsync(string path) => Task.CompletedTask;
+    }
+
+    private sealed class MemorySettings : ISettingsStore
+    {
+        public AppSettings Load() => new();
+
+        public void Save(AppSettings settings)
+        {
+        }
+    }
 
     public static void Run(string repoRoot)
     {
-        foreach (var (folder, culture) in Languages)
+        if (Directory.Exists(DemoRoot))
         {
-            var dir = Path.Combine(repoRoot, "docs", "images", folder);
-            Directory.CreateDirectory(dir);
-
-            foreach (var variant in new[] { ThemeVariant.Light, ThemeVariant.Dark })
-            {
-                Avalonia.Application.Current!.RequestedThemeVariant = variant;
-                var suffix = variant == ThemeVariant.Dark ? "dark" : "light";
-                Shoot(dir, $"main-start-{suffix}", CultureInfo.GetCultureInfo(culture));
-            }
+            Directory.Delete(DemoRoot, recursive: true);
         }
 
-        Avalonia.Application.Current!.RequestedThemeVariant = ThemeVariant.Default;
+        var source = Path.Combine(DemoRoot, "Holiday 2024");
+        SamplePhotos.Create(source);
+        using var thumbnails = new ThumbnailLoader();
+
+        try
+        {
+            foreach (var (folder, culture) in Languages)
+            {
+                var dir = Path.Combine(repoRoot, "docs", "images", folder);
+                Directory.CreateDirectory(dir);
+                var ci = CultureInfo.GetCultureInfo(culture);
+
+                foreach (var variant in new[] { ThemeVariant.Light, ThemeVariant.Dark })
+                {
+                    Avalonia.Application.Current!.RequestedThemeVariant = variant;
+                    var suffix = variant == ThemeVariant.Dark ? "dark" : "light";
+
+                    Shoot(dir, $"01-start-{suffix}", ci, thumbnails, _ => { });
+                    Shoot(dir, $"02-preview-{suffix}", ci, thumbnails, vm =>
+                    {
+                        vm.SourceFolder = source;
+                        Wait(vm.ScanCompletion);
+                        vm.TargetFolder = Path.Combine(DemoRoot, "Sorted");
+                    });
+                }
+
+                Avalonia.Application.Current!.RequestedThemeVariant = ThemeVariant.Light;
+                var target = Path.Combine(DemoRoot, "Sorted");
+                Directory.CreateDirectory(target);
+
+                Shoot(dir, "03-custom-pattern-light", ci, thumbnails, vm =>
+                {
+                    vm.SourceFolder = source;
+                    Wait(vm.ScanCompletion);
+                    vm.TargetFolder = target;
+                    vm.Pattern.Text = folder == "de" ? "Urlaub {D}.{M}.{YYYY} {HH}{mm}" : "Holiday {D}.{M}.{YYYY} {HH}{mm}";
+                });
+                Shoot(dir, "04-folders-pattern-light", ci, thumbnails, vm =>
+                {
+                    vm.SourceFolder = source;
+                    Wait(vm.ScanCompletion);
+                    vm.TargetFolder = target;
+                    vm.Pattern.Text = "{YYYY}/{MM}/{YYYY}-{MM}-{DD} {name}";
+                });
+                Shoot(dir, "05-pattern-error-light", ci, thumbnails, vm =>
+                {
+                    vm.SourceFolder = source;
+                    Wait(vm.ScanCompletion);
+                    vm.TargetFolder = target;
+                    vm.Pattern.Text = "{YYYY}-{MM}-{DD} {hour}";
+                });
+                Shoot(dir, "06-options-light", ci, thumbnails, vm =>
+                {
+                    vm.SourceFolder = source;
+                    Wait(vm.ScanCompletion);
+                    vm.TargetFolder = target;
+                }, scrollLeftToEnd: true);
+                Shoot(dir, "07-confirm-move-light", ci, thumbnails, vm =>
+                {
+                    vm.SourceFolder = source;
+                    Wait(vm.ScanCompletion);
+                    vm.TargetFolder = target;
+                    vm.IsMoveMode = true;
+                    Wait(vm.RunCommand.ExecuteAsync(null));
+                });
+                Shoot(dir, "08-done-light", ci, thumbnails, vm =>
+                {
+                    var runTarget = Path.Combine(DemoRoot, "Sorted-" + folder);
+                    Directory.CreateDirectory(runTarget);
+                    vm.SourceFolder = source;
+                    Wait(vm.ScanCompletion);
+                    vm.TargetFolder = runTarget;
+                    Wait(vm.RunCommand.ExecuteAsync(null));
+                });
+                Shoot(dir, "09-about-light", ci, thumbnails, vm => vm.IsAboutOpen = true);
+            }
+        }
+        finally
+        {
+            Avalonia.Application.Current!.RequestedThemeVariant = ThemeVariant.Default;
+            Directory.Delete(DemoRoot, recursive: true);
+        }
     }
 
-    private static void Shoot(string dir, string name, CultureInfo culture)
+    private static void Shoot(string dir, string name, CultureInfo culture, ThumbnailLoader thumbnails, Action<MainWindowViewModel> arrange, bool scrollLeftToEnd = false)
     {
-        var vm = new MainWindowViewModel(new FixedTheme(), culture);
-        var window = new MainWindow { DataContext = vm };
+        var services = new AppServices(
+            new FixedTheme(),
+            new NoDesktop(),
+            new MemorySettings(),
+            new LocalFileSystem(),
+            new MetadataExtractorReader(TimeProvider.System),
+            TimeProvider.System,
+            thumbnails);
+        var vm = new MainWindowViewModel(services, culture);
+        var window = new MainWindow { DataContext = vm, Width = 1180, Height = 780 };
         window.Show();
+        arrange(vm);
+
         Dispatcher.UIThread.RunJobs();
-        AvaloniaHeadlessPlatform.ForceRenderTimerTick();
+        if (scrollLeftToEnd)
+        {
+            window.GetVisualDescendants().OfType<ScrollViewer>().First().ScrollToEnd();
+        }
+
+        // Let layout settle and lazily loaded thumbnails arrive.
+        for (var i = 0; i < 40; i++)
+        {
+            Dispatcher.UIThread.RunJobs();
+            AvaloniaHeadlessPlatform.ForceRenderTimerTick();
+            Thread.Sleep(15);
+        }
 
         using var frame = window.CaptureRenderedFrame() ?? throw new InvalidOperationException("No frame rendered.");
         var path = Path.Combine(dir, name + ".png");
-        frame.Save(path, Avalonia.Media.Imaging.PngBitmapEncoderOptions.Default);
+        frame.Save(path, PngBitmapEncoderOptions.Default);
         window.Close();
-        Console.WriteLine($"wrote {path}");
+        Console.WriteLine($"wrote docs/images/{Path.GetFileName(dir)}/{name}.png");
+    }
+
+    private static void Wait(Task task)
+    {
+        var deadline = DateTime.UtcNow.AddSeconds(30);
+        while (!task.IsCompleted)
+        {
+            if (DateTime.UtcNow > deadline)
+            {
+                throw new TimeoutException("Timed out waiting for the view model.");
+            }
+
+            Dispatcher.UIThread.RunJobs();
+            Thread.Sleep(5);
+        }
+
+        task.GetAwaiter().GetResult();
     }
 }

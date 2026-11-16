@@ -177,4 +177,229 @@
     <Setter Property="Foreground" Value="White" />
     <Setter Property="Opacity" Value="0.45" />
   </Style>
+
+  <!-- Secondary action -->
+  <Style Selector="Button.secondary">
+    <Setter Property="Background" Value="{DynamicResource SdSurfaceBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource SdBorderBrush}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="Foreground" Value="{DynamicResource SdTextBrush}" />
+    <Setter Property="CornerRadius" Value="{StaticResource SdRadiusMedium}" />
+    <Setter Property="Height" Value="44" />
+    <Setter Property="Padding" Value="16,0" />
+    <Setter Property="FontSize" Value="14" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
+  </Style>
+  <Style Selector="Button.secondary:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource SdSurface2Brush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource SdPrimaryBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource SdTextBrush}" />
+  </Style>
+  <Style Selector="Button.link">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="Foreground" Value="{DynamicResource SdPrimaryBrush}" />
+    <Setter Property="FontSize" Value="12" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+    <Setter Property="Padding" Value="6,2" />
+    <Setter Property="CornerRadius" Value="6" />
+  </Style>
+  <Style Selector="Button.link:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource SdPrimarySoftBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource SdPrimaryBrush}" />
+  </Style>
+
+  <!-- Pattern text box -->
+  <Style Selector="TextBox.pattern">
+    <Setter Property="FontFamily" Value="{StaticResource SdMonoFont}" />
+    <Setter Property="FontSize" Value="13" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+    <Setter Property="CornerRadius" Value="{StaticResource SdRadiusMedium}" />
+    <Setter Property="BorderThickness" Value="2" />
+    <Setter Property="BorderBrush" Value="{DynamicResource SdBorderBrush}" />
+    <Setter Property="Background" Value="{DynamicResource SdSurfaceBrush}" />
+    <Setter Property="Padding" Value="10,8" />
+    <Setter Property="MinHeight" Value="40" />
+  </Style>
+  <Style Selector="TextBox.pattern:focus /template/ Border#PART_BorderElement">
+    <Setter Property="BorderBrush" Value="{DynamicResource SdPrimaryBrush}" />
+    <Setter Property="BorderThickness" Value="2" />
+    <Setter Property="Background" Value="{DynamicResource SdSurfaceBrush}" />
+  </Style>
+  <Style Selector="TextBox.pattern.invalid /template/ Border#PART_BorderElement">
+    <Setter Property="BorderBrush" Value="{DynamicResource SdDangerBrush}" />
+  </Style>
+
+  <!-- Chips (insert a block) -->
+  <Style Selector="Button.chip">
+    <Setter Property="Background" Value="{DynamicResource SdSurface2Brush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource SdBorderBrush}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="Foreground" Value="{DynamicResource SdTextBrush}" />
+    <Setter Property="CornerRadius" Value="{StaticResource SdRadiusSmall}" />
+    <Setter Property="Padding" Value="8,3" />
+    <Setter Property="Margin" Value="0,0,6,6" />
+    <Setter Property="FontSize" Value="12" />
+    <Setter Property="FontWeight" Value="Medium" />
+    <Setter Property="MinHeight" Value="28" />
+  </Style>
+  <Style Selector="Button.chip:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource SdPrimarySoftBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource SdPrimaryBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource SdPrimaryBrush}" />
+  </Style>
+  <Style Selector="Button.preset">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderBrush" Value="{DynamicResource SdPrimaryBrush}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="Foreground" Value="{DynamicResource SdPrimaryBrush}" />
+    <Setter Property="CornerRadius" Value="{StaticResource SdRadiusSmall}" />
+    <Setter Property="Padding" Value="8,4,8,5" />
+    <Setter Property="MinHeight" Value="26" />
+    <Setter Property="Margin" Value="0,0,6,6" />
+    <Setter Property="FontFamily" Value="{StaticResource SdMonoFont}" />
+    <Setter Property="FontSize" Value="11.5" />
+  </Style>
+  <Style Selector="Button.preset:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource SdPrimarySoftBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource SdPrimaryBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource SdPrimaryBrush}" />
+  </Style>
+
+  <!-- Pills (parsed pattern) -->
+  <Style Selector="Border.pill">
+    <Setter Property="CornerRadius" Value="{StaticResource SdRadiusSmall}" />
+    <Setter Property="Margin" Value="0,0,4,4" />
+    <Setter Property="Background" Value="{DynamicResource SdPrimarySoftBrush}" />
+  </Style>
+  <Style Selector="Border.pill.literal">
+    <Setter Property="Background" Value="{DynamicResource SdSurface2Brush}" />
+  </Style>
+  <Style Selector="Border.pill Button">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="Padding" Value="6,2" />
+    <Setter Property="MinHeight" Value="26" />
+    <Setter Property="CornerRadius" Value="{StaticResource SdRadiusSmall}" />
+    <Setter Property="Foreground" Value="{DynamicResource SdPrimaryBrush}" />
+  </Style>
+  <Style Selector="Border.pill.literal Button">
+    <Setter Property="Foreground" Value="{DynamicResource SdTextBrush}" />
+  </Style>
+  <Style Selector="Border.pill Button:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="#1F5B4BF5" />
+    <Setter Property="Foreground" Value="{DynamicResource SdPrimaryBrush}" />
+  </Style>
+  <Style Selector="Border.pill Button.remove">
+    <Setter Property="Padding" Value="4,2" />
+    <Setter Property="Opacity" Value="0.6" />
+  </Style>
+  <Style Selector="Border.pill Button.remove:pointerover">
+    <Setter Property="Opacity" Value="1" />
+  </Style>
+
+  <!-- Badges -->
+  <Style Selector="Border.badge">
+    <Setter Property="CornerRadius" Value="{StaticResource SdRadiusSmall}" />
+    <Setter Property="Padding" Value="8,2" />
+    <Setter Property="VerticalAlignment" Value="Center" />
+    <Setter Property="Background" Value="{DynamicResource SdSuccessSoftBrush}" />
+  </Style>
+  <Style Selector="Border.badge > TextBlock">
+    <Setter Property="FontSize" Value="11.5" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+    <Setter Property="Foreground" Value="{DynamicResource SdSuccessBrush}" />
+  </Style>
+  <Style Selector="Border.badge.warn">
+    <Setter Property="Background" Value="{DynamicResource SdWarningSoftBrush}" />
+  </Style>
+  <Style Selector="Border.badge.warn > TextBlock">
+    <Setter Property="Foreground" Value="{DynamicResource SdWarningBrush}" />
+  </Style>
+
+  <!-- Filter tabs -->
+  <Style Selector="RadioButton.tab">
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border Name="PART_Border"
+                Background="Transparent"
+                BorderBrush="{DynamicResource SdBorderBrush}"
+                BorderThickness="1"
+                CornerRadius="8"
+                Padding="10,4">
+          <ContentPresenter Name="PART_Content" Content="{TemplateBinding Content}"
+                            TextElement.FontSize="12" TextElement.FontWeight="SemiBold"
+                            TextElement.Foreground="{DynamicResource SdMutedBrush}" />
+        </Border>
+      </ControlTemplate>
+    </Setter>
+    <Setter Property="Margin" Value="0,0,6,0" />
+    <Setter Property="Cursor" Value="Hand" />
+  </Style>
+  <Style Selector="RadioButton.tab:pointerover /template/ Border#PART_Border">
+    <Setter Property="BorderBrush" Value="{DynamicResource SdPrimaryBrush}" />
+  </Style>
+  <Style Selector="RadioButton.tab:checked /template/ Border#PART_Border">
+    <Setter Property="Background" Value="{DynamicResource SdPrimarySoftBrush}" />
+    <Setter Property="BorderBrush" Value="Transparent" />
+  </Style>
+  <Style Selector="RadioButton.tab:checked /template/ ContentPresenter#PART_Content">
+    <Setter Property="TextElement.Foreground" Value="{DynamicResource SdPrimaryBrush}" />
+  </Style>
+
+  <!-- Preview list -->
+  <Style Selector="ListBox.preview">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="Padding" Value="8,6" />
+  </Style>
+  <Style Selector="ListBox.preview ListBoxItem">
+    <Setter Property="Padding" Value="12,8" />
+    <Setter Property="CornerRadius" Value="10" />
+    <Setter Property="Margin" Value="0,0,0,2" />
+  </Style>
+  <Style Selector="ListBox.preview ListBoxItem:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource SdSurface2Brush}" />
+  </Style>
+  <Style Selector="ListBox.preview ListBoxItem:selected /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource SdPrimarySoftBrush}" />
+  </Style>
+  <Style Selector="Border.thumb">
+    <Setter Property="Width" Value="44" />
+    <Setter Property="Height" Value="44" />
+    <Setter Property="CornerRadius" Value="8" />
+    <Setter Property="ClipToBounds" Value="True" />
+    <Setter Property="Background" Value="{DynamicResource SdPrimarySoftBrush}" />
+  </Style>
+
+  <!-- Progress -->
+  <Style Selector="ProgressBar.brand">
+    <Setter Property="Height" Value="8" />
+    <Setter Property="MinHeight" Value="8" />
+    <Setter Property="CornerRadius" Value="4" />
+    <Setter Property="Background" Value="{DynamicResource SdSurface2Brush}" />
+    <Setter Property="Foreground" Value="{StaticResource SdBrandGradientHorizontal}" />
+  </Style>
+
+  <!-- Dialog overlay -->
+  <Style Selector="Border.scrim">
+    <Setter Property="Background" Value="#80100C24" />
+  </Style>
+  <Style Selector="Border.dialog">
+    <Setter Property="Background" Value="{DynamicResource SdSurfaceBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource SdBorderBrush}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="CornerRadius" Value="20" />
+    <Setter Property="Padding" Value="28" />
+    <Setter Property="Width" Value="460" />
+    <Setter Property="HorizontalAlignment" Value="Center" />
+    <Setter Property="VerticalAlignment" Value="Center" />
+    <Setter Property="BoxShadow" Value="0 24 64 0 #40100C24" />
+  </Style>
+
+  <!-- Drop target highlight -->
+  <Style Selector="Button.folderRow.dragover /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="BorderBrush" Value="{DynamicResource SdPrimaryBrush}" />
+    <Setter Property="Background" Value="{DynamicResource SdPrimarySoftBrush}" />
+  </Style>
 </Styles>
