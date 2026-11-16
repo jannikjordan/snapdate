@@ -64,7 +64,12 @@ Decision and rationale: [ADR 0004](adr/0004-update-check-and-in-app-update.md).
   hard-checked; redirects are followed manually and only to the same host (max. 3).
 - **Nothing identifying is sent**: `User-Agent: Snapdate/<version>` and `Accept`; no cookies,
   tokens, machine or user ids. GitHub sees the IP address like for any web request.
-- **Opt-out, rare**: on by default, can be switched off; automatic checks at most once per day.
+- **Opt-out, rare**: on by default, can be switched off (About); automatic checks at most once per day.
+- **Informed first**: on the very first start Snapdate only shows a one-time notice ("checks GitHub
+  once a day … turn this off in About") and makes **no request** in that session; the first check
+  runs from the next start, so users can opt out before anything is sent. The notice is remembered
+  in the settings file the moment it is shown. A result that arrives after the user switched the
+  check off is discarded.
 - **The response is untrusted**: 10 s timeout, 1 MB cap, source-generated JSON parsing, version
   must be valid SemVer, page links must be `https://github.com/jannikjordan/snapdate/…` (no `.`/`..` path segments), asset
   links must be exactly `…/releases/download/<tag>/<name>` with `<name>` equal to the asset name, and

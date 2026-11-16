@@ -402,6 +402,24 @@
     <Setter Property="Foreground" Value="{StaticResource SdBrandGradientHorizontal}" />
   </Style>
 
+  <!-- Update banner and one-time notice: slim strip under the title bar -->
+  <Style Selector="Border.banner">
+    <Setter Property="Background" Value="{DynamicResource SdPrimarySoftBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource SdBorderBrush}" />
+    <Setter Property="BorderThickness" Value="0,0,0,1" />
+    <Setter Property="Padding" Value="20,8" />
+  </Style>
+  <Style Selector="Border.banner Button.primary, Border.banner Button.secondary">
+    <Setter Property="Height" Value="34" />
+    <Setter Property="Padding" Value="14,0" />
+    <Setter Property="FontSize" Value="13" />
+  </Style>
+  <Style Selector="Border.banner Button.link">
+    <Setter Property="FontSize" Value="13" />
+    <Setter Property="Height" Value="34" />
+    <Setter Property="Padding" Value="10,0" />
+  </Style>
+
   <!-- Dialog overlay -->
   <Style Selector="Border.scrim">
     <Setter Property="Background" Value="#80100C24" />

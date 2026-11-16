@@ -3,7 +3,7 @@ LanguageGroup	Language	Sprache
 ThemeToggle	Switch light / dark	Hell / Dunkel umschalten
 HelpButton	Help	Hilfe
 About	About Snapdate	Über Snapdate
-AboutBody	Snapdate gives your photos clear names based on the day they were taken. Everything runs offline: no account, no tracking, nothing leaves your computer.	Snapdate gibt Ihren Fotos klare Namen nach dem Tag der Aufnahme. Alles läuft offline: kein Konto, kein Tracking, nichts verlässt Ihren Computer.
+AboutBody	Snapdate gives your photos clear names based on the day they were taken. Everything runs on your computer: no account, no tracking, and your photos never leave it.	Snapdate gibt Ihren Fotos klare Namen nach dem Tag der Aufnahme. Alles läuft auf Ihrem Computer: kein Konto, kein Tracking, und Ihre Fotos verlassen ihn nie.
 AboutVersion	Version {0}	Version {0}
 AboutLicense	Free and open source (MIT licence).	Kostenlos und quelloffen (MIT-Lizenz).
 AboutWebsite	Project website	Projektseite
@@ -119,3 +119,21 @@ ConfirmMoveBody	Your {0} photos will be moved to the target folder with their ne
 ConfirmMoveBodyOne	Your photo will be moved to the target folder with its new name. Afterwards it is no longer in the original folder.	Ihr Foto wird mit neuem Namen in den Zielordner verschoben. Danach ist es nicht mehr im ursprünglichen Ordner.
 ConfirmMoveYes	Yes, move them	Ja, verschieben
 ConfirmMoveYesOne	Yes, move it	Ja, verschieben
+AboutPrivacy	Only checks GitHub for new versions — and only if you allow it.	Prüft höchstens bei GitHub auf neue Versionen — und nur, wenn Sie es erlauben.
+UpdateAvailableTitle	Snapdate {0} is available	Snapdate {0} ist verfügbar
+UpdateAvailableBody	You are using version {0}.	Sie verwenden Version {0}.
+UpdateBannerName	Update available	Update verfügbar
+UpdateNow	Update now	Jetzt aktualisieren
+UpdateWhatsNew	What's new	Was ist neu
+UpdateDownload	Download	Herunterladen
+UpdateLater	Later	Später
+UpdateSkip	Skip this version	Diese Version überspringen
+UpdateNoticeName	About update checks	Hinweis zur Update-Prüfung
+UpdateNoticeText	Snapdate checks GitHub once a day for new versions. You can turn this off in About.	Snapdate prüft einmal täglich bei GitHub auf neue Versionen. Sie können das unter „Über Snapdate“ ausschalten.
+UpdateNoticeDismiss	Got it	Verstanden
+UpdatesTitle	Updates	Updates
+UpdateAutoCheck	Check for updates automatically	Automatisch nach Updates suchen
+UpdateCheckNow	Check now	Jetzt prüfen
+UpdateChecking	Checking…	Prüfe …
+UpdateUpToDate	You're up to date (version {0})	Sie sind auf dem neuesten Stand (Version {0})
+UpdateCheckFailed	Couldn't check right now — are you offline?	Prüfung gerade nicht möglich — sind Sie offline?

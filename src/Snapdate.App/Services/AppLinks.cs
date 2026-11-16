@@ -13,5 +13,8 @@ public static class AppLinks
             ? $"{Repository}/blob/main/docs/user-guide.de.md"
             : $"{Repository}/blob/main/docs/user-guide.en.md");
 
+    /// <summary>Where portable users download the newest version.</summary>
+    public static Uri LatestRelease { get; } = new(Repository + "/releases/latest");
+
     public static Uri Website { get; } = new(Repository);
 }

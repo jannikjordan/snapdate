@@ -69,6 +69,45 @@
         </Grid>
       </Border>
 
+      <!-- ============ Update banner and first-start notice (only shown when needed) ============ -->
+      <StackPanel DockPanel.Dock="Top">
+        <Border Classes="banner" IsVisible="{Binding Update.IsBannerVisible}"
+                AutomationProperties.Name="{Binding Update.BannerAnnouncement}"
+                AutomationProperties.LiveSetting="Polite">
+          <Grid ColumnDefinitions="Auto,*,Auto" VerticalAlignment="Center">
+            <PathIcon Data="{StaticResource IconRefresh}" Width="18" Height="18" Margin="0,0,12,0"
+                      Foreground="{DynamicResource SdPrimaryBrush}" />
+            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+              <TextBlock Text="{Binding Update.BannerTitle}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+              <TextBlock Text="{Binding Update.BannerSubtitle}" Classes="muted" FontSize="12" TextTrimming="CharacterEllipsis" />
+            </StackPanel>
+            <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6" Margin="12,0,0,0" VerticalAlignment="Center">
+              <!-- Installed: Update now + What's new -->
+              <Button Classes="primary" Content="{Binding L.UpdateNow}" Command="{Binding Update.UpdateNowCommand}"
+                      IsVisible="{Binding Update.IsInstalled}" />
+              <Button Classes="secondary" Content="{Binding L.UpdateWhatsNew}" Command="{Binding Update.WhatsNewCommand}"
+                      IsVisible="{Binding Update.IsInstalled}" />
+              <!-- Portable: one Download button -->
+              <Button Classes="primary" Content="{Binding L.UpdateDownload}" Command="{Binding Update.DownloadCommand}"
+                      IsVisible="{Binding Update.IsPortable}" />
+              <Button Classes="link" Content="{Binding L.UpdateLater}" Command="{Binding Update.LaterCommand}" />
+              <Button Classes="link" Content="{Binding L.UpdateSkip}" Command="{Binding Update.SkipCommand}" />
+            </StackPanel>
+          </Grid>
+        </Border>
+        <Border Classes="banner" IsVisible="{Binding Update.IsNoticeVisible}"
+                AutomationProperties.Name="{Binding L.UpdateNoticeName}"
+                AutomationProperties.LiveSetting="Polite">
+          <Grid ColumnDefinitions="Auto,*,Auto" VerticalAlignment="Center">
+            <PathIcon Data="{StaticResource IconInfo}" Width="16" Height="16" Margin="0,0,12,0"
+                      Foreground="{DynamicResource SdPrimaryBrush}" />
+            <TextBlock Grid.Column="1" Text="{Binding L.UpdateNoticeText}" TextWrapping="Wrap" VerticalAlignment="Center" />
+            <Button Grid.Column="2" Classes="link" Margin="12,0,0,0" VerticalAlignment="Center" Content="{Binding L.UpdateNoticeDismiss}"
+                    Command="{Binding Update.DismissNoticeCommand}" />
+          </Grid>
+        </Border>
+      </StackPanel>
+
       <!-- ============ Action bar (68 px) ============ -->
       <Border DockPanel.Dock="Bottom" Height="68" Padding="20,0"
               Background="{DynamicResource SdSurfaceBrush}"
@@ -467,6 +506,18 @@
           <TextBlock Text="{Binding L.AppTagline}" FontWeight="SemiBold" TextWrapping="Wrap" />
           <TextBlock Text="{Binding L.AboutBody}" Classes="muted" TextWrapping="Wrap" />
           <TextBlock Text="{Binding L.AboutLicense}" Classes="muted" TextWrapping="Wrap" />
+          <TextBlock Text="{Binding L.AboutPrivacy}" Classes="muted" TextWrapping="Wrap" />
+          <StackPanel Spacing="8" IsVisible="{Binding Update.IsAvailable}"
+                      AutomationProperties.Name="{Binding L.UpdatesTitle}">
+            <Border Height="1" Background="{DynamicResource SdBorderBrush}" Margin="0,4" />
+            <CheckBox IsChecked="{Binding Update.AutoCheck}" Content="{Binding L.UpdateAutoCheck}" />
+            <StackPanel Orientation="Horizontal" Spacing="12">
+              <Button Classes="secondary" Content="{Binding L.UpdateCheckNow}" Command="{Binding Update.CheckNowCommand}" />
+              <TextBlock Text="{Binding Update.CheckResultText}" Classes="muted" VerticalAlignment="Center"
+                         TextWrapping="Wrap" MaxWidth="260" IsVisible="{Binding Update.HasCheckResult}"
+                         AutomationProperties.LiveSetting="Polite" />
+            </StackPanel>
+          </StackPanel>
           <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right" Margin="0,8,0,0">
             <Button Classes="secondary" Content="{Binding L.AboutWebsite}" Command="{Binding OpenWebsiteCommand}" />
             <Button Classes="primary" Height="44" Content="{Binding L.Close}" Command="{Binding ToggleAboutCommand}" IsCancel="True" />

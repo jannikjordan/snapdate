@@ -1,5 +1,4 @@
 using System.Globalization;
-using System.Reflection;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Snapdate.App.Localization;
@@ -77,6 +76,8 @@ public sealed partial class MainWindowViewModel : ObservableObject
         SourceFolder = ExistingOrNull(settings.SourceFolder);
         TargetFolder = ExistingOrNull(settings.TargetFolder);
 
+        Update = new UpdateViewModel(services, L);
+
         _initializing = false;
         if (SourceFolder is not null)
         {
@@ -127,7 +128,10 @@ public sealed partial class MainWindowViewModel : ObservableObject
         }
     }
 
-    public string VersionLabel { get; } = "v" + GetVersion();
+    public string VersionLabel { get; } = "v" + RunningVersion.Text;
+
+    /// <summary>Update notification, setting and manual check.</summary>
+    public UpdateViewModel Update { get; }
 
     // ---------- Step 1: folders ----------
 
@@ -314,7 +318,7 @@ public sealed partial class MainWindowViewModel : ObservableObject
     [ObservableProperty]
     public partial string ConfirmMoveYesText { get; private set; } = string.Empty;
 
-    public string AboutVersionText => L.Format(nameof(LocalizedStrings.AboutVersion), GetVersion());
+    public string AboutVersionText => L.Format(nameof(LocalizedStrings.AboutVersion), RunningVersion.Text);
 
     // ---------- Commands ----------
 
@@ -425,6 +429,13 @@ public sealed partial class MainWindowViewModel : ObservableObject
     [RelayCommand]
     private void ToggleAbout() => IsAboutOpen = !IsAboutOpen;
 
+    /// <summary>Called when the window closes: cancels a running update check.</summary>
+    public void Shutdown()
+    {
+        Update.Shutdown();
+        Update.Dispose();
+    }
+
     /// <summary>
     /// Persists the current choices and keeps settings the UI does not own (update-check state).
     /// Called when running and when the window closes.
@@ -452,6 +463,7 @@ public sealed partial class MainWindowViewModel : ObservableObject
         }
 
         Pattern.UpdateStrings(L);
+        Update.UpdateStrings(L);
         OnPropertyChanged(nameof(SourceDisplay));
         OnPropertyChanged(nameof(TargetDisplay));
         OnPropertyChanged(nameof(ScanCountText));
@@ -777,12 +789,4 @@ public sealed partial class MainWindowViewModel : ObservableObject
 
     private static LocalizedStrings CreateStrings(UiLanguage language) =>
         new(UiLanguageResolver.ToCulture(language));
-
-    private static string GetVersion()
-    {
-        var info = typeof(MainWindowViewModel).Assembly
-            .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? "0.0.0";
-        var plus = info.IndexOf('+', StringComparison.Ordinal);
-        return plus >= 0 ? info[..plus] : info;
-    }
 }

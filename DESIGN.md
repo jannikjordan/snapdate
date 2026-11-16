@@ -163,6 +163,16 @@ progress bar with "Cancel"; on completion a success card slides up:
 Language segmented control `EN | DE`, theme toggle, About (version, licences,
 "no data leaves this PC").
 
+### 5.7 Update banner and notice
+Slim strip (`Border.banner`: `SdPrimarySoft` background, 1 px `SdBorder` bottom line, padding 20/8)
+directly under the title bar; it pushes the content down and never overlays it. The update banner
+shows a refresh icon, "Snapdate X is available" with "You are using version Y." below, and buttons
+(34 px high): installed copies "Update now" (primary) + "What's new" (secondary), portable copies
+"Download" (primary); "Later" and "Skip this version" are link buttons. The one-time notice uses the
+same strip with an info icon, one line of text and a "Got it" link button. Both are live regions with
+automation names. About gets a divider, the "Check for updates automatically" checkbox and a
+"Check now" secondary button with a short inline result next to it.
+
 ## 6. Localisation
 
 - Auto: Windows display language `de-*` → German, otherwise English.

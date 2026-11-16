@@ -33,4 +33,7 @@ public sealed record AppSettings
 
     /// <summary>Version the user chose not to be notified about (SemVer text), or null.</summary>
     public string? SkippedVersion { get; set; }
+
+    /// <summary>True once the one-time "Snapdate checks GitHub once a day" notice has been shown.</summary>
+    public bool UpdateNoticeShown { get; set; }
 }

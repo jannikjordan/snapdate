@@ -12,7 +12,11 @@ public partial class MainWindow : Window
         InitializeComponent();
         WireDropTarget(SourceDrop, asSource: true);
         WireDropTarget(TargetDrop, asSource: false);
-        Closing += (_, _) => (DataContext as MainWindowViewModel)?.SaveSettings();
+        Closing += (_, _) =>
+        {
+            (DataContext as MainWindowViewModel)?.Shutdown();
+            (DataContext as MainWindowViewModel)?.SaveSettings();
+        };
     }
 
     private void WireDropTarget(Button target, bool asSource)

@@ -1,8 +1,11 @@
 using System.Globalization;
 using Snapdate.App.Services;
 using Snapdate.App.ViewModels;
+using Snapdate.Application.Installation;
 using Snapdate.Application.Ports;
 using Snapdate.Application.Settings;
+using Snapdate.Application.Updates;
+using Snapdate.Domain.Versioning;
 using Snapdate.Infrastructure.FileSystem;
 using Snapdate.Infrastructure.Metadata;
 
@@ -55,7 +58,13 @@ internal sealed class MemorySettings(AppSettings? initial = null) : ISettingsSto
 
     public AppSettings Load() => Current;
 
-    public void Save(AppSettings settings) => Current = settings;
+    public int Saves { get; private set; }
+
+    public void Save(AppSettings settings)
+    {
+        Saves++;
+        Current = settings;
+    }
 }
 
 internal sealed class TestServices
@@ -66,10 +75,75 @@ internal sealed class TestServices
 
     public MemorySettings Settings { get; init; } = new();
 
+    /// <summary>When set, the update check is wired to this feed (never the network).</summary>
+    public FakeFeed? Feed { get; init; }
+
+    public FakeClock Clock { get; } = new();
+
+    public InstallKind InstallKind { get; init; } = InstallKind.Installed;
+
+    public AppVersion CurrentVersion { get; init; } = AppVersion.Parse("1.0.0");
+
+    public RecordingUpdateInstaller Installer { get; } = new();
+
     public MainWindowViewModel CreateViewModel(string culture = "en-US") =>
         new(
-            new AppServices(Theme, Desktop, Settings, new LocalFileSystem(), new MetadataExtractorReader(TimeProvider.System), TimeProvider.System, null),
+            new AppServices(
+                Theme,
+                Desktop,
+                Settings,
+                new LocalFileSystem(),
+                new MetadataExtractorReader(TimeProvider.System),
+                TimeProvider.System,
+                null,
+                Feed is null ? null : new UpdateCheckService(Feed, Settings, Clock, CurrentVersion),
+                new FakeInstall(InstallKind),
+                Installer),
             CultureInfo.GetCultureInfo(culture));
+}
+
+internal sealed class FakeFeed : IReleaseFeed
+{
+    public ReleaseInfo? Latest { get; set; }
+
+    public int Calls { get; private set; }
+
+    public TaskCompletionSource? Gate { get; set; }
+
+    public async Task<ReleaseInfo?> GetLatestAsync(CancellationToken cancellationToken)
+    {
+        Calls++;
+        if (Gate is not null)
+        {
+            await Gate.Task.WaitAsync(cancellationToken);
+        }
+
+        return Latest;
+    }
+
+    public static ReleaseInfo Release(string version) =>
+        new(AppVersion.Parse(version), new Uri($"https://github.com/jannikjordan/snapdate/releases/tag/v{version}"), false, false, []);
+}
+
+internal sealed class FakeClock : IClock
+{
+    public DateTimeOffset UtcNow { get; set; } = new(2026, 6, 1, 12, 0, 0, TimeSpan.Zero);
+}
+
+internal sealed class FakeInstall(InstallKind kind) : IInstallInfo
+{
+    public InstallInfo Current { get; } = new(kind, kind == InstallKind.Installed ? InstallScope.CurrentUser : InstallScope.None);
+}
+
+internal sealed class RecordingUpdateInstaller : IUpdateInstaller
+{
+    public List<ReleaseInfo> Started { get; } = [];
+
+    public Task UpdateNowAsync(ReleaseInfo release, InstallInfo install)
+    {
+        Started.Add(release);
+        return Task.CompletedTask;
+    }
 }
 
 /// <summary>A unique temporary folder that is deleted after the test.</summary>

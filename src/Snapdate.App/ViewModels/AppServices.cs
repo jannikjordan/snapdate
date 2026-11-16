@@ -1,5 +1,6 @@
 using Snapdate.App.Services;
 using Snapdate.Application.Ports;
+using Snapdate.Application.Updates;
 
 namespace Snapdate.App.ViewModels;
 
@@ -11,4 +12,7 @@ public sealed record AppServices(
     IFileSystem FileSystem,
     IMetadataReader MetadataReader,
     TimeProvider Clock,
-    ThumbnailLoader? Thumbnails);
+    ThumbnailLoader? Thumbnails,
+    UpdateCheckService? UpdateCheck = null,
+    IInstallInfo? Install = null,
+    IUpdateInstaller? UpdateInstaller = null);

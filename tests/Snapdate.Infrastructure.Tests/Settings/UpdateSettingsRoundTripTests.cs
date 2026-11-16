@@ -17,6 +17,7 @@ public sealed class UpdateSettingsRoundTripTests : IDisposable
         Assert.True(settings.AutoUpdateCheck);
         Assert.Null(settings.LastUpdateCheckUtc);
         Assert.Null(settings.SkippedVersion);
+        Assert.False(settings.UpdateNoticeShown);
     }
 
     [Fact]
@@ -28,9 +29,26 @@ public sealed class UpdateSettingsRoundTripTests : IDisposable
             AutoUpdateCheck = false,
             LastUpdateCheckUtc = new DateTimeOffset(2026, 6, 1, 12, 0, 0, TimeSpan.Zero),
             SkippedVersion = "0.2.0",
+            UpdateNoticeShown = true,
         };
         store.Save(saved);
         Assert.Equal(saved, store.Load());
+    }
+
+    [Fact]
+    public void Concurrent_saves_neither_fail_nor_leave_temp_files_behind()
+    {
+        var path = _temp.Combine("busy.json");
+        var store = new JsonSettingsStore(path);
+
+        Parallel.For(0, 200, i =>
+        {
+            store.Save(store.Load() with { Pattern = "{YYYY}" + i });
+            Assert.NotNull(store.Load());
+        });
+
+        Assert.StartsWith("{YYYY}", store.Load().Pattern, StringComparison.Ordinal);
+        Assert.Equal([path], Directory.GetFiles(_temp.Path));
     }
 
     [Fact]
@@ -44,5 +62,6 @@ public sealed class UpdateSettingsRoundTripTests : IDisposable
         Assert.Equal("{YYYY}", settings.Pattern);
         Assert.True(settings.IncludeSubfolders);
         Assert.True(settings.AutoUpdateCheck);
+        Assert.False(settings.UpdateNoticeShown);
     }
 }

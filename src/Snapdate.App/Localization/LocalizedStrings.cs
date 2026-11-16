@@ -256,6 +256,42 @@ public sealed class LocalizedStrings(CultureInfo culture)
 
     public string ConfirmMoveYesOne => Get(nameof(ConfirmMoveYesOne));
 
+    public string AboutPrivacy => Get(nameof(AboutPrivacy));
+
+    public string UpdateAvailableTitle => Get(nameof(UpdateAvailableTitle));
+
+    public string UpdateAvailableBody => Get(nameof(UpdateAvailableBody));
+
+    public string UpdateBannerName => Get(nameof(UpdateBannerName));
+
+    public string UpdateNow => Get(nameof(UpdateNow));
+
+    public string UpdateWhatsNew => Get(nameof(UpdateWhatsNew));
+
+    public string UpdateDownload => Get(nameof(UpdateDownload));
+
+    public string UpdateLater => Get(nameof(UpdateLater));
+
+    public string UpdateSkip => Get(nameof(UpdateSkip));
+
+    public string UpdateNoticeName => Get(nameof(UpdateNoticeName));
+
+    public string UpdateNoticeText => Get(nameof(UpdateNoticeText));
+
+    public string UpdateNoticeDismiss => Get(nameof(UpdateNoticeDismiss));
+
+    public string UpdatesTitle => Get(nameof(UpdatesTitle));
+
+    public string UpdateAutoCheck => Get(nameof(UpdateAutoCheck));
+
+    public string UpdateCheckNow => Get(nameof(UpdateCheckNow));
+
+    public string UpdateChecking => Get(nameof(UpdateChecking));
+
+    public string UpdateUpToDate => Get(nameof(UpdateUpToDate));
+
+    public string UpdateCheckFailed => Get(nameof(UpdateCheckFailed));
+
     /// <summary>Looks up a key; falls back to the key itself so missing strings are visible, not fatal.</summary>
     public string Get(string key) => Resources.GetString(key, Culture) ?? key;
 

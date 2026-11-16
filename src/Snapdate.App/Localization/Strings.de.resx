@@ -9,7 +9,7 @@
   <data name="ThemeToggle" xml:space="preserve"><value>Hell / Dunkel umschalten</value></data>
   <data name="HelpButton" xml:space="preserve"><value>Hilfe</value></data>
   <data name="About" xml:space="preserve"><value>Über Snapdate</value></data>
-  <data name="AboutBody" xml:space="preserve"><value>Snapdate gibt Ihren Fotos klare Namen nach dem Tag der Aufnahme. Alles läuft offline: kein Konto, kein Tracking, nichts verlässt Ihren Computer.</value></data>
+  <data name="AboutBody" xml:space="preserve"><value>Snapdate gibt Ihren Fotos klare Namen nach dem Tag der Aufnahme. Alles läuft auf Ihrem Computer: kein Konto, kein Tracking, und Ihre Fotos verlassen ihn nie.</value></data>
   <data name="AboutVersion" xml:space="preserve"><value>Version {0}</value></data>
   <data name="AboutLicense" xml:space="preserve"><value>Kostenlos und quelloffen (MIT-Lizenz).</value></data>
   <data name="AboutWebsite" xml:space="preserve"><value>Projektseite</value></data>
@@ -125,4 +125,22 @@
   <data name="ConfirmMoveBodyOne" xml:space="preserve"><value>Ihr Foto wird mit neuem Namen in den Zielordner verschoben. Danach ist es nicht mehr im ursprünglichen Ordner.</value></data>
   <data name="ConfirmMoveYes" xml:space="preserve"><value>Ja, verschieben</value></data>
   <data name="ConfirmMoveYesOne" xml:space="preserve"><value>Ja, verschieben</value></data>
+  <data name="AboutPrivacy" xml:space="preserve"><value>Prüft höchstens bei GitHub auf neue Versionen — und nur, wenn Sie es erlauben.</value></data>
+  <data name="UpdateAvailableTitle" xml:space="preserve"><value>Snapdate {0} ist verfügbar</value></data>
+  <data name="UpdateAvailableBody" xml:space="preserve"><value>Sie verwenden Version {0}.</value></data>
+  <data name="UpdateBannerName" xml:space="preserve"><value>Update verfügbar</value></data>
+  <data name="UpdateNow" xml:space="preserve"><value>Jetzt aktualisieren</value></data>
+  <data name="UpdateWhatsNew" xml:space="preserve"><value>Was ist neu</value></data>
+  <data name="UpdateDownload" xml:space="preserve"><value>Herunterladen</value></data>
+  <data name="UpdateLater" xml:space="preserve"><value>Später</value></data>
+  <data name="UpdateSkip" xml:space="preserve"><value>Diese Version überspringen</value></data>
+  <data name="UpdateNoticeName" xml:space="preserve"><value>Hinweis zur Update-Prüfung</value></data>
+  <data name="UpdateNoticeText" xml:space="preserve"><value>Snapdate prüft einmal täglich bei GitHub auf neue Versionen. Sie können das unter „Über Snapdate“ ausschalten.</value></data>
+  <data name="UpdateNoticeDismiss" xml:space="preserve"><value>Verstanden</value></data>
+  <data name="UpdatesTitle" xml:space="preserve"><value>Updates</value></data>
+  <data name="UpdateAutoCheck" xml:space="preserve"><value>Automatisch nach Updates suchen</value></data>
+  <data name="UpdateCheckNow" xml:space="preserve"><value>Jetzt prüfen</value></data>
+  <data name="UpdateChecking" xml:space="preserve"><value>Prüfe …</value></data>
+  <data name="UpdateUpToDate" xml:space="preserve"><value>Sie sind auf dem neuesten Stand (Version {0})</value></data>
+  <data name="UpdateCheckFailed" xml:space="preserve"><value>Prüfung gerade nicht möglich — sind Sie offline?</value></data>
 </root>

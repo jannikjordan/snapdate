@@ -8,8 +8,11 @@ using Avalonia.VisualTree;
 using Snapdate.App.Services;
 using Snapdate.App.ViewModels;
 using Snapdate.App.Views;
+using Snapdate.Application.Installation;
 using Snapdate.Application.Ports;
 using Snapdate.Application.Settings;
+using Snapdate.Application.Updates;
+using Snapdate.Domain.Versioning;
 using Snapdate.Infrastructure.FileSystem;
 using Snapdate.Infrastructure.Metadata;
 
@@ -49,14 +52,33 @@ internal static class ScreenshotRenderer
         public Task OpenFileAsync(string path) => Task.CompletedTask;
     }
 
-    private sealed class MemorySettings : ISettingsStore
+    private sealed class MemorySettings(AppSettings initial) : ISettingsStore
     {
-        public AppSettings Load() => new();
+        private AppSettings _current = initial;
 
-        public void Save(AppSettings settings)
-        {
-        }
+        public AppSettings Load() => _current;
+
+        public void Save(AppSettings settings) => _current = settings;
     }
+
+    /// <summary>Never touches the network: answers with a fixed release.</summary>
+    private sealed class FixedFeed(ReleaseInfo? latest) : IReleaseFeed
+    {
+        public Task<ReleaseInfo?> GetLatestAsync(CancellationToken cancellationToken) => Task.FromResult(latest);
+    }
+
+    private sealed class FixedClock : IClock
+    {
+        public DateTimeOffset UtcNow { get; } = new(2026, 6, 1, 12, 0, 0, TimeSpan.Zero);
+    }
+
+    private sealed class FixedInstall(InstallKind kind) : IInstallInfo
+    {
+        public InstallInfo Current { get; } = new(kind, kind == InstallKind.Installed ? InstallScope.CurrentUser : InstallScope.None);
+    }
+
+    /// <summary>How the update check behaves in a screenshot.</summary>
+    private sealed record UpdateShot(bool NewerVersion = false, InstallKind Kind = InstallKind.Installed, bool NoticeShown = true);
 
     private static int _width = 1180;
     private static int _height = 780;
@@ -106,6 +128,22 @@ internal static class ScreenshotRenderer
                         vm.TargetFolder = Path.Combine(DemoRoot, "Sorted");
                         vm.Pattern.Text = "{YYYY}-{MM}-{DD} {hour}";
                     });
+
+                    void ArrangePreview(MainWindowViewModel vm)
+                    {
+                        vm.SourceFolder = source;
+                        Wait(vm.ScanCompletion);
+                        vm.TargetFolder = Path.Combine(DemoRoot, "Sorted");
+                    }
+
+                    Shoot(dir, $"10-update-installed-{suffix}", ci, thumbnails, ArrangePreview, update: new UpdateShot(NewerVersion: true));
+                    Shoot(dir, $"11-update-portable-{suffix}", ci, thumbnails, ArrangePreview, update: new UpdateShot(NewerVersion: true, Kind: InstallKind.Portable));
+                    Shoot(dir, $"12-about-update-{suffix}", ci, thumbnails, vm =>
+                    {
+                        vm.IsAboutOpen = true;
+                        Wait(vm.Update.CheckNowCommand.ExecuteAsync(null));
+                    });
+                    Shoot(dir, $"13-first-start-notice-{suffix}", ci, thumbnails, ArrangePreview, update: new UpdateShot(NoticeShown: false));
                 }
 
                 Avalonia.Application.Current!.RequestedThemeVariant = ThemeVariant.Light;
@@ -160,17 +198,30 @@ internal static class ScreenshotRenderer
         }
     }
 
-    private static void Shoot(string dir, string name, CultureInfo culture, ThumbnailLoader thumbnails, Action<MainWindowViewModel> arrange, bool scrollLeftToEnd = false)
+    private static void Shoot(string dir, string name, CultureInfo culture, ThumbnailLoader thumbnails, Action<MainWindowViewModel> arrange, bool scrollLeftToEnd = false, UpdateShot? update = null)
     {
+        update ??= new UpdateShot();
+        var running = RunningVersion.Parsed ?? AppVersion.Parse("0.1.0");
+        var newer = AppVersion.Parse($"{running.Major}.{running.Minor + 1}.0");
+        var latest = new ReleaseInfo(
+            update.NewerVersion ? newer : running,
+            new Uri("https://github.com/jannikjordan/snapdate/releases/latest"),
+            false,
+            false,
+            []);
+        var settings = new MemorySettings(new AppSettings { UpdateNoticeShown = update.NoticeShown });
         var services = new AppServices(
             new FixedTheme(),
             new NoDesktop(),
-            new MemorySettings(),
+            settings,
             new LocalFileSystem(),
             new MetadataExtractorReader(TimeProvider.System),
             TimeProvider.System,
-            thumbnails);
+            thumbnails,
+            new UpdateCheckService(new FixedFeed(latest), settings, new FixedClock(), running),
+            new FixedInstall(update.Kind));
         var vm = new MainWindowViewModel(services, culture);
+        Wait(vm.Update.AutomaticCheckCompletion);
         var window = new MainWindow { DataContext = vm, Width = _width, Height = _height };
         window.Show();
         arrange(vm);

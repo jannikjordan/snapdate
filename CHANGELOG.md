@@ -20,9 +20,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 📦 One portable executable each for `win-x64` and `win-arm64` (self-contained, about 22 MB); no installation, works offline.
 - 📖 User guides in English and German with screenshots and diagrams.
 - 💿 Installer (`Snapdate-Setup-vX.Y.Z-win-x64.exe` / `-win-arm64.exe`): installs Snapdate like a normal Windows program, with Start menu and (optional) desktop shortcut and an entry in Settings → Apps. Choose "only for me" (no administrator rights) or "for all users"; a newer installer updates in place and keeps your settings; uninstalling asks whether to keep them. English and German. The portable single exe is still available as `Snapdate-vX.Y.Z-win-x64-portable.exe` / `-win-arm64-portable.exe`.
+- 🔔 Snapdate now tells you when a new version is available (#2). Once a day at most, on start, it asks GitHub for the latest release and shows a slim banner: installed copies get "Update now", "What's new", "Later" and "Skip this version"; portable copies get "Download", which opens the latest release page. A one-time notice explains this, and About has a "Check for updates automatically" switch (on by default) and a "Check now" button. Nothing but the version request is sent; photos and personal data never leave your PC.
 
 ### Changed
 - Release files are renamed: portable exes now end in `-portable.exe`, and the zip packages are gone (they only held the exe plus README, CHANGELOG and LICENSE).
+- The About text no longer says Snapdate runs fully offline; it now mentions the optional update check.
 
 ### Fixed
 - 👀 While the file name pattern is invalid, the preview no longer keeps showing the previous names as if they were current: the list is dimmed with the new names struck through, a red note explains that the names can't be built right now, and the "Numbered" tab is hidden until the pattern is valid again (#9).
