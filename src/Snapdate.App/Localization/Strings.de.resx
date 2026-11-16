@@ -92,6 +92,8 @@
   <data name="ProblemSourceInsideTargetHint" xml:space="preserve"><value>Bitte wählen Sie einen anderen Zielordner.</value></data>
   <data name="ProblemPattern" xml:space="preserve"><value>Bitte prüfen Sie zuerst den Dateinamen</value></data>
   <data name="ProblemPatternHint" xml:space="preserve"><value>Die rote Meldung in Schritt 2 erklärt, was zu ändern ist.</value></data>
+  <data name="PreviewStaleTitle" xml:space="preserve"><value>Die neuen Namen können gerade nicht erstellt werden</value></data>
+  <data name="PreviewStaleBody" xml:space="preserve"><value>Korrigieren Sie den Dateinamen in Schritt 2. Die Liste darunter zeigt die Namen von vorher.</value></data>
   <data name="ProblemNoPhotos" xml:space="preserve"><value>Es gibt noch nichts zu tun</value></data>
   <data name="StatusNothingChanged" xml:space="preserve"><value>Bis Sie auf den Knopf drücken, wird nichts verändert.</value></data>
   <data name="ReadyTitle" xml:space="preserve"><value>Bereit: {0} Fotos</value></data>

@@ -86,6 +86,8 @@ ProblemSourceInsideTarget	The photo folder is inside the target folder	Der Fotoo
 ProblemSourceInsideTargetHint	Please choose a different target folder.	Bitte wählen Sie einen anderen Zielordner.
 ProblemPattern	Please check the file name first	Bitte prüfen Sie zuerst den Dateinamen
 ProblemPatternHint	The red message in step 2 explains what to change.	Die rote Meldung in Schritt 2 erklärt, was zu ändern ist.
+PreviewStaleTitle	The new names can’t be built right now	Die neuen Namen können gerade nicht erstellt werden
+PreviewStaleBody	Fix the file name in step 2. The list below shows the names from before.	Korrigieren Sie den Dateinamen in Schritt 2. Die Liste darunter zeigt die Namen von vorher.
 ProblemNoPhotos	There is nothing to do yet	Es gibt noch nichts zu tun
 StatusNothingChanged	Nothing changes until you press the button.	Bis Sie auf den Knopf drücken, wird nichts verändert.
 ReadyTitle	Ready: {0} photos	Bereit: {0} Fotos

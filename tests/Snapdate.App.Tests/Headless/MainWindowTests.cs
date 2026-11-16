@@ -22,6 +22,9 @@ public sealed class MainWindowTests(HeadlessSession headless)
             .Where(t => t.Length > 0)
             .ToList();
 
+    private static bool IsShown(Window window, string text) =>
+        window.GetLogicalDescendants().OfType<TextBlock>().Any(t => t.Text == text && t.IsEffectivelyVisible);
+
     private Task RunOnUi(Action action) =>
         headless.Session.Dispatch(action, TestContext.Current.CancellationToken);
 
@@ -103,6 +106,128 @@ public sealed class MainWindowTests(HeadlessSession headless)
         vm.ToggleThemeCommand.Execute(null);
 
         Assert.Equal(1, services.Theme.Toggles);
+    });
+
+    [Fact]
+    public Task Invalid_pattern_marks_the_preview_stale_until_the_pattern_is_valid_again() => RunOnUi(async () =>
+    {
+        using var temp = new TempFolder();
+        temp.Photo("camera/a.jpg", new DateTime(2024, 7, 14, 15, 32, 8));
+        temp.Photo("camera/b.png", new DateTime(2024, 7, 15, 8, 0, 0));
+        var target = temp.Combine("sorted");
+        Directory.CreateDirectory(target);
+        var vm = new TestServices().CreateViewModel();
+        vm.SourceFolder = temp.Combine("camera");
+        await vm.ScanCompletion;
+        vm.TargetFolder = target;
+        vm.Pattern.Text = "{YYYY}-{MM}-{DD}";
+        Assert.False(vm.IsPreviewStale);
+        Assert.Equal("2024-07-14.jpg", vm.VisibleItems[0].NewName);
+
+        vm.Pattern.Text = "{YYYY}-{nope}";
+
+        Assert.True(vm.IsPreviewStale);
+        Assert.True(vm.ShowList, "The list stays so the user keeps orientation.");
+        Assert.Equal(2, vm.CountAll);
+        Assert.False(vm.CanRun);
+
+        vm.Pattern.Text = "{YYYY}{MM}{DD}";
+
+        Assert.False(vm.IsPreviewStale);
+        Assert.Equal("20240714.jpg", vm.VisibleItems[0].NewName);
+        Assert.True(vm.CanRun);
+    });
+
+    [Fact]
+    public Task Stale_preview_shows_a_hint_and_drops_the_numbered_filter() => RunOnUi(async () =>
+    {
+        using var temp = new TempFolder();
+        temp.Photo("camera/a.jpg", new DateTime(2024, 7, 14, 15, 32, 8));
+        var vm = new TestServices().CreateViewModel();
+        vm.SourceFolder = temp.Combine("camera");
+        await vm.ScanCompletion;
+        vm.TargetFolder = temp.Combine("sorted");
+        vm.Filter = PreviewFilter.Renamed;
+        var window = new MainWindow { DataContext = vm };
+        window.Show();
+
+        vm.Pattern.Text = "{YYYY}-{nope}";
+        Dispatcher.UIThread.RunJobs();
+
+        Assert.Equal(PreviewFilter.All, vm.Filter);
+        Assert.Contains(vm.L.PreviewStaleTitle, VisibleTexts(window));
+        Assert.Contains(vm.L.PreviewStaleBody, VisibleTexts(window));
+
+        vm.Pattern.Text = "{YYYY}";
+        Dispatcher.UIThread.RunJobs();
+
+        Assert.False(IsShown(window, vm.L.PreviewStaleTitle));
+        window.Close();
+    });
+
+    [Fact]
+    public Task Stale_preview_follows_a_folder_change_and_empties_when_there_is_nothing_to_show() => RunOnUi(async () =>
+    {
+        using var temp = new TempFolder();
+        temp.Photo("one/a.jpg", new DateTime(2024, 7, 14, 15, 32, 8));
+        temp.Photo("two/b.jpg", new DateTime(2023, 1, 2, 3, 4, 5));
+        Directory.CreateDirectory(temp.Combine("empty"));
+        var vm = new TestServices().CreateViewModel();
+        vm.SourceFolder = temp.Combine("one");
+        await vm.ScanCompletion;
+        vm.TargetFolder = temp.Combine("sorted");
+        vm.Pattern.Text = "{YYYY}";
+        vm.Pattern.Text = "{YYYY}-{nope}";
+
+        vm.SourceFolder = temp.Combine("two");
+        await vm.ScanCompletion;
+
+        Assert.True(vm.IsPreviewStale);
+        Assert.Equal("2023.jpg", vm.VisibleItems.Single().NewName);
+
+        vm.SourceFolder = temp.Combine("empty");
+        await vm.ScanCompletion;
+
+        Assert.Empty(vm.VisibleItems);
+        Assert.Equal(0, vm.CountAll);
+        Assert.False(vm.IsPreviewStale);
+    });
+
+    [Fact]
+    public Task Stale_preview_hides_the_numbered_badge_on_rows() => RunOnUi(async () =>
+    {
+        using var temp = new TempFolder();
+        temp.Photo("one/a.jpg", new DateTime(2024, 7, 14, 15, 32, 8));
+        temp.Photo("one/b.jpg", new DateTime(2024, 7, 14, 15, 32, 8));
+        var vm = new TestServices().CreateViewModel();
+        vm.SourceFolder = temp.Combine("one");
+        await vm.ScanCompletion;
+        vm.TargetFolder = temp.Combine("sorted");
+        vm.Pattern.Text = "{YYYY}";
+        Assert.All(vm.VisibleItems, i => Assert.True(i.ShowBadge));
+
+        vm.Pattern.Text = "{nope}";
+
+        Assert.Contains(vm.VisibleItems, i => i.NewName.Contains("(2)"));
+        Assert.All(vm.VisibleItems, i => Assert.False(i.Badge == BadgeKind.Renamed && i.ShowBadge));
+    });
+
+    [Fact]
+    public Task Invalid_saved_pattern_at_startup_shows_a_stale_list_built_from_the_default_pattern() => RunOnUi(async () =>
+    {
+        using var temp = new TempFolder();
+        temp.Photo("one/a.jpg", new DateTime(2024, 7, 14, 15, 32, 8));
+        var services = new TestServices
+        {
+            Settings = new MemorySettings(new AppSettings { SourceFolder = temp.Combine("one"), Pattern = "{nope}" }),
+        };
+
+        var vm = services.CreateViewModel();
+        await vm.ScanCompletion;
+
+        Assert.True(vm.IsPreviewStale);
+        Assert.Equal("2024-07-14_15-32-08.jpg", vm.VisibleItems.Single().NewName);
+        Assert.False(vm.CanRun);
     });
 
     [Fact]

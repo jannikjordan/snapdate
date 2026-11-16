@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 📖 User guides in English and German with screenshots and diagrams.
 
 ### Fixed
+- 👀 While the file name pattern is invalid, the preview no longer keeps showing the previous names as if they were current: the list is dimmed with the new names struck through, a red note explains that the names can't be built right now, and the "Numbered" tab is hidden until the pattern is valid again (#9).
 - 🪟 The title bar now behaves like a normal Windows title bar: drag it to move the window, double-click to maximise or restore, and use snap layouts. The system window title no longer shows on top of the Snapdate logo.
 
 ### Security

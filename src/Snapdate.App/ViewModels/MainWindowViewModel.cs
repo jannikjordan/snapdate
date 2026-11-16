@@ -8,6 +8,7 @@ using Snapdate.Application.Execution;
 using Snapdate.Application.Localization;
 using Snapdate.Application.Planning;
 using Snapdate.Application.Scanning;
+using Snapdate.Domain.Naming;
 using Snapdate.Domain.Planning;
 
 namespace Snapdate.App.ViewModels;
@@ -49,6 +50,7 @@ public sealed partial class MainWindowViewModel : ObservableObject
     private List<ScannedPhoto> _photos = [];
     private RenamePlan? _plan;
     private List<PreviewItemViewModel> _allItems = [];
+    private NamePattern? _lastValidPattern;
     private CancellationTokenSource? _scanCts;
     private CancellationTokenSource? _runCts;
     private ExecutionResult? _result;
@@ -193,6 +195,15 @@ public sealed partial class MainWindowViewModel : ObservableObject
     public bool ShowNoPhotos => SourceFolder is not null && Phase != Phase.Scanning && _photos.Count == 0;
 
     public bool ShowList => Phase != Phase.Scanning && _photos.Count > 0;
+
+    /// <summary>
+    /// True while the file name pattern is invalid: the list is kept (dimmed, so the user keeps their
+    /// orientation) but its "new names" come from the last valid pattern and must not look final.
+    /// </summary>
+    public bool IsPreviewStale => Pattern.HasError && ShowList;
+
+    /// <summary>Spoken text for the hint banner (screen readers read the Name of a live region).</summary>
+    public string PreviewStaleAnnouncement => $"{L.PreviewStaleTitle}. {L.PreviewStaleBody}";
 
     [ObservableProperty]
     public partial int ScanCount { get; private set; }
@@ -445,6 +456,7 @@ public sealed partial class MainWindowViewModel : ObservableObject
         OnPropertyChanged(nameof(TargetDisplay));
         OnPropertyChanged(nameof(ScanCountText));
         OnPropertyChanged(nameof(PhotosCountText));
+        OnPropertyChanged(nameof(PreviewStaleAnnouncement));
         OnPropertyChanged(nameof(AboutVersionText));
 
         if (Phase == Phase.Done && _result is not null)
@@ -588,20 +600,34 @@ public sealed partial class MainWindowViewModel : ObservableObject
         }
 
         var pattern = Pattern.Pattern;
-        if (pattern is not null && SourceFolder is not null && _photos.Count > 0)
+        if (pattern is not null)
+        {
+            _lastValidPattern = pattern;
+        }
+
+        // While the pattern is invalid the list is rebuilt from the last valid one (so it still matches the
+        // chosen folder) and the view dims it; see IsPreviewStale.
+        // With no earlier valid pattern (invalid pattern saved from a previous session) the default one is used.
+        var effective = pattern ?? _lastValidPattern ?? NamePattern.Default;
+        if (effective is not null && SourceFolder is not null && _photos.Count > 0)
         {
             var problem = FolderCheck.Check(_services.FileSystem, SourceFolder, TargetFolder, IncludeSubfolders);
             var target = problem == FolderProblem.None ? TargetFolder : null;
-            _plan = _planner.Build(_photos, pattern, L.Culture, SourceFolder, target, Mode);
-            _allItems = _plan.Items.Select(i => new PreviewItemViewModel(i, L, _services.Thumbnails)).ToList();
-            ExampleName = _allItems[0].NewName;
+            _plan = _planner.Build(_photos, effective, L.Culture, SourceFolder, target, Mode);
+            _allItems = _plan.Items.Select(i => new PreviewItemViewModel(i, L, _services.Thumbnails, hideNumbered: pattern is null)).ToList();
+            if (pattern is not null)
+            {
+                ExampleName = _allItems[0].NewName;
+            }
         }
         else
         {
+            // No folder or no photos: nothing to show, whatever the pattern says. Old rows are only kept
+            // (above) when the pattern alone is invalid.
             _plan = null;
+            _allItems = [];
             if (pattern is not null)
             {
-                _allItems = [];
                 ExampleName = pattern.Render(PatternBuilderViewModel.SampleFacts, L.Culture).Replace('/', '\\') + ".jpg";
             }
         }
@@ -610,6 +636,14 @@ public sealed partial class MainWindowViewModel : ObservableObject
         CountCamera = _allItems.Count(i => i.Item.Photo.Date.IsFromMetadata);
         CountFile = CountAll - CountCamera;
         CountRenamed = _allItems.Count(i => i.Item.WasRenamed);
+
+        // "Numbered" depends on the pattern (duplicates get (2), (3) ...), so it makes no claim while the
+        // pattern is invalid; camera/file date counts do not depend on it and stay.
+        if (Pattern.HasError && Filter == PreviewFilter.Renamed)
+        {
+            Filter = PreviewFilter.All;
+        }
+
         ApplyFilter();
         RefreshPreviewState();
         UpdateStatus();
@@ -630,6 +664,7 @@ public sealed partial class MainWindowViewModel : ObservableObject
         OnPropertyChanged(nameof(ShowScanning));
         OnPropertyChanged(nameof(ShowNoPhotos));
         OnPropertyChanged(nameof(ShowList));
+        OnPropertyChanged(nameof(IsPreviewStale));
     }
 
     private void UpdateStatus()

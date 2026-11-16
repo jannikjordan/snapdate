@@ -21,7 +21,7 @@ public sealed partial class PreviewItemViewModel : ObservableObject
     private readonly ThumbnailLoader? _thumbnails;
     private bool _thumbnailRequested;
 
-    public PreviewItemViewModel(RenameItem item, LocalizedStrings l, ThumbnailLoader? thumbnails)
+    public PreviewItemViewModel(RenameItem item, LocalizedStrings l, ThumbnailLoader? thumbnails, bool hideNumbered = false)
     {
         _thumbnails = thumbnails;
         Item = item;
@@ -41,7 +41,9 @@ public sealed partial class PreviewItemViewModel : ObservableObject
             _ => l.TipRenamed,
         };
         IsVideo = SupportedFormats.Videos.Contains(item.Photo.Extension);
-        Accessible = $"{OriginalName} → {NewName}, {BadgeText}";
+        // "Numbered" depends on the pattern; while it is invalid the row makes no such claim.
+        ShowBadge = !(hideNumbered && Badge == BadgeKind.Renamed);
+        Accessible = ShowBadge ? $"{OriginalName} → {NewName}, {BadgeText}" : $"{OriginalName} → {NewName}";
     }
 
     public RenameItem Item { get; }
@@ -55,6 +57,8 @@ public sealed partial class PreviewItemViewModel : ObservableObject
     public bool IsCameraBadge => Badge == BadgeKind.Camera;
 
     public bool IsWarningBadge => Badge != BadgeKind.Camera;
+
+    public bool ShowBadge { get; }
 
     public string BadgeText { get; }
 

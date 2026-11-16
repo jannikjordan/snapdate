@@ -316,7 +316,8 @@
                   </ItemsControl.ItemTemplate>
                 </ItemsControl>
 
-                <Border Background="{DynamicResource SdSurface2Brush}" CornerRadius="{StaticResource SdRadiusMedium}" Padding="12,7"
+                <Border Classes="example" Classes.stale="{Binding Pattern.HasError}"
+                        Background="{DynamicResource SdSurface2Brush}" CornerRadius="{StaticResource SdRadiusMedium}" Padding="12,7"
                         ToolTip.Tip="{Binding L.ExtensionNote}">
                   <Grid ColumnDefinitions="Auto,*">
                     <TextBlock Classes="label" Text="{Binding L.ExampleLabel}" VerticalAlignment="Center" Margin="0,0,10,0" />
@@ -350,10 +351,20 @@
                   <RadioButton Classes="tab" GroupName="filter" IsChecked="{Binding IsFilterFile}">
                     <TextBlock><Run Text="● " Foreground="{DynamicResource SdWarningBrush}" /><Run Text="{Binding L.FilterFile}" /><Run Text="  " /><Run Text="{Binding CountFile}" /></TextBlock>
                   </RadioButton>
-                  <RadioButton Classes="tab" GroupName="filter" IsChecked="{Binding IsFilterRenamed}">
+                  <RadioButton Classes="tab" GroupName="filter" IsChecked="{Binding IsFilterRenamed}" IsVisible="{Binding !IsPreviewStale}">
                     <TextBlock><Run Text="● " Foreground="{DynamicResource SdWarningBrush}" /><Run Text="{Binding L.FilterRenamed}" /><Run Text="  " /><Run Text="{Binding CountRenamed}" /></TextBlock>
                   </RadioButton>
                 </WrapPanel>
+              </StackPanel>
+            </Border>
+
+            <!-- Pattern invalid: the list below is kept but dimmed; this explains why -->
+            <Border DockPanel.Dock="Top" Classes="staleHint" IsVisible="{Binding IsPreviewStale}"
+                    AutomationProperties.LiveSetting="Polite"
+                    AutomationProperties.Name="{Binding PreviewStaleAnnouncement}">
+              <StackPanel Spacing="2">
+                <TextBlock Classes="staleTitle" Text="{Binding L.PreviewStaleTitle}" TextWrapping="Wrap" />
+                <TextBlock Classes="muted" Text="{Binding L.PreviewStaleBody}" TextWrapping="Wrap" FontSize="12" />
               </StackPanel>
             </Border>
 
@@ -388,7 +399,7 @@
               </StackPanel>
 
               <!-- The list -->
-              <ListBox Classes="preview" ItemsSource="{Binding VisibleItems}" IsVisible="{Binding ShowList}"
+              <ListBox Classes="preview" Classes.stale="{Binding IsPreviewStale}" ItemsSource="{Binding VisibleItems}" IsVisible="{Binding ShowList}"
                        SelectionMode="Single" AutomationProperties.Name="{Binding L.PreviewTitle}">
                 <ListBox.ItemTemplate>
                   <DataTemplate x:DataType="vm:PreviewItemViewModel">
@@ -411,7 +422,7 @@
                                      TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding NewName}" />
                         </Grid>
                       </StackPanel>
-                      <Border Grid.Column="2" Classes="badge" Classes.warn="{Binding IsWarningBadge}"
+                      <Border Grid.Column="2" Classes="badge" Classes.warn="{Binding IsWarningBadge}" IsVisible="{Binding ShowBadge}"
                               ToolTip.Tip="{Binding BadgeTip}">
                         <TextBlock Text="{Binding BadgeText}" />
                       </Border>

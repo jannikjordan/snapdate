@@ -92,6 +92,8 @@
   <data name="ProblemSourceInsideTargetHint" xml:space="preserve"><value>Please choose a different target folder.</value></data>
   <data name="ProblemPattern" xml:space="preserve"><value>Please check the file name first</value></data>
   <data name="ProblemPatternHint" xml:space="preserve"><value>The red message in step 2 explains what to change.</value></data>
+  <data name="PreviewStaleTitle" xml:space="preserve"><value>The new names can’t be built right now</value></data>
+  <data name="PreviewStaleBody" xml:space="preserve"><value>Fix the file name in step 2. The list below shows the names from before.</value></data>
   <data name="ProblemNoPhotos" xml:space="preserve"><value>There is nothing to do yet</value></data>
   <data name="StatusNothingChanged" xml:space="preserve"><value>Nothing changes until you press the button.</value></data>
   <data name="ReadyTitle" xml:space="preserve"><value>Ready: {0} photos</value></data>

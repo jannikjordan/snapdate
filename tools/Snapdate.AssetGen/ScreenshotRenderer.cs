@@ -99,6 +99,13 @@ internal static class ScreenshotRenderer
                         Wait(vm.ScanCompletion);
                         vm.TargetFolder = Path.Combine(DemoRoot, "Sorted");
                     });
+                    Shoot(dir, $"05-pattern-error-{suffix}", ci, thumbnails, vm =>
+                    {
+                        vm.SourceFolder = source;
+                        Wait(vm.ScanCompletion);
+                        vm.TargetFolder = Path.Combine(DemoRoot, "Sorted");
+                        vm.Pattern.Text = "{YYYY}-{MM}-{DD} {hour}";
+                    });
                 }
 
                 Avalonia.Application.Current!.RequestedThemeVariant = ThemeVariant.Light;
@@ -118,13 +125,6 @@ internal static class ScreenshotRenderer
                     Wait(vm.ScanCompletion);
                     vm.TargetFolder = target;
                     vm.Pattern.Text = "{YYYY}/{MM}/{YYYY}-{MM}-{DD} {name}";
-                });
-                Shoot(dir, "05-pattern-error-light", ci, thumbnails, vm =>
-                {
-                    vm.SourceFolder = source;
-                    Wait(vm.ScanCompletion);
-                    vm.TargetFolder = target;
-                    vm.Pattern.Text = "{YYYY}-{MM}-{DD} {hour}";
                 });
                 Shoot(dir, "06-move-light", ci, thumbnails, vm =>
                 {

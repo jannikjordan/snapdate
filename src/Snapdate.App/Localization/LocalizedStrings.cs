@@ -190,6 +190,10 @@ public sealed class LocalizedStrings(CultureInfo culture)
 
     public string ProblemPatternHint => Get(nameof(ProblemPatternHint));
 
+    public string PreviewStaleTitle => Get(nameof(PreviewStaleTitle));
+
+    public string PreviewStaleBody => Get(nameof(PreviewStaleBody));
+
     public string ProblemNoPhotos => Get(nameof(ProblemNoPhotos));
 
     public string StatusNothingChanged => Get(nameof(StatusNothingChanged));

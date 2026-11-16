@@ -145,6 +145,13 @@ erklärt in einfachen Worten, was zu tun ist:
 
 ![Eine freundliche Fehlermeldung](images/de/05-pattern-error-light.png)
 
+Solange der Dateiname nicht verwendet werden kann, ist die Vorschau rechts
+abgeblendet, die neuen Namen sind durchgestrichen und ein roter Hinweis sagt,
+dass die Namen gerade nicht erstellt werden können. Die Liste bleibt stehen,
+damit Sie nicht den Überblick verlieren. Korrigieren Sie den Dateinamen, und
+die Vorschau aktualisiert sich von selbst. Der Knopf **Kopieren** bleibt bis
+dahin aus.
+
 ---
 
 ## 📋 5. Schritt 3 — Kopieren oder verschieben

@@ -138,6 +138,11 @@ words what to fix:
 
 ![A friendly error message](images/en/05-pattern-error-light.png)
 
+While the file name can't be used, the preview on the right is dimmed, the new
+names are struck through and a red note says the names can't be built right now.
+The list stays so you don't lose your place. Fix the file name and the preview
+updates by itself. The **Copy** button stays off until then.
+
 ---
 
 ## 📋 5. Step 3 — Copy or move
