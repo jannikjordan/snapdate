@@ -1,0 +1,26 @@
+## .NET
+bin/
+obj/
+artifacts/
+*.user
+*.suo
+.vs/
+.vscode/
+.idea/
+TestResults/
+*.trx
+coverage*/
+
+## OS
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+## Claude local settings
+.claude/settings.local.json
+
+## Local secrets (GitHub PAT etc.) — never commit
+.secrets/
+
+## Local, internal-only notes (never published)
+.local/

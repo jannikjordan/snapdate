@@ -1,0 +1,16 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Snapdate.App/Snapdate.App.csproj" />
+    <Project Path="src/Snapdate.Application/Snapdate.Application.csproj" />
+    <Project Path="src/Snapdate.Domain/Snapdate.Domain.csproj" />
+    <Project Path="src/Snapdate.Infrastructure/Snapdate.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Snapdate.App.Tests/Snapdate.App.Tests.csproj" />
+    <Project Path="tests/Snapdate.Application.Tests/Snapdate.Application.Tests.csproj" />
+    <Project Path="tests/Snapdate.Architecture.Tests/Snapdate.Architecture.Tests.csproj" />
+  </Folder>
+  <Folder Name="/tools/">
+    <Project Path="tools/Snapdate.AssetGen/Snapdate.AssetGen.csproj" />
+  </Folder>
+</Solution>

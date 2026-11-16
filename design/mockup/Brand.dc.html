@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Snapdate brand sheet</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#5B4BF5}a:hover{color:#4A3AE0}
+</style>
+</helmet>
+<div style="width: 720px; height: 760px; box-sizing: border-box; padding: 40px; display: flex; flex-direction: column; gap: 28px; background: #F6F5FB; color: #1B1A2E; font-family: Inter, system-ui, sans-serif; border-radius: 12px">
+  <div style="display: flex; align-items: center; gap: 24px">
+    <svg width="128" height="128" viewBox="0 0 256 256" role="img" aria-label="Snapdate logo">
+      <defs>
+        <linearGradient id="br-bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6D5DFC"></stop><stop offset="0.55" stop-color="#B44CF0"></stop><stop offset="1" stop-color="#FF7A59"></stop></linearGradient>
+        <linearGradient id="br-mt" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6D5DFC"></stop><stop offset="1" stop-color="#B44CF0"></stop></linearGradient>
+      </defs>
+      <rect x="8" y="8" width="240" height="240" rx="58" fill="url(#br-bg)"></rect>
+      <rect x="8" y="8" width="240" height="120" rx="58" fill="#FFFFFF" opacity="0.06"></rect>
+      <path d="M76 58 H166 L202 94 V180 a20 20 0 0 1 -20 20 H76 a20 20 0 0 1 -20 -20 V78 a20 20 0 0 1 20 -20 Z" fill="#FFFFFF"></path>
+      <path d="M166 58 V82 a12 12 0 0 0 12 12 H202 Z" fill="#E6E1FF"></path>
+      <circle cx="100" cy="108" r="15" fill="#FF8A5F"></circle>
+      <path d="M72 182 L114 128 L138 158 L154 140 L186 182 Z" fill="url(#br-mt)"></path>
+    </svg>
+    <div style="display: flex; flex-direction: column; gap: 6px">
+      <h1 style="margin: 0; font-size: 44px; font-weight: 700; letter-spacing: -1px; line-height: 48px">Snapdate</h1>
+      <p style="margin: 0; font-size: 16px; color: #6B6880; line-height: 24px">Sort your photos by the day they were taken.</p>
+      <p style="margin: 0; font-size: 14px; color: #6B6880; line-height: 20px">Fotos nach Aufnahmedatum sortieren.</p>
+    </div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 12px">
+    <h2 style="margin: 0; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.6px; color: #6B6880">App icon sizes</h2>
+    <div style="display: flex; align-items: flex-end; gap: 24px; background: #FFFFFF; border: 1px solid #E4E1F0; border-radius: 16px; padding: 20px 24px">
+      <sc-for list="{{sizes}}" as="s" hint-placeholder-count="6">
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 8px">
+          <svg width="{{s.px}}" height="{{s.px}}" viewBox="0 0 256 256" aria-hidden="true">
+            <rect x="8" y="8" width="240" height="240" rx="58" fill="#8A55F4"></rect>
+            <path d="M76 58 H166 L202 94 V180 a20 20 0 0 1 -20 20 H76 a20 20 0 0 1 -20 -20 V78 a20 20 0 0 1 20 -20 Z" fill="#FFFFFF"></path>
+            <path d="M166 58 V82 a12 12 0 0 0 12 12 H202 Z" fill="#E6E1FF"></path>
+            <circle cx="100" cy="108" r="15" fill="#FF8A5F"></circle>
+            <path d="M72 182 L114 128 L138 158 L154 140 L186 182 Z" fill="#7B5BF8"></path>
+          </svg>
+          <span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #6B6880">{{s.label}}</span>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 12px">
+    <h2 style="margin: 0; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.6px; color: #6B6880">Colour</h2>
+    <div style="height: 56px; border-radius: 12px; background: linear-gradient(135deg,#6D5DFC,#B44CF0 55%,#FF7A59); display: flex; align-items: center; justify-content: space-between; padding: 0 16px; color: #FFFFFF; font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 600">
+      <span>#6D5DFC</span><span>#B44CF0</span><span>#FF7A59</span>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 10px">
+      <sc-for list="{{swatches}}" as="w" hint-placeholder-count="6">
+        <div style="display: flex; flex-direction: column; gap: 6px">
+          <div style="{{w.style}}"></div>
+          <span style="font-size: 12px; font-weight: 600">{{w.name}}</span>
+          <span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #6B6880">{{w.hex}}</span>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 12px">
+    <h2 style="margin: 0; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.6px; color: #6B6880">Type</h2>
+    <div style="display: flex; gap: 24px; background: #FFFFFF; border: 1px solid #E4E1F0; border-radius: 16px; padding: 16px 20px; align-items: baseline">
+      <span style="font-size: 28px; font-weight: 700; letter-spacing: -0.5px">Inter Aa</span>
+      <span style="font-size: 15px; font-weight: 600">Title 15/600</span>
+      <span style="font-size: 13px">Body 13/400</span>
+      <span style="font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 600">2024-07-14_15-32-08.jpg</span>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":720,"height":760}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const sizes = [256, 64, 48, 32, 24, 16].map((n) => ({ px: Math.min(n, 128), label: n + ' px' }));
+    sizes[0].px = 128; sizes[0].label = '256 px (½)';
+    const sw = [
+      ['Primary', '#5B4BF5'], ['Soft', '#ECE9FF'], ['Success', '#1FA971'], ['Warning', '#D98A0B'], ['Danger', '#E5484D'], ['Ink', '#1B1A2E']
+    ];
+    return {
+      sizes,
+      swatches: sw.map(([name, hex]) => ({ name, hex, style: `height: 48px; border-radius: 10px; background: ${hex}; border: 1px solid #E4E1F0;` }))
+    };
+  }
+}
+</script>
+</body>
+</html>

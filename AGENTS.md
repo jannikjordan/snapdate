@@ -1,0 +1,78 @@
+# AGENTS.md
+
+Guidance for AI coding agents and human contributors working on **Snapdate**.
+This file is the single source of truth; tool-specific files (e.g.
+[`.claude/CLAUDE.md`](.claude/CLAUDE.md)) only point here.
+
+## Project in one paragraph
+
+Snapdate is a portable Windows GUI app (single `.exe`, no runtime to install)
+for non-technical users. It copies or moves photos from a source folder to a
+destination folder and renames them by capture date (metadata, fallback file
+timestamp) using a user-built placeholder pattern. UI in English and German.
+
+## Read first
+
+| Document | Content |
+|---|---|
+| [docs/PLAN.md](docs/PLAN.md) | Scope, tech stack, architecture, security, milestones |
+| [DESIGN.md](DESIGN.md) | Design tokens, layout, components, i18n, a11y |
+| [CHANGELOG.md](CHANGELOG.md) | Release history (Keep a Changelog) |
+| `docs/adr/` | Architecture decisions — add one for every significant choice |
+
+## Tech stack
+
+.NET 10 LTS · C# · Avalonia 12 · CommunityToolkit.Mvvm · MetadataExtractor ·
+xUnit · Native AOT publish (`win-x64`, `win-arm64`).
+
+## Architecture rules
+
+- Layers: `Domain` ← `Application` ← `Infrastructure` / `App`.
+  - `Snapdate.Domain` has **no** package or project references.
+  - `Snapdate.Application` references only Domain; defines ports (interfaces).
+  - Only `Snapdate.Infrastructure` touches the file system or MetadataExtractor.
+  - Only `Snapdate.App` references Avalonia.
+- No reflection-based serialization or DI magic — must stay **AOT/trim safe**
+  (use source generators: `System.Text.Json` context, CommunityToolkit.Mvvm,
+  compiled bindings `x:CompileBindings="True"`).
+- No user-visible string literals in code or XAML — use `Strings.resx` /
+  `Strings.de.resx`. Add both languages in the same change.
+- Colours, spacing, radii come from theme resources defined per DESIGN.md —
+  never hard-code them in views.
+
+## Security rules (non-negotiable)
+
+- Treat image files and their metadata as **untrusted input**.
+- Every generated path goes through `FileNameSanitizer` and must resolve
+  inside the destination root (`Path.GetFullPath` check).
+- Never overwrite files. Never delete a source before the copy is verified.
+- No network access, telemetry, or auto-update code.
+- New dependencies need a justification in the PR and an ADR if non-trivial;
+  pin exact versions in `Directory.Packages.props`; keep `packages.lock.json`
+  updated; NuGet audit must pass.
+
+## Commands
+
+```bash
+pwsh scripts/build/build.ps1 -Target Test      # restore + build + tests
+pwsh scripts/build/build.ps1 -Target Publish   # Native AOT exe(s) to artifacts/
+pwsh scripts/build/build.ps1 -Target All       # full release pipeline
+dotnet run --project src/Snapdate.App          # run the app in dev
+```
+
+## Conventions
+
+- **Commits:** [Conventional Commits](https://www.conventionalcommits.org/)
+  (`feat:`, `fix:`, `docs:`, `refactor:`, `test:`, `build:`, `ci:`, `chore:`),
+  scope optional (`feat(pattern): add {camera} token`).
+- **Versioning:** SemVer, single source in `Directory.Build.props`.
+  Update `CHANGELOG.md` (`Unreleased` section) with every user-facing change.
+- **Code style:** `.editorconfig`, nullable enabled, warnings as errors,
+  file-scoped namespaces, one public type per file.
+- **Tests:** domain logic is test-first; every bug fix gets a regression test.
+- **Docs:** user-visible behaviour changes update `docs/` (EN and DE guides).
+
+## Definition of done
+
+Builds with zero warnings · all tests green · both languages present ·
+works in light and dark theme · CHANGELOG updated · docs updated.

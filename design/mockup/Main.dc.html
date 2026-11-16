@@ -1,0 +1,450 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Snapdate main window</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#5B4BF5}a:hover{color:#4A3AE0}
+button{font-family:inherit}
+</style>
+</helmet>
+<div style="width: 1180px; height: 760px; box-sizing: border-box; display: flex; flex-direction: column; background: {{c.bg}}; color: {{c.text}}; font-family: Inter, system-ui, sans-serif; font-size: 13px; line-height: 20px; overflow: hidden; border-radius: 12px; border: 1px solid {{c.border}}">
+
+  <!-- Title bar -->
+  <div style="height: 48px; flex-shrink: 0; display: flex; align-items: center; gap: 12px; padding: 0 0 0 16px; border-bottom: 1px solid {{c.border}}; background: {{c.surface}}">
+    <svg width="28" height="28" viewBox="0 0 256 256" role="img" aria-label="Snapdate logo">
+      <defs>
+        <linearGradient id="tb-bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6D5DFC"></stop><stop offset="0.55" stop-color="#B44CF0"></stop><stop offset="1" stop-color="#FF7A59"></stop></linearGradient>
+        <linearGradient id="tb-mt" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6D5DFC"></stop><stop offset="1" stop-color="#B44CF0"></stop></linearGradient>
+      </defs>
+      <rect x="8" y="8" width="240" height="240" rx="58" fill="url(#tb-bg)"></rect>
+      <path d="M76 58 H166 L202 94 V180 a20 20 0 0 1 -20 20 H76 a20 20 0 0 1 -20 -20 V78 a20 20 0 0 1 20 -20 Z" fill="#FFFFFF"></path>
+      <path d="M166 58 V82 a12 12 0 0 0 12 12 H202 Z" fill="#E6E1FF"></path>
+      <circle cx="100" cy="108" r="15" fill="#FF8A5F"></circle>
+      <path d="M72 182 L114 128 L138 158 L154 140 L186 182 Z" fill="url(#tb-mt)"></path>
+    </svg>
+    <span style="font-size: 16px; font-weight: 700; letter-spacing: -0.2px">Snapdate</span>
+    <span style="font-size: 11px; font-weight: 600; color: {{c.muted}}; background: {{c.surface2}}; border-radius: 6px; padding: 0 6px; line-height: 18px">v0.1.0</span>
+    <div style="flex-grow: 1"></div>
+    <div role="group" aria-label="Language" style="display: flex; background: {{c.surface2}}; border-radius: 8px; padding: 3px; gap: 2px">
+      <button type="button" onClick="{{setEn}}" style="{{langEnStyle}}">EN</button>
+      <button type="button" onClick="{{setDe}}" style="{{langDeStyle}}">DE</button>
+    </div>
+    <button type="button" onClick="{{toggleTheme}}" aria-label="{{t.theme}}" title="{{t.theme}}" style="width: 32px; height: 32px; border: 0; border-radius: 8px; background: transparent; color: {{c.muted}}; cursor: pointer; display: flex; align-items: center; justify-content: center">
+      <sc-if value="{{isDark}}" hint-placeholder-val="{{false}}">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg>
+      </sc-if>
+      <sc-if value="{{isLight}}" hint-placeholder-val="{{true}}">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"></path></svg>
+      </sc-if>
+    </button>
+    <button type="button" aria-label="{{t.about}}" title="{{t.about}}" style="width: 32px; height: 32px; border: 0; border-radius: 8px; background: transparent; color: {{c.muted}}; cursor: pointer; display: flex; align-items: center; justify-content: center">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 11v5M12 8h.01"></path></svg>
+    </button>
+    <div style="display: flex; height: 48px; margin-left: 4px; color: {{c.muted}}" aria-hidden="true">
+      <div style="width: 46px; display: flex; align-items: center; justify-content: center"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M0 5h10" stroke="currentColor"></path></svg></div>
+      <div style="width: 46px; display: flex; align-items: center; justify-content: center"><svg width="10" height="10" viewBox="0 0 10 10"><rect x="0.5" y="0.5" width="9" height="9" fill="none" stroke="currentColor"></rect></svg></div>
+      <div style="width: 46px; display: flex; align-items: center; justify-content: center"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M0 0l10 10M10 0L0 10" stroke="currentColor"></path></svg></div>
+    </div>
+  </div>
+
+  <!-- Body -->
+  <div style="flex-grow: 1; min-height: 0; display: flex; gap: 16px; padding: 16px">
+
+    <!-- Left column: steps -->
+    <div style="width: 400px; flex-shrink: 0; display: flex; flex-direction: column; gap: 12px; overflow-y: auto">
+
+      <!-- Step 1 -->
+      <section style="background: {{c.surface}}; border: 1px solid {{c.border}}; border-radius: 16px; padding: 16px; box-shadow: {{c.shadow}}; display: flex; flex-direction: column; gap: 10px">
+        <div style="display: flex; align-items: center; gap: 10px">
+          <span style="width: 24px; height: 24px; border-radius: 12px; background: linear-gradient(135deg,#6D5DFC,#B44CF0 55%,#FF7A59); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700">1</span>
+          <h2 style="margin: 0; font-size: 15px; font-weight: 600">{{t.step1}}</h2>
+        </div>
+        <button type="button" style="display: flex; align-items: center; gap: 12px; text-align: left; border: 1px solid {{c.border}}; background: {{c.surface2}}; border-radius: 10px; padding: 8px 12px; cursor: pointer; color: {{c.text}}; min-height: 52px">
+          <span style="width: 32px; height: 32px; border-radius: 8px; background: {{c.primarySoft}}; color: {{c.primary}}; display: flex; align-items: center; justify-content: center; flex-shrink: 0">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
+          </span>
+          <span style="display: flex; flex-direction: column; flex-grow: 1; min-width: 0">
+            <span style="font-size: 12px; font-weight: 500; color: {{c.muted}}; line-height: 16px">{{t.source}}</span>
+            <span style="font-family: 'JetBrains Mono', monospace; font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">D:\Pictures\…\Summer 2024</span>
+          </span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="{{c.muted}}" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg>
+        </button>
+        <button type="button" style="display: flex; align-items: center; gap: 12px; text-align: left; border: 1px solid {{c.border}}; background: {{c.surface2}}; border-radius: 10px; padding: 8px 12px; cursor: pointer; color: {{c.text}}; min-height: 52px">
+          <span style="width: 32px; height: 32px; border-radius: 8px; background: {{c.primarySoft}}; color: {{c.primary}}; display: flex; align-items: center; justify-content: center; flex-shrink: 0">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><path d="M10 13h5M13 11l2 2-2 2"></path></svg>
+          </span>
+          <span style="display: flex; flex-direction: column; flex-grow: 1; min-width: 0">
+            <span style="font-size: 12px; font-weight: 500; color: {{c.muted}}; line-height: 16px">{{t.target}}</span>
+            <span style="font-family: 'JetBrains Mono', monospace; font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">E:\Photos\Sorted</span>
+          </span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="{{c.muted}}" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg>
+        </button>
+        <label style="display: flex; align-items: center; gap: 8px; color: {{c.muted}}; cursor: pointer">
+          <input type="checkbox" checked="{{subfolders}}" onChange="{{toggleSub}}" style="width: 16px; height: 16px; accent-color: #5B4BF5; margin: 0">
+          <span>{{t.subfolders}}</span>
+        </label>
+      </section>
+
+      <!-- Step 2 -->
+      <section style="background: {{c.surface}}; border: 1px solid {{c.border}}; border-radius: 16px; padding: 16px; box-shadow: {{c.shadow}}; display: flex; flex-direction: column; gap: 10px">
+        <div style="display: flex; align-items: center; gap: 10px">
+          <span style="width: 24px; height: 24px; border-radius: 12px; background: linear-gradient(135deg,#6D5DFC,#B44CF0 55%,#FF7A59); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700">2</span>
+          <h2 style="margin: 0; font-size: 15px; font-weight: 600; flex-grow: 1">{{t.step2}}</h2>
+          <button type="button" onClick="{{resetPattern}}" style="border: 0; background: transparent; color: {{c.primary}}; font-size: 12px; font-weight: 600; cursor: pointer; padding: 4px 6px">{{t.reset}}</button>
+        </div>
+        <div style="display: flex; flex-wrap: wrap; gap: 4px; align-items: center; min-height: 44px; box-sizing: border-box; border: 2px solid {{c.primary}}; border-radius: 10px; padding: 6px 8px; background: {{c.surface}}">
+          <sc-for list="{{segView}}" as="seg" hint-placeholder-count="6">
+            <button type="button" onClick="{{seg.remove}}" title="{{t.clickRemove}}" style="{{seg.style}}">{{seg.label}}</button>
+          </sc-for>
+          <span style="width: 2px; height: 18px; background: {{c.primary}}; border-radius: 1px" aria-hidden="true"></span>
+          <span style="font-family: 'JetBrains Mono', monospace; font-size: 12px; color: {{c.muted}}">.{{extHint}}</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 6px">
+          <sc-for list="{{chipGroups}}" as="g" hint-placeholder-count="4">
+            <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap">
+              <span style="width: 64px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px; color: {{c.muted}}">{{g.title}}</span>
+              <sc-for list="{{g.chips}}" as="ch" hint-placeholder-count="3">
+                <button type="button" onClick="{{ch.add}}" title="{{ch.raw}}" style="{{ch.style}}">+ {{ch.label}}</button>
+              </sc-for>
+            </div>
+          </sc-for>
+        </div>
+        <div style="display: flex; gap: 6px; flex-wrap: wrap; align-items: center">
+          <span style="font-size: 12px; font-weight: 500; color: {{c.muted}}">{{t.presets}}</span>
+          <sc-for list="{{presets}}" as="p" hint-placeholder-count="4">
+            <button type="button" onClick="{{p.apply}}" style="{{p.style}}">{{p.label}}</button>
+          </sc-for>
+        </div>
+        <div style="background: {{c.surface2}}; border-radius: 10px; padding: 8px 12px; display: flex; flex-direction: column; gap: 2px">
+          <span style="font-size: 12px; font-weight: 500; color: {{c.muted}}">{{t.example}}</span>
+          <span style="font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 600; word-break: break-all">{{example}}</span>
+          <span style="font-size: 11.5px; color: {{c.muted}}; line-height: 16px">{{t.extNote}}</span>
+        </div>
+      </section>
+
+      <!-- Step 3 -->
+      <section style="background: {{c.surface}}; border: 1px solid {{c.border}}; border-radius: 16px; padding: 16px; box-shadow: {{c.shadow}}; display: flex; flex-direction: column; gap: 10px">
+        <div style="display: flex; align-items: center; gap: 10px">
+          <span style="width: 24px; height: 24px; border-radius: 12px; background: linear-gradient(135deg,#6D5DFC,#B44CF0 55%,#FF7A59); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700">3</span>
+          <h2 style="margin: 0; font-size: 15px; font-weight: 600">{{t.step3}}</h2>
+        </div>
+        <div role="group" aria-label="{{t.step3}}" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+          <button type="button" onClick="{{setCopy}}" style="{{copyStyle}}">
+            <span style="font-weight: 600; font-size: 13px">{{t.copy}}</span>
+            <span style="font-size: 11.5px; line-height: 16px; color: {{c.muted}}">{{t.copyHint}}</span>
+          </button>
+          <button type="button" onClick="{{setMove}}" style="{{moveStyle}}">
+            <span style="font-weight: 600; font-size: 13px">{{t.move}}</span>
+            <span style="font-size: 11.5px; line-height: 16px; color: {{c.muted}}">{{t.moveHint}}</span>
+          </button>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px; color: {{c.muted}}; font-size: 12px">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="{{c.success}}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"></path><path d="M9 12l2 2 4-4"></path></svg>
+          <span>{{t.never}}</span>
+        </div>
+      </section>
+    </div>
+
+    <!-- Right column: preview -->
+    <section style="flex-grow: 1; min-width: 0; background: {{c.surface}}; border: 1px solid {{c.border}}; border-radius: 16px; box-shadow: {{c.shadow}}; display: flex; flex-direction: column; overflow: hidden">
+      <div style="padding: 16px 20px 12px; display: flex; flex-direction: column; gap: 10px; border-bottom: 1px solid {{c.border}}">
+        <div style="display: flex; align-items: baseline; gap: 10px">
+          <h2 style="margin: 0; font-size: 15px; font-weight: 600; flex-grow: 1">{{t.preview}}</h2>
+          <span style="color: {{c.muted}}">{{countLabel}}</span>
+        </div>
+        <div role="tablist" style="display: flex; gap: 6px; flex-wrap: wrap">
+          <sc-for list="{{filters}}" as="f" hint-placeholder-count="4">
+            <button type="button" role="tab" onClick="{{f.pick}}" style="{{f.style}}">
+              <span style="{{f.dotStyle}}"></span>{{f.label}} <span style="opacity: 0.7">{{f.count}}</span>
+            </button>
+          </sc-for>
+        </div>
+      </div>
+      <div style="flex-grow: 1; min-height: 0; overflow-y: auto; padding: 6px 8px">
+        <sc-for list="{{rows}}" as="r" hint-placeholder-count="8">
+          <div style="display: flex; align-items: center; gap: 12px; padding: 8px 12px; border-radius: 10px; border-bottom: 1px solid {{c.borderSoft}}">
+            <span style="{{r.thumbStyle}}">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M3 18l6-7 4 5 3-3 5 5"></path><circle cx="8" cy="7" r="2"></circle></svg>
+            </span>
+            <div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column">
+              <span style="font-size: 12px; color: {{c.muted}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{r.orig}}</span>
+              <span style="display: flex; align-items: center; gap: 6px; min-width: 0">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="{{c.primary}}" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0"><path d="M5 12h14M13 6l6 6-6 6"></path></svg>
+                <span style="font-family: 'JetBrains Mono', monospace; font-size: 12.5px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{r.newName}}</span>
+              </span>
+            </div>
+            <span style="{{r.badgeStyle}}" title="{{r.badgeTip}}">{{r.badge}}</span>
+          </div>
+        </sc-for>
+      </div>
+    </section>
+  </div>
+
+  <!-- Action bar -->
+  <div style="height: 72px; flex-shrink: 0; display: flex; align-items: center; gap: 16px; padding: 0 20px; border-top: 1px solid {{c.border}}; background: {{c.surface}}">
+    <sc-if value="{{isDone}}" hint-placeholder-val="{{false}}">
+      <span style="width: 32px; height: 32px; border-radius: 16px; background: {{c.successSoft}}; color: {{c.success}}; display: flex; align-items: center; justify-content: center">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5 9-10"></path></svg>
+      </span>
+      <div style="flex-grow: 1; display: flex; flex-direction: column">
+        <span style="font-weight: 600">{{doneTitle}}</span>
+        <span style="color: {{c.muted}}; font-size: 12px">{{t.doneSub}}</span>
+      </div>
+      <button type="button" onClick="{{resetRun}}" style="height: 44px; padding: 0 16px; border-radius: 10px; border: 1px solid {{c.border}}; background: {{c.surface}}; color: {{c.text}}; font-weight: 600; font-size: 14px; cursor: pointer">{{t.again}}</button>
+      <button type="button" style="height: 44px; padding: 0 20px; border-radius: 10px; border: 0; background: {{c.primary}}; color: #fff; font-weight: 600; font-size: 14px; cursor: pointer">{{t.openFolder}}</button>
+    </sc-if>
+    <sc-if value="{{isRunning}}" hint-placeholder-val="{{false}}">
+      <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 6px">
+        <div style="display: flex; justify-content: space-between">
+          <span style="font-weight: 600">{{runLabel}}</span>
+          <span style="color: {{c.muted}}; font-family: 'JetBrains Mono', monospace; font-size: 12px">{{progressText}}</span>
+        </div>
+        <div style="height: 8px; border-radius: 4px; background: {{c.surface2}}; overflow: hidden">
+          <div style="{{progressStyle}}"></div>
+        </div>
+      </div>
+      <button type="button" onClick="{{resetRun}}" style="height: 44px; padding: 0 16px; border-radius: 10px; border: 1px solid {{c.border}}; background: {{c.surface}}; color: {{c.text}}; font-weight: 600; font-size: 14px; cursor: pointer">{{t.cancel}}</button>
+    </sc-if>
+    <sc-if value="{{isIdle}}" hint-placeholder-val="{{true}}">
+      <span style="width: 32px; height: 32px; border-radius: 16px; background: {{c.primarySoft}}; color: {{c.primary}}; display: flex; align-items: center; justify-content: center">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 11v5M12 8h.01"></path></svg>
+      </span>
+      <div style="flex-grow: 1; display: flex; flex-direction: column">
+        <span style="font-weight: 600">{{readyTitle}}</span>
+        <span style="color: {{c.muted}}; font-size: 12px">{{readySub}}</span>
+      </div>
+      <button type="button" onClick="{{run}}" style="height: 48px; padding: 0 24px; border-radius: 10px; border: 0; background: linear-gradient(135deg,#6D5DFC,#B44CF0 55%,#FF7A59); color: #fff; font-weight: 600; font-size: 15px; cursor: pointer; display: flex; align-items: center; gap: 10px; box-shadow: 0 6px 18px rgba(109,93,252,0.35)">
+        {{runButton}}
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg>
+      </button>
+    </sc-if>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"language":{"editor":"enum","options":["en","de"],"default":"en"},"theme":{"editor":"enum","options":["light","dark"],"default":"light"},"$preview":{"width":1180,"height":760}}'>
+class Component extends DCLogic {
+  componentWillUnmount() { if (this.timer) clearInterval(this.timer); }
+
+  renderVals() {
+    const s = this.state || {};
+    const lang = s.lang || this.props.language || 'en';
+    const theme = s.theme || this.props.theme || 'light';
+    const dark = theme === 'dark';
+    const c = dark ? {
+      bg: '#121119', surface: '#1B1A26', surface2: '#24233A', border: '#302E48', borderSoft: '#24233A',
+      text: '#F2F1FA', muted: '#A3A0B8', primary: '#8B7DFF', primarySoft: '#2E2A5C',
+      success: '#3CCB8F', successSoft: '#173A2C', warning: '#F2B13C', warningSoft: '#3A2E14', shadow: 'none'
+    } : {
+      bg: '#F6F5FB', surface: '#FFFFFF', surface2: '#F0EEF9', border: '#E4E1F0', borderSoft: '#F2F0F8',
+      text: '#1B1A2E', muted: '#6B6880', primary: '#5B4BF5', primarySoft: '#ECE9FF',
+      success: '#137A50', successSoft: '#E3F6EE', warning: '#8A5A00', warningSoft: '#FDF1DC',
+      shadow: '0 1px 2px rgba(20,16,60,.04), 0 4px 16px rgba(20,16,60,.06)'
+    };
+
+    const L = {
+      en: {
+        step1: 'Choose folders', source: 'Photos from', target: 'Save renamed copies to', subfolders: 'Include sub-folders',
+        step2: 'Build the file name', reset: 'Reset', clickRemove: 'Click to remove', presets: 'Quick picks:',
+        example: 'Example', extNote: 'The file type (.jpg, .png, .heic …) is kept automatically.',
+        step3: 'What should happen?', copy: 'Copy', copyHint: 'Originals stay untouched (recommended)',
+        move: 'Move', moveHint: 'Originals are moved after a safe copy',
+        never: 'Existing files are never overwritten.', preview: 'Preview',
+        all: 'All', camera: 'Camera date', file: 'File date', problems: 'Needs attention',
+        badgeCamera: 'Camera', badgeFile: 'File date', badgeDup: 'Renamed (2)',
+        tipCamera: 'Date taken from the photo itself (EXIF)', tipFile: 'No date in the photo — used the file date instead', tipDup: 'Same name already used — a number was added',
+        photos: 'photos', ready: 'Ready', readySubCopy: 'Your originals will not be changed.', readySubMove: 'Originals are removed only after each copy is verified.',
+        runCopy: 'Copy', runMove: 'Move', copying: 'Copying photos…', moving: 'Moving photos…', cancel: 'Cancel',
+        doneCopy: 'photos copied', doneMove: 'photos moved', doneSub: 'A log file was saved in the target folder.', again: 'Start over', openFolder: 'Open folder',
+        theme: 'Switch light / dark', about: 'About Snapdate',
+        gDate: 'Date', gTime: 'Time', gFile: 'File', gSep: 'Separator', space: 'space', folder: 'sub-folder'
+      },
+      de: {
+        step1: 'Ordner wählen', source: 'Fotos aus', target: 'Umbenannte Kopien speichern in', subfolders: 'Unterordner einbeziehen',
+        step2: 'Dateinamen gestalten', reset: 'Zurücksetzen', clickRemove: 'Klicken zum Entfernen', presets: 'Vorlagen:',
+        example: 'Beispiel', extNote: 'Der Dateityp (.jpg, .png, .heic …) bleibt automatisch erhalten.',
+        step3: 'Was soll passieren?', copy: 'Kopieren', copyHint: 'Originale bleiben unverändert (empfohlen)',
+        move: 'Verschieben', moveHint: 'Originale werden nach sicherer Kopie verschoben',
+        never: 'Vorhandene Dateien werden niemals überschrieben.', preview: 'Vorschau',
+        all: 'Alle', camera: 'Aufnahmedatum', file: 'Dateidatum', problems: 'Zu prüfen',
+        badgeCamera: 'Kamera', badgeFile: 'Dateidatum', badgeDup: 'Umbenannt (2)',
+        tipCamera: 'Datum aus dem Foto selbst (EXIF)', tipFile: 'Kein Datum im Foto — Dateidatum verwendet', tipDup: 'Name schon vergeben — Nummer ergänzt',
+        photos: 'Fotos', ready: 'Bereit', readySubCopy: 'Ihre Originale werden nicht verändert.', readySubMove: 'Originale werden erst nach geprüfter Kopie entfernt.',
+        runCopy: 'Kopieren', runMove: 'Verschieben', copying: 'Fotos werden kopiert…', moving: 'Fotos werden verschoben…', cancel: 'Abbrechen',
+        doneCopy: 'Fotos kopiert', doneMove: 'Fotos verschoben', doneSub: 'Eine Protokolldatei liegt im Zielordner.', again: 'Neu starten', openFolder: 'Ordner öffnen',
+        theme: 'Hell / Dunkel umschalten', about: 'Über Snapdate',
+        gDate: 'Datum', gTime: 'Zeit', gFile: 'Datei', gSep: 'Trenner', space: 'Leerzeichen', folder: 'Unterordner'
+      }
+    };
+    const t = L[lang];
+
+    const TOK = {
+      YYYY: { en: 'Year', de: 'Jahr' }, MM: { en: 'Month', de: 'Monat' }, DD: { en: 'Day', de: 'Tag' },
+      MMM: { en: 'Month name', de: 'Monatsname' }, ddd: { en: 'Weekday', de: 'Wochentag' },
+      hh: { en: 'Hour', de: 'Stunde' }, mm: { en: 'Minute', de: 'Minute' }, ss: { en: 'Second', de: 'Sekunde' },
+      name: { en: 'Original name', de: 'Originalname' }, camera: { en: 'Camera', de: 'Kamera' }, counter: { en: 'Counter', de: 'Zähler' }
+    };
+    const MON = { en: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'], de: ['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'] };
+    const WD = { en: ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'], de: ['So','Mo','Di','Mi','Do','Fr','Sa'] };
+
+    const T = (v) => ({ k: 't', v });
+    const S = (v) => ({ k: 's', v });
+    const DEFAULT = [T('YYYY'), S('-'), T('MM'), S('-'), T('DD'), S('_'), T('hh'), S('-'), T('mm'), S('-'), T('ss')];
+    const PRESETS = [
+      { label: '2024-07-14_15-32-08', segs: DEFAULT },
+      { label: '20240714_153208', segs: [T('YYYY'), T('MM'), T('DD'), S('_'), T('hh'), T('mm'), T('ss')] },
+      { label: '2024/07/2024-07-14 IMG_4711', segs: [T('YYYY'), S('/'), T('MM'), S('/'), T('YYYY'), S('-'), T('MM'), S('-'), T('DD'), S(' '), T('name')] },
+      { label: '14.07.2024_001', segs: [T('DD'), S('.'), T('MM'), S('.'), T('YYYY'), S('_'), T('counter')] }
+    ];
+    const segs = s.segs || DEFAULT;
+
+    const FILES = [
+      { orig: 'IMG_4711.JPG', base: 'IMG_4711', ext: 'jpg', y: 2024, mo: 7, d: 14, h: 15, mi: 32, se: 8, src: 'exif', cam: 'iPhone 15 Pro', hue: 210 },
+      { orig: 'IMG_4712.JPG', base: 'IMG_4712', ext: 'jpg', y: 2024, mo: 7, d: 14, h: 15, mi: 33, se: 41, src: 'exif', cam: 'iPhone 15 Pro', hue: 190 },
+      { orig: 'DSC00012.ARW', base: 'DSC00012', ext: 'arw', y: 2024, mo: 7, d: 14, h: 16, mi: 1, se: 55, src: 'exif', cam: 'ILCE-7M4', hue: 28 },
+      { orig: 'DSC00013.ARW', base: 'DSC00013', ext: 'arw', y: 2024, mo: 7, d: 14, h: 16, mi: 1, se: 55, src: 'exif', cam: 'ILCE-7M4', hue: 18 },
+      { orig: 'Screenshot 2024-07-15.png', base: 'Screenshot 2024-07-15', ext: 'png', y: 2024, mo: 7, d: 15, h: 8, mi: 12, se: 4, src: 'file', cam: '', hue: 260 },
+      { orig: 'IMG_4713.HEIC', base: 'IMG_4713', ext: 'heic', y: 2024, mo: 7, d: 15, h: 9, mi: 47, se: 10, src: 'exif', cam: 'iPhone 15 Pro', hue: 150 },
+      { orig: 'WhatsApp Image 2024-07-16.jpeg', base: 'WhatsApp Image 2024-07-16', ext: 'jpeg', y: 2024, mo: 7, d: 16, h: 19, mi: 5, se: 22, src: 'file', cam: '', hue: 330 },
+      { orig: 'MVI_0021.MP4', base: 'MVI_0021', ext: 'mp4', y: 2024, mo: 7, d: 17, h: 11, mi: 20, se: 0, src: 'exif', cam: 'Canon EOS R6', hue: 45 },
+      { orig: 'IMG_4714.webp', base: 'IMG_4714', ext: 'webp', y: 2024, mo: 7, d: 17, h: 18, mi: 44, se: 31, src: 'exif', cam: 'iPhone 15 Pro', hue: 280 }
+    ];
+    const p2 = (n) => String(n).padStart(2, '0');
+    const val = (tok, f, i) => {
+      switch (tok) {
+        case 'YYYY': return String(f.y);
+        case 'MM': return p2(f.mo);
+        case 'DD': return p2(f.d);
+        case 'MMM': return MON[lang][f.mo - 1];
+        case 'ddd': return WD[lang][new Date(f.y, f.mo - 1, f.d).getDay()];
+        case 'hh': return p2(f.h);
+        case 'mm': return p2(f.mi);
+        case 'ss': return p2(f.se);
+        case 'name': return f.base;
+        case 'camera': return f.cam || 'unknown';
+        case 'counter': return String(i + 1).padStart(3, '0');
+        default: return '';
+      }
+    };
+    const build = (f, i) => {
+      const stem = segs.map((g) => g.k === 't' ? val(g.v, f, i) : g.v).join('') || f.base;
+      return stem;
+    };
+    const used = {};
+    const all = FILES.map((f, i) => {
+      let stem = build(f, i);
+      let key = (stem + '.' + f.ext).toLowerCase();
+      let dup = false;
+      if (used[key]) { stem = stem + ' (2)'; dup = true; }
+      used[key] = true;
+      return { f, newName: stem + '.' + f.ext, dup };
+    });
+
+    const filter = s.filter || 'all';
+    const counts = {
+      all: all.length,
+      camera: all.filter((a) => a.f.src === 'exif').length,
+      file: all.filter((a) => a.f.src === 'file').length,
+      problems: all.filter((a) => a.dup).length
+    };
+    const badgeBase = 'flex-shrink: 0; font-size: 11.5px; font-weight: 600; border-radius: 6px; padding: 2px 8px; line-height: 18px; white-space: nowrap;';
+    const rows = all.filter((a) => filter === 'all' || (filter === 'camera' && a.f.src === 'exif') || (filter === 'file' && a.f.src === 'file') || (filter === 'problems' && a.dup))
+      .map((a) => {
+        const warn = a.dup || a.f.src === 'file';
+        return {
+          orig: a.f.orig,
+          newName: a.newName,
+          badge: a.dup ? t.badgeDup : (a.f.src === 'exif' ? t.badgeCamera : t.badgeFile),
+          badgeTip: a.dup ? t.tipDup : (a.f.src === 'exif' ? t.tipCamera : t.tipFile),
+          badgeStyle: badgeBase + (warn ? `background:${c.warningSoft};color:${c.warning};` : `background:${c.successSoft};color:${c.success};`),
+          thumbStyle: `width: 44px; height: 44px; flex-shrink: 0; border-radius: 8px; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 4px; box-sizing: border-box; background: linear-gradient(160deg, hsl(${a.f.hue},70%,72%), hsl(${(a.f.hue + 40) % 360},60%,45%));`
+        };
+      });
+
+    const pill = 'border: 0; cursor: pointer; font-family: inherit; border-radius: 6px; line-height: 22px;';
+    const segView = segs.map((g, i) => ({
+      label: g.k === 't' ? TOK[g.v][lang] : (g.v === ' ' ? '␣' : g.v),
+      style: g.k === 't'
+        ? pill + `padding: 1px 8px; font-size: 12px; font-weight: 600; background: ${c.primarySoft}; color: ${c.primary};`
+        : pill + `padding: 1px 4px; font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 600; background: transparent; color: ${c.text};`,
+      remove: () => this.setState({ segs: segs.filter((_, j) => j !== i) })
+    }));
+
+    const chipStyle = pill + `padding: 2px 8px; font-size: 12px; font-weight: 500; background: ${c.surface2}; color: ${c.text}; border: 1px solid ${c.border};`;
+    const add = (seg) => () => this.setState({ segs: segs.concat([seg]) });
+    const tokChip = (v) => ({ label: TOK[v][lang], raw: '{' + v + '}', style: chipStyle, add: add(T(v)) });
+    const sepChip = (v, label) => ({ label: label || v, raw: JSON.stringify(v), style: chipStyle + "font-family: 'JetBrains Mono', monospace;", add: add(S(v)) });
+    const chipGroups = [
+      { title: t.gDate, chips: ['YYYY', 'MM', 'DD', 'MMM', 'ddd'].map(tokChip) },
+      { title: t.gTime, chips: ['hh', 'mm', 'ss'].map(tokChip) },
+      { title: t.gFile, chips: ['name', 'camera', 'counter'].map(tokChip) },
+      { title: t.gSep, chips: [sepChip('-'), sepChip('_'), sepChip('.'), sepChip(' ', t.space), sepChip('/', '/ ' + t.folder)] }
+    ];
+    const presetStyle = pill + `padding: 2px 8px; font-size: 11.5px; font-family: 'JetBrains Mono', monospace; background: transparent; color: ${c.primary}; border: 1px dashed ${c.primary};`;
+    const presets = PRESETS.map((p) => ({ label: p.label, style: presetStyle, apply: () => this.setState({ segs: p.segs }) }));
+
+    const tab = (key, label, dot) => ({
+      label, count: String(counts[key]),
+      style: `display: flex; align-items: center; gap: 6px; border-radius: 8px; padding: 4px 10px; font-size: 12px; font-weight: 600; cursor: pointer; ${filter === key ? `background:${c.primarySoft};color:${c.primary};border:1px solid transparent;` : `background:transparent;color:${c.muted};border:1px solid ${c.border};`}`,
+      dotStyle: dot ? `width: 8px; height: 8px; border-radius: 4px; background: ${dot};` : 'display: none;',
+      pick: () => this.setState({ filter: key })
+    });
+    const filters = [tab('all', t.all), tab('camera', t.camera, c.success), tab('file', t.file, c.warning), tab('problems', t.problems, c.warning)];
+
+    const mode = s.mode || 'copy';
+    const optBase = 'display: flex; flex-direction: column; align-items: flex-start; gap: 2px; text-align: left; border-radius: 10px; padding: 10px 12px; cursor: pointer; min-height: 64px;';
+    const optOn = optBase + `border: 2px solid ${c.primary}; background: ${c.primarySoft}; color: ${c.text};`;
+    const optOff = optBase + `border: 2px solid ${c.border}; background: ${c.surface}; color: ${c.text};`;
+
+    const segBtn = (on) => `border: 0; border-radius: 6px; padding: 0 10px; height: 26px; font-size: 12px; font-weight: 600; cursor: pointer; ${on ? `background:${c.surface};color:${c.text};box-shadow:0 1px 2px rgba(0,0,0,.12);` : `background:transparent;color:${c.muted};`}`;
+
+    const phase = s.phase || 'idle';
+    const progress = s.progress || 0;
+    const n = all.length;
+    const done = Math.round(progress / 100 * n);
+
+    return {
+      c, t, isDark: dark, isLight: !dark,
+      langEnStyle: segBtn(lang === 'en'), langDeStyle: segBtn(lang === 'de'),
+      setEn: () => this.setState({ lang: 'en' }), setDe: () => this.setState({ lang: 'de' }),
+      toggleTheme: () => this.setState({ theme: dark ? 'light' : 'dark' }),
+      subfolders: s.sub !== false, toggleSub: () => this.setState({ sub: s.sub === false }),
+      segView, chipGroups, presets, resetPattern: () => this.setState({ segs: DEFAULT }),
+      extHint: 'jpg',
+      example: all[0].newName,
+      copyStyle: mode === 'copy' ? optOn : optOff, moveStyle: mode === 'move' ? optOn : optOff,
+      setCopy: () => this.setState({ mode: 'copy' }), setMove: () => this.setState({ mode: 'move' }),
+      filters, rows,
+      countLabel: n + ' ' + t.photos,
+      isIdle: phase === 'idle', isRunning: phase === 'running', isDone: phase === 'done',
+      readyTitle: t.ready + ' · ' + counts.camera + ' × ' + t.camera + ', ' + counts.file + ' × ' + t.file,
+      readySub: mode === 'copy' ? t.readySubCopy : t.readySubMove,
+      runButton: (mode === 'copy' ? t.runCopy : t.runMove) + ' ' + n + ' ' + t.photos,
+      runLabel: mode === 'copy' ? t.copying : t.moving,
+      progressText: done + ' / ' + n,
+      progressStyle: `height: 8px; width: ${progress}%; border-radius: 4px; background: linear-gradient(90deg,#6D5DFC,#B44CF0 55%,#FF7A59); transition: width 120ms linear;`,
+      doneTitle: n + ' ' + (mode === 'copy' ? t.doneCopy : t.doneMove),
+      run: () => {
+        if (this.timer) clearInterval(this.timer);
+        this.setState({ phase: 'running', progress: 0 });
+        this.timer = setInterval(() => {
+          const p = Math.min(100, ((this.state && this.state.progress) || 0) + 4);
+          if (p >= 100) { clearInterval(this.timer); this.timer = null; this.setState({ progress: 100, phase: 'done' }); }
+          else this.setState({ progress: p });
+        }, 80);
+      },
+      resetRun: () => { if (this.timer) { clearInterval(this.timer); this.timer = null; } this.setState({ phase: 'idle', progress: 0 }); }
+    };
+  }
+}
+</script>
+</body>
+</html>
