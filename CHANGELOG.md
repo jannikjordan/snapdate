@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-11-17
+
+Bug-fix release.
+
 ### Fixed
 - 🪟 The ⓘ (About) button no longer opens a hidden fullscreen mode that hid the minimise, maximise and close buttons and could not be left. Snapdate has no fullscreen mode now; the window buttons are always there.
 
@@ -38,5 +42,6 @@ Snapdate copies or moves your photos and renames them by capture date. It comes 
 - Pinned, locked and audited dependencies; SBOM and SHA-256 checksums for every release.
 - Release files carry a detached ECDSA P-256 signature (`<file>.sig`) that Snapdate verifies with a public key built into it, so the in-app updater only runs files we signed.
 
-[Unreleased]: https://github.com/jannikjordan/snapdate/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/jannikjordan/snapdate/compare/v0.2.1...HEAD
+[0.2.1]: https://github.com/jannikjordan/snapdate/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/jannikjordan/snapdate/releases/tag/v0.2.0
