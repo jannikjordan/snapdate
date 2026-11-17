@@ -1,3 +1,4 @@
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Platform.Storage;
@@ -17,6 +18,19 @@ public partial class MainWindow : Window
             (DataContext as MainWindowViewModel)?.Shutdown();
             (DataContext as MainWindowViewModel)?.SaveSettings();
         };
+    }
+
+    /// <summary>
+    /// Snapdate has no fullscreen mode (it hides the caption buttons and the user could not leave it):
+    /// anything that asks for <see cref="WindowState.FullScreen"/> gets the previous state back.
+    /// </summary>
+    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+    {
+        base.OnPropertyChanged(change);
+        if (change.Property == WindowStateProperty && change.NewValue is WindowState.FullScreen)
+        {
+            WindowState = change.OldValue is WindowState.Maximized ? WindowState.Maximized : WindowState.Normal;
+        }
     }
 
     private void WireDropTarget(Button target, bool asSource)

@@ -80,6 +80,10 @@ reports it as caption: drag, double-click, snap layouts); the language, theme, h
 are marked `ElementRole="User"` so they stay clickable. Avalonia draws the caption buttons itself but they
 report native hit-test codes, so snap layouts work. Avalonia also draws the window title over the bar;
 `App.axaml` hides it (`Panel#PART_TitleTextPanel`, opacity 0) while `Title` stays for Alt-Tab, taskbar and screen readers.
+There is **no fullscreen mode**: Avalonia's decorations add a fullscreen button left of minimize (it would cover the About
+button, and fullscreen hides the caption buttons). `App.axaml` sets `IsVisible=False` on `PART_FullScreenButton` and
+`PART_PopoverFullScreenButton`, and `MainWindow` reverts any `WindowState.FullScreen`. The three caption buttons are
+46 dip wide each (138 dip), inside the 150 dip column reserved at the right end of the bar.
 
 **Rule: the left column must fit without scrolling at the default and the minimum size**
 (guarded by UI tests in both languages). Long names are shortened with “…”

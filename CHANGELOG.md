@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- 🪟 The ⓘ (About) button no longer opens a hidden fullscreen mode that hid the minimise, maximise and close buttons and could not be left. Snapdate has no fullscreen mode now; the window buttons are always there.
+
 ## [0.2.0] - 2026-11-16
 
 First public release. 🎉

@@ -15,5 +15,11 @@
     <StyleInclude Source="avares://Snapdate/Theme/Controls.axaml" />
     <!-- Avalonia draws the window title over our own title bar; the window keeps its Title for Alt-Tab, taskbar and screen readers. -->
     <Style Selector="Panel#PART_TitleTextPanel"><Setter Property="Opacity" Value="0" /></Style>
+    <!-- Snapdate has no fullscreen mode: it would hide the caption buttons for good. Avalonia's drawn decorations
+         add a fullscreen button (and a twin in the hover popover) left of minimize that covers our About button;
+         remove both from layout and hit-testing. MainWindow also reverts WindowState.FullScreen. -->
+    <Style Selector="Button#PART_FullScreenButton, Button#PART_PopoverFullScreenButton">
+      <Setter Property="IsVisible" Value="False" />
+    </Style>
   </Application.Styles>
 </Application>

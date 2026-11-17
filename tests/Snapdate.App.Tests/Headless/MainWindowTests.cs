@@ -404,6 +404,43 @@ public sealed class MainWindowTests(HeadlessSession headless)
     });
 
     [Fact]
+    public Task Fullscreen_is_not_reachable() => RunOnUi(() =>
+    {
+        var window = new MainWindow { DataContext = new TestServices().CreateViewModel() };
+        window.Show();
+        Dispatcher.UIThread.RunJobs();
+
+        // Regression for #12: fullscreen hid the caption buttons and could not be left again.
+        window.WindowState = WindowState.FullScreen;
+        Dispatcher.UIThread.RunJobs();
+        Assert.Equal(WindowState.Normal, window.WindowState);
+
+        window.WindowState = WindowState.Maximized;
+        window.WindowState = WindowState.FullScreen;
+        Dispatcher.UIThread.RunJobs();
+        Assert.Equal(WindowState.Maximized, window.WindowState);
+
+        // The decorations' fullscreen button (and its popover twin) are removed by an app style.
+        // The headless platform draws no decorations, so these stand-ins only mirror the names of Avalonia 12.1.6's
+        // WindowDrawnDecorations template parts (Button PART_FullScreenButton / PART_PopoverFullScreenButton).
+        // Re-check those names against the theme template whenever Avalonia is upgraded.
+        var host = new StackPanel();
+        var fullscreen = new Button { Name = "PART_FullScreenButton" };
+        var popover = new Button { Name = "PART_PopoverFullScreenButton" };
+        var close = new Button { Name = "PART_CloseButton" };
+        host.Children.Add(fullscreen);
+        host.Children.Add(popover);
+        host.Children.Add(close);
+        window.Content = host;
+        Dispatcher.UIThread.RunJobs();
+        Assert.False(fullscreen.IsVisible);
+        Assert.False(popover.IsVisible);
+        Assert.True(close.IsVisible);
+
+        window.Close();
+    });
+
+    [Fact]
     public Task Title_bar_is_the_caption_area_and_its_controls_are_not() => RunOnUi(() =>
     {
         var window = new MainWindow { DataContext = new TestServices().CreateViewModel() };
