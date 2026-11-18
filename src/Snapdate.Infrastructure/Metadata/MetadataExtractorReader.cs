@@ -17,8 +17,6 @@ namespace Snapdate.Infrastructure.Metadata;
 /// </summary>
 public sealed class MetadataExtractorReader(TimeProvider clock) : IMetadataReader
 {
-    private static readonly DateTime Earliest = new(1900, 1, 1);
-
     private static readonly string[] XmpDateKeys =
     [
         "exif:DateTimeOriginal",
@@ -161,12 +159,11 @@ public sealed class MetadataExtractorReader(TimeProvider clock) : IMetadataReade
         return false;
     }
 
-    /// <summary>Rejects unset camera clocks (0000, 1904, 1970 epochs are allowed only if after 1900) and future dates.</summary>
+    /// <summary>Rejects unset camera clocks and future dates (see <see cref="DatePlausibility"/>).</summary>
     private DateTime? Plausible(DateTime value)
     {
-        var latest = clock.GetLocalNow().DateTime.AddDays(2);
         var unspecified = DateTime.SpecifyKind(value, DateTimeKind.Unspecified);
-        return unspecified >= Earliest && unspecified <= latest ? unspecified : null;
+        return DatePlausibility.IsPlausible(unspecified, clock.GetLocalNow().DateTime) ? unspecified : null;
     }
 
     private static string? CameraModel(IReadOnlyList<MeDirectory> directories)
