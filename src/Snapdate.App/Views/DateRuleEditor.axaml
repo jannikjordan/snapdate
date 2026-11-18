@@ -1,0 +1,130 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:Snapdate.App.ViewModels"
+             mc:Ignorable="d"
+             x:Class="Snapdate.App.Views.DateRuleEditor"
+             x:DataType="vm:DateRuleEditorViewModel"
+             x:CompileBindings="True">
+  <!-- The rule editor (DESIGN.md §5.8). Fills the list area of the "Dates from file names" dialog while open; its own
+       footer replaces the dialog's. Top to bottom: name, patterns with blocks and per-line messages, tester, buttons. -->
+  <DockPanel>
+    <!-- Footer: Cancel + Save, or the inline "Discard your changes?" question -->
+    <Grid DockPanel.Dock="Bottom" ColumnDefinitions="*,Auto" Margin="0,16,0,0">
+      <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" IsVisible="{Binding ShowButtons}">
+        <Button x:Name="EditorCancelButton" Classes="secondary" Content="{Binding L.Cancel}"
+                Command="{Binding CancelCommand}" AutomationProperties.Name="{Binding L.Cancel}" />
+        <Button x:Name="SaveRuleButton" Classes="primary" Content="{Binding L.RuleSave}"
+                Command="{Binding SaveCommand}" AutomationProperties.Name="{Binding L.RuleSave}" />
+      </StackPanel>
+      <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" IsVisible="{Binding IsConfirmingDiscard}"
+                  AutomationProperties.LiveSetting="Polite"
+                  AutomationProperties.Name="{Binding L.RuleDiscardQuestion}">
+        <TextBlock Text="{Binding L.RuleDiscardQuestion}" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,4,0" />
+        <Button x:Name="DiscardButton" Classes="secondary danger" Content="{Binding L.RuleDiscard}"
+                Command="{Binding DiscardCommand}" AutomationProperties.Name="{Binding L.RuleDiscard}" />
+        <Button x:Name="KeepEditingButton" Classes="primary" Content="{Binding L.RuleKeepEditing}"
+                Command="{Binding KeepEditingCommand}" AutomationProperties.Name="{Binding L.RuleKeepEditing}" />
+      </StackPanel>
+    </Grid>
+
+    <ScrollViewer x:Name="EditorScroller" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+      <StackPanel Spacing="10" Margin="0,0,4,0">
+        <StackPanel Spacing="4">
+          <TextBlock Text="{Binding Title}" FontSize="15" FontWeight="SemiBold" />
+          <TextBlock Text="{Binding L.RuleEditorIntro}" Classes="muted" TextWrapping="Wrap" />
+        </StackPanel>
+
+        <!-- Name -->
+        <Grid ColumnDefinitions="Auto,*">
+          <TextBlock Classes="label" Text="{Binding L.RuleNameLabel}" VerticalAlignment="Center" Margin="0,0,12,0" />
+          <!-- MaxLength = UserDateRules.MaxNameLength (80); the view model also refuses longer names. -->
+          <TextBox x:Name="RuleNameBox" Grid.Column="1" Classes="ruleName" Text="{Binding Name}"
+                   MaxLength="80" PlaceholderText="{Binding L.RuleDefaultName}"
+                   AutomationProperties.Name="{Binding L.RuleNameLabel}" />
+        </Grid>
+
+        <!-- Patterns: one per line, blocks insert at the caret -->
+        <StackPanel Spacing="6">
+          <TextBlock Classes="label" Text="{Binding PatternsLabel}" />
+          <TextBox x:Name="PatternsBox" Classes="rulePatterns" Classes.invalid="{Binding HasProblems}"
+                   Text="{Binding PatternsText}" CaretIndex="{Binding CaretIndex}"
+                   AcceptsReturn="True" AcceptsTab="False" TextWrapping="NoWrap"
+                   ToolTip.Tip="{Binding L.RulePatternsHint}"
+                   AutomationProperties.Name="{Binding PatternsLabel}"
+                   AutomationProperties.HelpText="{Binding L.RulePatternsHint}" />
+          <TextBlock Text="{Binding L.RulePatternsHint}" Classes="muted" FontSize="12" TextWrapping="Wrap" />
+          <ItemsControl x:Name="ChipList" ItemsSource="{Binding Chips}" AutomationProperties.Name="{Binding L.RuleChipsName}">
+            <ItemsControl.ItemsPanel>
+              <ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="vm:ChipViewModel">
+                <Button Classes="chip" Command="{Binding InsertCommand}"
+                        ToolTip.Tip="{Binding Tooltip}" AutomationProperties.Name="{Binding Label}">
+                  <TextBlock Text="{Binding Label}" />
+                </Button>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+
+          <!-- What is wrong, line by line (or that all patterns can be used) -->
+          <Panel x:Name="ValidationPanel"
+                 AutomationProperties.LiveSetting="Polite"
+                 AutomationProperties.Name="{Binding ValidationText}">
+            <ItemsControl ItemsSource="{Binding Problems}" IsVisible="{Binding HasProblems}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="x:String">
+                  <Grid Classes="ruleProblem" ColumnDefinitions="Auto,*">
+                    <PathIcon Data="{StaticResource IconWarning}" />
+                    <TextBlock Grid.Column="1" Text="{Binding}" TextWrapping="Wrap" />
+                  </Grid>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            <Grid Classes="testResult match" ColumnDefinitions="Auto,*" IsVisible="{Binding ShowPatternsOk}">
+              <PathIcon Data="{StaticResource IconCheck}" Margin="0,0,8,0" />
+              <TextBlock Grid.Column="1" Text="{Binding L.RulePatternsOk}" TextWrapping="Wrap" />
+            </Grid>
+          </Panel>
+        </StackPanel>
+
+        <!-- Tester for this rule only -->
+        <Border Classes="tester">
+          <StackPanel Spacing="8">
+            <TextBlock Classes="label" Text="{Binding L.TesterTitle}" />
+            <Grid ColumnDefinitions="*,Auto">
+              <TextBox x:Name="SampleBox" Classes="tester" Text="{Binding Sample}"
+                       PlaceholderText="{Binding L.TesterPlaceholder}"
+                       AutomationProperties.Name="{Binding L.TesterTitle}" />
+              <ComboBox x:Name="EditorSamplePicker" Grid.Column="1" Classes="tester" Margin="8,0,0,0" Width="230"
+                        ItemsSource="{Binding SampleNames}" SelectedItem="{Binding SelectedSample}"
+                        PlaceholderText="{Binding L.TesterPick}" IsVisible="{Binding HasSampleNames}"
+                        ToolTip.Tip="{Binding L.TesterPickName}"
+                        AutomationProperties.Name="{Binding L.TesterPickName}">
+                <ComboBox.ItemTemplate>
+                  <DataTemplate x:DataType="x:String">
+                    <TextBlock Text="{Binding}" Classes="mono" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding}" />
+                  </DataTemplate>
+                </ComboBox.ItemTemplate>
+              </ComboBox>
+            </Grid>
+            <Grid x:Name="SampleResultPanel" Classes="testResult" ColumnDefinitions="Auto,*"
+                  Classes.match="{Binding IsSampleMatch}" Classes.off="{Binding IsSampleNotADate}"
+                  Classes.none="{Binding IsSampleNoMatch}"
+                  AutomationProperties.LiveSetting="Polite"
+                  AutomationProperties.Name="{Binding SampleResult}">
+              <Panel IsVisible="{Binding HasSampleIcon}" Margin="0,0,8,0" VerticalAlignment="Center">
+                <PathIcon Data="{StaticResource IconCheck}" IsVisible="{Binding IsSampleMatch}" />
+                <PathIcon Data="{StaticResource IconWarning}" IsVisible="{Binding IsSampleNotADate}" />
+                <PathIcon Data="{StaticResource IconClose}" IsVisible="{Binding IsSampleNoMatch}" />
+              </Panel>
+              <TextBlock Grid.Column="1" Text="{Binding SampleResult}" TextWrapping="Wrap" />
+            </Grid>
+          </StackPanel>
+        </Border>
+      </StackPanel>
+    </ScrollViewer>
+  </DockPanel>
+</UserControl>

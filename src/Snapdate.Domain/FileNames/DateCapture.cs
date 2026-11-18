@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Text;
 using System.Text.RegularExpressions;
 using Snapdate.Domain.Photos;
 
@@ -21,8 +22,25 @@ internal static class DateCapture
 
     public static bool TryRead(Match match, DateTime localNow, out FileNameDate date)
     {
-        date = default;
+        var kind = Read(match, localNow, out var candidate);
+        date = kind == PatternCheckKind.Date ? candidate!.Value : default;
+        return kind == PatternCheckKind.Date;
+    }
 
+    /// <summary>
+    /// Reads the date of a successful match and says whether it is a valid, plausible date, with the numbers found
+    /// (for the rule editor; scanning uses <see cref="TryRead(Match, DateTime, out FileNameDate)"/>).
+    /// </summary>
+    public static PatternCheck Check(Match match, DateTime localNow)
+    {
+        var kind = Read(match, localNow, out var candidate);
+        return new PatternCheck(kind, candidate, Describe(match, localNow));
+    }
+
+    /// <summary>The date of a match; <paramref name="candidate"/> is set for valid dates, plausible or not.</summary>
+    private static PatternCheckKind Read(Match match, DateTime localNow, out FileNameDate? candidate)
+    {
+        candidate = null;
         if (!TryReadYear(match, localNow, out var year)
             || !TryRead(match, Month, out var month)
             || !TryRead(match, Day, out var day)
@@ -31,7 +49,7 @@ internal static class DateCapture
             || day < 1
             || day > DateTime.DaysInMonth(year, month))
         {
-            return false;
+            return PatternCheckKind.InvalidDate;
         }
 
         TimeOnly? time = null;
@@ -44,21 +62,44 @@ internal static class DateCapture
                 || minute > 59
                 || second > 59)
             {
-                return false;
+                return PatternCheckKind.InvalidDate;
             }
 
             time = new TimeOnly(hour, minute, second);
         }
 
-        var candidate = new FileNameDate(new DateOnly(year, month, day), time);
-        if (!DatePlausibility.IsPlausible(candidate.ToDateTime(), localNow))
+        candidate = new FileNameDate(new DateOnly(year, month, day), time);
+        return DatePlausibility.IsPlausible(candidate.Value.ToDateTime(), localNow)
+            ? PatternCheckKind.Date
+            : PatternCheckKind.ImplausibleDate;
+    }
+
+    /// <summary>The captured numbers as <c>YYYY-MM-DD[ HH:mm[:ss]]</c>; a two-digit year is shown as the year it stands for.</summary>
+    private static string Describe(Match match, DateTime localNow)
+    {
+        var text = new StringBuilder();
+        text.Append(TryReadYear(match, localNow, out var year) && year is >= 0 and <= 9999
+            ? year.ToString("0000", CultureInfo.InvariantCulture)
+            : Raw(match, Year) ?? Raw(match, TwoDigitYear) ?? "?");
+        text.Append('-').Append(Raw(match, Month) ?? "?");
+        text.Append('-').Append(Raw(match, Day) ?? "?");
+        if (Raw(match, Hour) is { } hour)
         {
-            return false;
+            text.Append(' ').Append(hour).Append(':').Append(Raw(match, Minute) ?? "00");
+            if (Raw(match, Second) is { } second)
+            {
+                text.Append(':').Append(second);
+            }
         }
 
-        date = candidate;
-        return true;
+        return text.ToString();
     }
+
+    /// <summary>A captured value for display; long captures (possible with user-written expressions) are shortened.</summary>
+    private static string? Raw(Match match, string group) =>
+        match.Groups[group] is { Success: true } captured
+            ? captured.Length <= 4 ? captured.Value : string.Concat(captured.ValueSpan[..4], "…")
+            : null;
 
     private static bool TryReadYear(Match match, DateTime localNow, out int year)
     {

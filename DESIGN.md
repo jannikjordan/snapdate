@@ -202,14 +202,32 @@ is never taller than the window; only the rule list scrolls). From top to bottom
   a `badge.warn` with the syntax name for rules this version cannot use, and the patterns (mono, muted, one line, tooltip
   one per line). Actions at the right as link buttons: built-in rows "Duplicate" (copy named "<name> (copy)"/"(Kopie)",
   placed with the own rules, focus moves to it); own rows "Delete" (`Button.link.danger`) with an inline confirmation
-  "Delete this rule?" + Delete + Cancel. "Edit" (own rows) and "Add rule" (footer, left) exist but stay hidden until the
-  rule editor (#20).
+  "Delete this rule?" + Delete + Cancel; own rows also "Edit" (not for rules in a syntax this version cannot use).
 - Tester (`Border.tester`: `surface-2`, radius 10): label, mono text box "Try a file name" and, when a folder was scanned, a
   picker with up to 50 of its names (those with a file date first; editing the text clears the pick, so the same name can be picked again). The result line is a Polite live region: check icon +
   `success` text "Rule "<name>": <long date>[, <time>]" in the UI culture; warning icon + `warning` text "… (rule is
-  switched off)"; red ✕ icon + muted "No rule matches". Only photo/video extensions are removed before matching.
-- Footer: primary "Close". Esc cancels an open delete confirmation, otherwise closes. Tab cycles inside the dialog
-  (top to bottom); on open the first switch gets focus, on close focus returns to where it was.
+  switched off)"; red ✕ icon + muted "No rule matches". Only photo/video extensions are removed before matching. When no
+  rule reads the name but it contains an 8-digit `YYYYMMDD` run, a link button "Create a rule from this name" opens the
+  editor with the text before the run kept, the run as `{YYYY}{MM}{DD}` and the rest as `*`.
+- Footer: secondary "Add rule" (left, hidden while read-only) and primary "Close". Esc cancels an open delete
+  confirmation, otherwise closes. Tab cycles inside the dialog (top to bottom); on open the first switch gets focus, on
+  close focus returns to where it was.
+- Rule editor ("Add rule", "Edit", "Create a rule from this name"): replaces the list, the dialog tester, the intro and
+  the footer while open (the title and notices stay). Never reachable while read-only. In a scroll viewer, top to bottom:
+  title "New rule"/"Edit rule" (15/600) and a muted one-sentence intro; "Name" label + `TextBox.ruleName` (max 80, placeholder
+  "My rule"/"Meine Regel"; saved trimmed, empty → that default; duplicate names are allowed); the label "Patterns (one
+  per line, up to 10)" and `TextBox.rulePatterns` (mono 13, 104 px high, multi-line, Enter = new line, Tab leaves;
+  `danger` border while something is wrong) with a muted hint; `Button.chip` blocks Year, Month, Day, Hour, Minute,
+  Second ({YYYY} {MM} {DD} {HH} {mm} {ss}) and "any text *" that insert at the caret; then the validation (Polite live
+  region): one `Grid.ruleProblem` per problem (`danger` warning icon + 12 px text "Line 2: …", one plain-language message
+  per error kind, including how to fix ambiguous digits), or the check icon + `success` "All patterns can be used.";
+  then its own tester (`Border.tester`, prefilled from the dialog tester, same picker), trying only this rule: ✓
+  "Matches line 2 → <date>", warning icon "Line 2 matches, but 2024-13-45 is not a valid date." / "… is before 1900 or
+  in the future.", ✕ "No pattern matches this name."; Polite live region. Footer: secondary "Cancel" + primary "Save
+  rule" (disabled while anything is wrong). Leaving with changes asks inline "Discard your changes?" + "Discard"
+  (`Button.secondary.danger`) + "Keep editing" (gets focus, the safe answer); Esc in the editor = Cancel, Esc on the question = keep
+  editing. On open the name box gets focus; after Save or Cancel the edited/saved rule's switch (or "Add rule"). A
+  refused save keeps the editor open with the reason in the notice above; Save can be pressed again.
 
 Every change is saved at once. Closing after a change scans the folder again (once) with the new rules.
 

@@ -4,4 +4,7 @@ namespace Snapdate.Domain.FileNames;
 internal interface IFileNameDateMatcher
 {
     bool TryMatch(string? name, DateTime localNow, out FileNameDate date);
+
+    /// <summary>Like <see cref="TryMatch"/>, with the reason when a fitting name gives no date.</summary>
+    PatternCheck Check(string? name, DateTime localNow);
 }

@@ -57,8 +57,8 @@ public sealed partial class DateRuleItemViewModel : ObservableObject
 
     public bool CanDelete => CanChange && IsCustom;
 
-    /// <summary>Editing arrives with the rule editor (#20); hidden until then.</summary>
-    public bool CanEdit => CanChange && IsCustom && DateRulesViewModel.IsEditorAvailable;
+    /// <summary>The user's own rules can be edited, unless they are written in a syntax this version cannot use.</summary>
+    public bool CanEdit => CanChange && IsCustom && IsSyntaxSupported;
 
     [ObservableProperty]
     public partial bool IsEnabled { get; set; }
@@ -145,6 +145,9 @@ public sealed partial class DateRuleItemViewModel : ObservableObject
         Rule = Rule with { Enabled = value };
         _owner.SetEnabled(this, value);
     }
+
+    [RelayCommand]
+    private void Edit() => _owner.Edit(this);
 
     [RelayCommand]
     private void Duplicate() => _owner.Duplicate(this);

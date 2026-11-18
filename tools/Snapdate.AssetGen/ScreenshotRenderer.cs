@@ -207,6 +207,18 @@ internal static class ScreenshotRenderer
                         var rules = vm.RulesDialog!;
                         rules.SelectedSample = rules.SampleNames.First(n => n.StartsWith("WhatsApp", StringComparison.Ordinal));
                     });
+                    Shoot(dir, $"18-date-rule-editor-{suffix}", ci, thumbnails, vm =>
+                    {
+                        // A new rule for screenshots, tried on the screenshot from the folder (nothing is saved).
+                        ArrangePreview(vm);
+                        vm.OpenDateRulesCommand.Execute(null);
+                        var rules = vm.RulesDialog!;
+                        rules.SelectedSample = rules.SampleNames.First(n => n.StartsWith("Screenshot", StringComparison.Ordinal));
+                        rules.AddRuleCommand.Execute(null);
+                        var editor = rules.Editor!;
+                        editor.Name = folder == "de" ? "Bildschirmfotos" : "Screenshots";
+                        editor.PatternsText = "Screenshot_{YYYY}{MM}{DD}-{HH}{mm}{ss}*" + Environment.NewLine + "Screenshot {YYYY}-{MM}-{DD}";
+                    });
                 }
 
                 Avalonia.Application.Current!.RequestedThemeVariant = ThemeVariant.Light;
