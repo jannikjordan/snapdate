@@ -58,10 +58,11 @@ To report a vulnerability, see [SECURITY.md](../SECURITY.md).
     non-letters, `\d \s \w .`, simple classes (no nesting, subtraction or `\p{…}`), `(…)`, `(?:…)`,
     `(?<date-part>…)`, `|`, `^ $` and quantifiers up to 20; nothing whose width varies (including alternatives
     of different length) may be repeated; at most 30 quantifiers, 8 unbounded ones, and unbounded × positions
-    ≤ 240; at most 300 characters. The engine must then compile the same text (on its own and wrapped as
+    ≤ 120; at most 300 characters. The engine must then compile the same text (on its own and wrapped as
     `^(?:…)$`), or it is rejected. Every problem is a validation message, never a crash.
-  - Every expression from two security reviews (0.5–18 s before) is rejected or under 30 ms; fuzzing finds no
-    accepted expression above about 40 ms per hostile name; tests require under 200 ms per match.
+  - Every expression from two security reviews (0.5–18 s before) is rejected or under 20 ms; fuzzing and the
+    budget's edges find no accepted expression above about 45 ms per hostile name; tests (best of three runs,
+    run alone) require under 200 ms per match.
   - Per file name, regex rules together get **200 ms**; after that further regex rules are skipped (token
     patterns still run), so many rules cannot add up. The rule editor's tester runs off the UI thread.
   - Captured values must be ASCII digits and pass the calendar and plausibility checks

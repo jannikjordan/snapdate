@@ -152,7 +152,7 @@ Checks, in order:
    (`(?:_\d{2}\d{2})?`, `(?:ab|cd){3}`). Repeating something of width 0
    (`^*`, `()?`) → `UnsupportedConstruct`.
 4. **Budget** → `TooComplex`: at most **30 quantifiers**, at most **8
-   unbounded** ones, and unbounded quantifiers × positions ≤ **240**, where
+   unbounded** ones, and unbounded quantifiers × positions ≤ **120**, where
    positions = single-character steps once counts are written out (`\d{4}` = 4,
    `.{0,20}` = 20, `.*` = 1, a fixed-count group counts its content each time,
    an alternation counts all its branches). Without an unbounded quantifier
@@ -170,11 +170,14 @@ Checks, in order:
 *Measured* (tests in `MatchTimeTests`, `DateRuleSetTests`; hostile names of 260
 characters such as runs of one letter with one odd letter, repeating pairs,
 digits only, random text): every expression from both review rounds is now
-rejected or takes under 30 ms; the slowest accepted expressions found by
+rejected or takes under 20 ms; the slowest accepted expressions found by
 fuzzing (thousands of combinations including empty and different-length
 alternatives, classes with escapes and `[`, fixed-count groups) and at the
-budget's edges take up to about 40 ms per match on a developer machine. The
-tests require under 200 ms per match.
+budget's edges take up to about 45 ms per match on a developer machine (a lazy
+ending such as `.*a.{0,20}…{0,10}?` is the slowest kind). The tests take the best of
+three runs, run alone, and require under 200 ms per match. The budget was
+lowered from 240 to 120 after budget-edge expressions reached 130–212 ms under
+parallel test load.
 
 *Per-name budget.* `DateRuleSet.Match` stops trying regex rules for a name once
 they have used **200 ms** together (`DefaultRegexBudget`); token-pattern rules

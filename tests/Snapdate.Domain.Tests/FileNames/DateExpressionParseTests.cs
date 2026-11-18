@@ -343,7 +343,8 @@ public sealed class DateExpressionParseTests
     [InlineData(8, true)]
     public void At_most_8_unbounded_quantifiers_are_allowed(int count, bool valid)
     {
-        var text = string.Concat(Enumerable.Repeat(".*a", count)) + "(?<year>....)(?<month>..)(?<day>..)";
+        // 8 × (8 + 4) = 96 is within the budget; a ninth unbounded quantifier is refused by count.
+        var text = string.Concat(Enumerable.Repeat(".*", count)) + "(?<yy>..)(?<month>.)(?<day>.)";
 
         var result = DateExpression.Parse(text);
 
@@ -355,12 +356,14 @@ public sealed class DateExpressionParseTests
     }
 
     [Theory]
-    [InlineData("[a-z]*.{0,20}.{0,20}.{0,20}.{0,20}.{0,20}.{0,20}.{0,20}.{0,20}.{0,20}.{0,20}.{0,20}.{0,11}", true)] // 1 × (8 + 1 + 231) = 240
-    [InlineData("[a-z]*.{0,20}.{0,20}.{0,20}.{0,20}.{0,20}.{0,20}.{0,20}.{0,20}.{0,20}.{0,20}.{0,20}.{0,12}", false)] // 241
-    [InlineData(".*.*.*.*.*.*.*.*.?.?.?.?.?.?.?.?.?.?.?.?.?.?", true)] // 8 × (8 + 8 + 14) = 240
-    [InlineData(".*.*.*.*.*.*.*.*.?.?.?.?.?.?.?.?.?.?.?.?.?.?.?", false)] // 8 × 31 = 248
-    [InlineData("[a-z]*(?:abcdefghij){20}", true)] // 1 × (8 + 1 + 200) = 209: a fixed-count group counts its content each time
-    [InlineData("[a-z]*(?:abcdefghijkl){20}", false)] // 1 × (8 + 1 + 240) = 249
+    [InlineData("[a-z]*.{0,20}.{0,20}.{0,20}.{0,20}.{0,20}.{0,11}", true)] // 1 × (8 + 1 + 111) = 120
+    [InlineData("[a-z]*.{0,20}.{0,20}.{0,20}.{0,20}.{0,20}.{0,12}", false)] // 121
+    [InlineData(".*.*.*.*.?.?.?.?.?.?.?.?.?.?.?.?.?.?.?.?.?.?", true)] // 4 × (8 + 4 + 18) = 120
+    [InlineData(".*.*.*.*.?.?.?.?.?.?.?.?.?.?.?.?.?.?.?.?.?.?.?", false)] // 4 × 31 = 124
+    [InlineData("[a-z]*(?:abcde){20}", true)] // 1 × (8 + 1 + 100) = 109: a fixed-count group counts its content each time
+    [InlineData("[a-z]*(?:abcdefg){20}", false)] // 1 × (8 + 1 + 140) = 149
+    [InlineData(".*a.{0,20}.{0,20}.{0,20}.{0,20}.{0,20}.{0,10}?", true)] // 1 × (8 + 2 + 110) = 120, lazy ending
+    [InlineData(".*a.{0,20}.{0,20}.{0,20}.{0,20}.{0,20}.{0,20}.{0,20}.{0,20}.{0,20}.{0,20}.{0,20}.{0,10}?", false)] // 239
     public void Unbounded_quantifiers_times_positions_have_a_budget(string tail, bool valid)
     {
         var result = DateExpression.Parse(Valid + tail);
@@ -375,10 +378,10 @@ public sealed class DateExpressionParseTests
     [Fact]
     public void An_alternation_counts_every_branch()
     {
-        string Text(int tail) => Valid + "[a-z]*(?:" + new string('a', 100) + "|" + new string('b', 100) + ")" + new string('a', tail);
+        string Text(int tail) => Valid + "[a-z]*(?:" + new string('a', 50) + "|" + new string('b', 50) + ")" + new string('a', tail);
 
-        Assert.True(DateExpression.Parse(Text(31)).IsValid); // 1 × (8 + 1 + 200 + 31) = 240
-        Assert.Equal(DatePatternErrorKind.TooComplex, Assert.Single(DateExpression.Parse(Text(32)).Errors).Kind);
+        Assert.True(DateExpression.Parse(Text(11)).IsValid); // 1 × (8 + 1 + 100 + 11) = 120
+        Assert.Equal(DatePatternErrorKind.TooComplex, Assert.Single(DateExpression.Parse(Text(12)).Errors).Kind);
     }
 
     [Fact]

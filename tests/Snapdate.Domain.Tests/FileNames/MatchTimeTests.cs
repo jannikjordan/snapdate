@@ -5,8 +5,10 @@ namespace Snapdate.Domain.Tests.FileNames;
 /// <summary>
 /// Accepted expressions and patterns must match quickly on hostile 260-character names. The engine's timeout is only
 /// checked now and then, so these bounds are what the grammar's limits (<see cref="DateExpression"/>) guarantee. No
-/// test here relies on the timeout.
+/// test here relies on the timeout. They run alone (never in parallel with other tests) and take the best of three
+/// runs, so a busy machine does not make them fail.
 /// </summary>
+[Collection(nameof(TimingTests))]
 public sealed class MatchTimeTests
 {
     private const string Date = @"(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})";
@@ -81,16 +83,20 @@ public sealed class MatchTimeTests
     /// <summary>The slowest expressions found among those still accepted (fuzzing and the limits' edges).</summary>
     public static TheoryData<string> ExpensiveAcceptedExpressions() =>
     [
-        Date + "[a-z]*.{0,20}.{0,20}.{0,20}.{0,20}.{0,20}.{0,20}.{0,20}.{0,20}.{0,20}.{0,20}.{0,20}.{0,11}",
-        Date + "[a-z]*.{0,20}.{0,20}[a-z]*.{0,20}.{0,20}.{0,20}",
-        Date + ".*.*.*.*.*.*.*.*.?.?.?.?.?.?.?.?.?.?.?.?.?.?",
-        Date + ".*a" + new string('.', 230),
+        Date + "[a-z]*.{0,20}.{0,20}.{0,20}.{0,20}.{0,20}.{0,11}",
+        Date + @"\w*.{0,20}.{0,20}.{0,20}.{0,20}.{0,20}.{0,11}",
+        Date + ".*a.{0,20}.{0,20}.{0,20}.{0,20}.{0,20}.{0,10}",
+        Date + ".*a.{0,20}.{0,20}.{0,20}.{0,20}.{0,20}.{0,10}?",
+        Date + ".*?a.{0,20}?.{0,20}?.{0,20}?.{0,20}?.{0,20}?.{0,10}?",
+        Date + "[a-z]*.{0,20}[a-z]*.{0,20}.{0,10}",
+        Date + ".*.*.*.*.?.?.?.?.?.?.?.?.?.?.?.?.?.?.?.?.?.?",
+        Date + ".*a" + new string('.', 110),
         Date + ".*a" + string.Concat(Enumerable.Repeat("(?:|.)", 35)),
-        Date + "[a-z]*.{0,6}[a-z]*.{0,6}[a-z]*.{0,6}[a-z]*.{0,6}",
-        Date + ".*a.{0,20}.*a.{0,20}.*a.{0,20}",
-        Date + "[a-z]*(?:abcdefghij){20}",
-        Date + "(?:ab|ba)*(?:ab|ba)*(?:ab|ba)*(?:ab|ba)*(?:ab|ba)*(?:ab|ba)*",
-        @"[\d\s_]{1,20}\d(?:.|..|...)[^_]*[^_]{20}[^a]{0,20}" + Date + ".*",
+        Date + "[a-z]*.{0,9}[a-z]*.{0,9}[a-z]*.{0,9}",
+        Date + ".*a.{0,8}.*a.{0,8}.*a.{0,8}",
+        Date + "[a-z]*(?:abcde){20}",
+        Date + "(?:ab|ba)*(?:ab|ba)*(?:ab|ba)*",
+        @"[\d\s_]{1,20}\d(?:.|..|...)[^_]*[^_]{20}" + Date + ".*",
         ".*" + Date + ".*",
     ];
 
@@ -184,6 +190,28 @@ public sealed class MatchTimeTests
 
             Assert.True(worst < AdversarialNames.Bound, $"{worst.TotalMilliseconds:0} ms for {text}");
         }
+    }
+
+    [Fact]
+    public void Many_regex_rules_together_stay_within_the_budget_per_name()
+    {
+        // 100 rules × 10 of the most expensive accepted expressions, none of which matches: without the budget this
+        // would add up to seconds per name.
+        string[] expensive =
+        [
+            Date + "x[a-z]*.{0,20}.{0,20}.{0,20}.{0,20}.{0,20}.{0,9}",
+            Date + "x.*a" + new string('.', 108),
+        ];
+        var rules = Enumerable.Range(0, 100)
+            .Select(i => new DateRule($"custom-{i}", $"R{i}", RuleOrigin.Custom, Enabled: true, [.. Enumerable.Range(0, 10).Select(j => expensive[j % 2])], DateRuleSyntax.Regex))
+            .ToList();
+        var set = new DateRuleSet(rules);
+        Assert.All(rules, rule => Assert.All(rule.Patterns, p => Assert.True(DateExpression.Parse(p).IsValid, p)));
+
+        var worst = AdversarialNames.Worst(name => set.Match(name, Now));
+
+        // The budget plus at most one expression that was already running when it ran out.
+        Assert.True(worst < DateRuleSet.DefaultRegexBudget + AdversarialNames.Bound, worst.ToString());
     }
 
     private static void AssertFast(DateExpression expression, string text)

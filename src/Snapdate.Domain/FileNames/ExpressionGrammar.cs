@@ -38,7 +38,7 @@ internal sealed class ExpressionGrammar
     public const int MaxUnbounded = 8;
 
     /// <summary>Unbounded quantifiers × positions may be at most this.</summary>
-    public const int MaxComplexity = 240;
+    public const int MaxComplexity = 120;
 
     private const int Unbounded = int.MaxValue;
 

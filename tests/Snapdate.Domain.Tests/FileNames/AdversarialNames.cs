@@ -13,19 +13,28 @@ internal static class AdversarialNames
 
     public static IReadOnlyList<string> All { get; } = Create();
 
-    /// <summary>The longest time <paramref name="match"/> takes for one of <see cref="All"/>.</summary>
+    /// <summary>
+    /// The longest time <paramref name="match"/> takes for one of <see cref="All"/>, as the best of three runs, so a
+    /// moment of load on the machine does not count.
+    /// </summary>
     public static TimeSpan Worst(Action<string> match)
     {
-        var worst = TimeSpan.Zero;
-        foreach (var name in All)
+        var best = TimeSpan.MaxValue;
+        for (var run = 0; run < 3; run++)
         {
-            var watch = Stopwatch.StartNew();
-            match(name);
-            watch.Stop();
-            worst = watch.Elapsed > worst ? watch.Elapsed : worst;
+            var worst = TimeSpan.Zero;
+            foreach (var name in All)
+            {
+                var watch = Stopwatch.StartNew();
+                match(name);
+                watch.Stop();
+                worst = watch.Elapsed > worst ? watch.Elapsed : worst;
+            }
+
+            best = worst < best ? worst : best;
         }
 
-        return worst;
+        return best;
     }
 
     private static string[] Create()
