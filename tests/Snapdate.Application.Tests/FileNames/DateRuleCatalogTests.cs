@@ -328,6 +328,49 @@ public sealed class DateRuleCatalogTests
     }
 
     [Fact]
+    public void Save_passes_the_loaded_fingerprint_and_then_the_written_one()
+    {
+        var loaded = UserRulesFingerprint.ForContent(10, "0A");
+        var written = UserRulesFingerprint.ForContent(20, "0B");
+        var store = new RecordingStore(DateRuleSaveResult.Saved) { Written = written };
+        var catalog = new DateRuleCatalog([Android, Desktop], new UserDateRulesLoad(UserDateRules.Empty, UserRulesStatus.Unreadable, loaded));
+
+        Assert.Equal(DateRuleSaveResult.Saved, catalog.Save(store));
+        Assert.Equal(loaded, store.Expected);
+        Assert.Equal(written, catalog.Fingerprint);
+        Assert.Equal(UserRulesStatus.Ok, catalog.Status);
+
+        catalog.Save(store);
+        Assert.Equal(written, store.Expected);
+    }
+
+    [Theory]
+    [InlineData(DateRuleSaveResult.Conflict)]
+    [InlineData(DateRuleSaveResult.Failed)]
+    public void A_refused_save_keeps_the_fingerprint_and_status(DateRuleSaveResult result)
+    {
+        var loaded = UserRulesFingerprint.ForContent(10, "0A");
+        var catalog = new DateRuleCatalog([Android, Desktop], new UserDateRulesLoad(UserDateRules.Empty, UserRulesStatus.Unreadable, loaded));
+
+        Assert.Equal(result, catalog.Save(new RecordingStore(result)));
+        Assert.Equal(loaded, catalog.Fingerprint);
+        Assert.Equal(UserRulesStatus.Unreadable, catalog.Status);
+    }
+
+    [Fact]
+    public void Fingerprints_compare_by_content_and_unknown_never_matches()
+    {
+        Assert.True(UserRulesFingerprint.ForContent(3, "abc").Matches(UserRulesFingerprint.ForContent(3, "ABC")));
+        Assert.False(UserRulesFingerprint.ForContent(3, "ABC").Matches(UserRulesFingerprint.ForContent(4, "ABC")));
+        Assert.False(UserRulesFingerprint.ForContent(3, "ABC").Matches(UserRulesFingerprint.Absent));
+        Assert.True(UserRulesFingerprint.Absent.Matches(UserRulesFingerprint.Absent));
+        Assert.False(UserRulesFingerprint.Unknown.Matches(UserRulesFingerprint.Unknown));
+        Assert.False(UserRulesFingerprint.Absent.Matches(UserRulesFingerprint.Unknown));
+        Assert.Equal(UserRulesFingerprint.Unknown, new UserDateRulesLoad(UserDateRules.Empty, UserRulesStatus.Ok).Fingerprint);
+        Assert.Equal(UserRulesFingerprint.Absent, UserDateRulesLoad.Missing.Fingerprint);
+    }
+
+    [Fact]
     public void Load_combines_the_store_rules()
     {
         var store = new RecordingStore(DateRuleSaveResult.Saved)
@@ -407,14 +450,19 @@ public sealed class DateRuleCatalogTests
 
         public UserDateRules? Saved { get; private set; }
 
+        public UserRulesFingerprint? Expected { get; private set; }
+
+        public UserRulesFingerprint Written { get; init; } = UserRulesFingerprint.ForContent(2, "AB");
+
         public IReadOnlyList<DateRule> LoadSystemRules() => [Android, Desktop];
 
         public UserDateRulesLoad LoadUserRules() => User;
 
-        public DateRuleSaveResult SaveUserRules(UserDateRules rules)
+        public UserDateRulesSave SaveUserRules(UserDateRules rules, UserRulesFingerprint expected)
         {
             Saved = rules;
-            return result;
+            Expected = expected;
+            return new UserDateRulesSave(result, result == DateRuleSaveResult.Saved ? Written : expected);
         }
     }
 }

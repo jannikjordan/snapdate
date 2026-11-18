@@ -31,6 +31,7 @@ public sealed class DateRuleCatalog
             .DistinctBy(rule => rule.Id, StringComparer.Ordinal)
             .Select(rule => rule with { Origin = RuleOrigin.System, Enabled = true })];
         Status = user.Status;
+        Fingerprint = user.Fingerprint;
 
         var rules = user.Rules ?? UserDateRules.Empty;
         _disabled = [.. (rules.DisabledSystemRuleIds ?? []).Where(UserDateRules.IsValidId).Distinct(StringComparer.Ordinal)];
@@ -44,8 +45,11 @@ public sealed class DateRuleCatalog
             .Select(rule => rule with { Origin = RuleOrigin.Custom })];
     }
 
-    /// <summary>What was found when the user's rules were loaded.</summary>
-    public UserRulesStatus Status { get; }
+    /// <summary>What was found when the user's rules were loaded; <see cref="UserRulesStatus.Ok"/> after a successful save.</summary>
+    public UserRulesStatus Status { get; private set; }
+
+    /// <summary>What the file looked like when it was loaded or last saved by this catalog.</summary>
+    public UserRulesFingerprint Fingerprint { get; private set; }
 
     /// <summary>
     /// True when the user's file was written by a newer version or could not be opened; nothing may be changed or
@@ -70,11 +74,27 @@ public sealed class DateRuleCatalog
         return new DateRuleCatalog(store.LoadSystemRules(), store.LoadUserRules());
     }
 
-    /// <summary>Saves the user's part to <paramref name="store"/>; <see cref="DateRuleSaveResult.ReadOnly"/> when read-only.</summary>
+    /// <summary>
+    /// Saves the user's part to <paramref name="store"/>, unless the file changed since it was loaded or last saved
+    /// (<see cref="DateRuleSaveResult.Conflict"/>); <see cref="DateRuleSaveResult.ReadOnly"/> when read-only.
+    /// </summary>
     public DateRuleSaveResult Save(IDateRuleStore store)
     {
         ArgumentNullException.ThrowIfNull(store);
-        return IsReadOnly ? DateRuleSaveResult.ReadOnly : store.SaveUserRules(ToUserRules());
+        if (IsReadOnly)
+        {
+            return DateRuleSaveResult.ReadOnly;
+        }
+
+        var saved = store.SaveUserRules(ToUserRules(), Fingerprint);
+        if (saved.Result == DateRuleSaveResult.Saved)
+        {
+            // The next save is based on what this catalog just wrote.
+            Fingerprint = saved.Fingerprint;
+            Status = UserRulesStatus.Ok;
+        }
+
+        return saved.Result;
     }
 
     /// <summary>The compiled rule set for scanning.</summary>
@@ -195,4 +215,3 @@ public sealed class DateRuleCatalog
         }
     }
 }
-

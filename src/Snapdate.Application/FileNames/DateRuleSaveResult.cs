@@ -12,6 +12,12 @@ public enum DateRuleSaveResult
     /// </summary>
     ReadOnly,
 
+    /// <summary>
+    /// Not written: the file changed since it was loaded (another app instance, or it was edited or repaired meanwhile).
+    /// Reload before changing the rules again.
+    /// </summary>
+    Conflict,
+
     /// <summary>Not written: the rules would exceed the size limit of the file.</summary>
     TooLarge,
 

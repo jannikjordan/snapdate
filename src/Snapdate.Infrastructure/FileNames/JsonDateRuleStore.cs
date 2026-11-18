@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Security.Cryptography;
 using System.Text.Json;
 using Snapdate.Application.FileNames;
 using Snapdate.Application.Ports;
@@ -10,7 +11,8 @@ namespace Snapdate.Infrastructure.FileNames;
 /// <summary>
 /// Built-in rules from the JSON embedded in this assembly; the user's rules from <c>%APPDATA%\Snapdate\date-rules.json</c>
 /// (ADR 0007). The user file is untrusted: it is size-capped, invalid entries are dropped, and a broken file is reported
-/// as <see cref="UserRulesStatus.Unreadable"/> and moved aside before the next save. Never throws.
+/// as <see cref="UserRulesStatus.Unreadable"/> and moved aside before the next save. A save is refused when the file
+/// changed since it was loaded (<see cref="UserRulesFingerprint"/>). Never throws.
 /// </summary>
 /// <param name="filePath">Path of the user's rule file.</param>
 /// <param name="clock">Clock for the time stamp of a moved-aside file; default the system clock.</param>
@@ -59,40 +61,53 @@ public sealed class JsonDateRuleStore(string filePath, IClock? clock = null) : I
     }
 
     /// <inheritdoc />
-    public DateRuleSaveResult SaveUserRules(UserDateRules rules)
+    public UserDateRulesSave SaveUserRules(UserDateRules rules, UserRulesFingerprint expected)
     {
-        if (rules is null)
+        if (rules is null || expected is null)
         {
-            return DateRuleSaveResult.Failed;
+            return new UserDateRulesSave(DateRuleSaveResult.Failed, expected ?? UserRulesFingerprint.Unknown);
         }
 
         lock (Gate)
         {
-            var current = Read().Status;
-            switch (current)
+            var current = Read();
+            if (current.Status == UserRulesStatus.Inaccessible)
             {
-                case UserRulesStatus.NewerVersion:
-                    // A newer version's data is never lost.
-                    return DateRuleSaveResult.ReadOnly;
-                case UserRulesStatus.Inaccessible:
-                    // The rules on disk are unknown; writing now could replace rules the user still has.
-                    return DateRuleSaveResult.Failed;
+                // The rules on disk are unknown; writing now could replace rules the user still has.
+                return Refused(DateRuleSaveResult.Failed);
+            }
+
+            if (!expected.Matches(current.Fingerprint))
+            {
+                // Another instance saved, or the file was edited or repaired since it was loaded: never overwrite that.
+                return Refused(DateRuleSaveResult.Conflict);
+            }
+
+            if (current.Status == UserRulesStatus.NewerVersion)
+            {
+                // A newer version's data is never lost.
+                return Refused(DateRuleSaveResult.ReadOnly);
             }
 
             var bytes = JsonSerializer.SerializeToUtf8Bytes(ToFile(rules), DateRulesJsonContext.Default.UserDateRulesFile);
             if (bytes.Length > MaxFileSize)
             {
                 // It would be unreadable on the next start.
-                return DateRuleSaveResult.TooLarge;
+                return Refused(DateRuleSaveResult.TooLarge);
             }
 
-            if (current == UserRulesStatus.Unreadable && !TryMoveAside())
+            // Still the same unreadable bytes as at load: keep them aside instead of overwriting them.
+            if (current.Status == UserRulesStatus.Unreadable && !TryMoveAside())
             {
-                return DateRuleSaveResult.Failed;
+                return Refused(DateRuleSaveResult.Failed);
             }
 
-            return AtomicFile.TryWrite(filePath, bytes) ? DateRuleSaveResult.Saved : DateRuleSaveResult.Failed;
+            return AtomicFile.TryWrite(filePath, bytes)
+                ? new UserDateRulesSave(DateRuleSaveResult.Saved, FingerprintOf(bytes))
+                : Refused(DateRuleSaveResult.Failed);
         }
+
+        UserDateRulesSave Refused(DateRuleSaveResult result) => new(result, expected);
     }
 
     private UserDateRulesLoad Read()
@@ -100,43 +115,57 @@ public sealed class JsonDateRuleStore(string filePath, IClock? clock = null) : I
         byte[] bytes;
         try
         {
-            var info = new FileInfo(filePath);
-            if (!info.Exists)
+            if (!File.Exists(filePath))
             {
                 return UserDateRulesLoad.Missing;
             }
 
-            if (info.Length > MaxFileSize)
+            using var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read);
+            if (stream.Length > MaxFileSize)
             {
-                return Unreadable();
+                // Hashed while streaming, so an oversized file is never held in memory.
+                return Unreadable(UserRulesFingerprint.ForContent(stream.Length, Convert.ToHexString(SHA256.HashData(stream))));
             }
 
-            bytes = File.ReadAllBytes(filePath);
+            bytes = new byte[stream.Length];
+            stream.ReadExactly(bytes);
+        }
+        catch (Exception ex) when (ex is FileNotFoundException or DirectoryNotFoundException)
+        {
+            // Deleted between the check and the open.
+            return UserDateRulesLoad.Missing;
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or System.Security.SecurityException)
         {
             // Not "unreadable": the content may be fine (e.g. locked for a moment) and must not be replaced.
-            return new UserDateRulesLoad(UserDateRules.Empty, UserRulesStatus.Inaccessible);
+            return new UserDateRulesLoad(UserDateRules.Empty, UserRulesStatus.Inaccessible, UserRulesFingerprint.Unknown);
         }
+
+        // The fingerprint covers the raw bytes, byte order mark included.
+        var fingerprint = FingerprintOf(bytes);
 
         // Editors such as Notepad may save UTF-8 with a byte order mark, which the JSON reader does not skip.
         var json = bytes.AsMemory(bytes.AsSpan().StartsWith(Utf8Bom) ? Utf8Bom.Length : 0);
-        if (json.Length > MaxFileSize || ReadSchemaVersion(json) is not { } version || version < 1)
+        if (ReadSchemaVersion(json) is not { } version || version < 1)
         {
-            return Unreadable();
+            return Unreadable(fingerprint);
         }
 
         var file = Deserialize(json.Span);
         if (version > SchemaVersion)
         {
             // Best effort: a newer file may have a shape this version cannot read; it is used if possible and never saved.
-            return new UserDateRulesLoad(file is null ? UserDateRules.Empty : ToRules(file), UserRulesStatus.NewerVersion);
+            return new UserDateRulesLoad(file is null ? UserDateRules.Empty : ToRules(file), UserRulesStatus.NewerVersion, fingerprint);
         }
 
-        return file is null ? Unreadable() : new UserDateRulesLoad(ToRules(file), UserRulesStatus.Ok);
+        return file is null ? Unreadable(fingerprint) : new UserDateRulesLoad(ToRules(file), UserRulesStatus.Ok, fingerprint);
 
-        static UserDateRulesLoad Unreadable() => new(UserDateRules.Empty, UserRulesStatus.Unreadable);
+        static UserDateRulesLoad Unreadable(UserRulesFingerprint fingerprint) =>
+            new(UserDateRules.Empty, UserRulesStatus.Unreadable, fingerprint);
     }
+
+    private static UserRulesFingerprint FingerprintOf(byte[] content) =>
+        UserRulesFingerprint.ForContent(content.Length, Convert.ToHexString(SHA256.HashData(content)));
 
     /// <summary>The schema version; 1 when absent; null when the root is not an object or the version is not an integer.</summary>
     private static int? ReadSchemaVersion(ReadOnlyMemory<byte> json)
@@ -162,6 +191,7 @@ public sealed class JsonDateRuleStore(string filePath, IClock? clock = null) : I
             return null;
         }
     }
+
     private static UserDateRulesFile? Deserialize(ReadOnlySpan<byte> json)
     {
         try

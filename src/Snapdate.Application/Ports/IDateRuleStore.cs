@@ -17,7 +17,9 @@ public interface IDateRuleStore
 
     /// <summary>
     /// Saves the user's rules. An unreadable file is moved aside first, never overwritten; a file written by a newer
-    /// version or one that cannot be opened is never overwritten.
+    /// version, one that cannot be opened, or one that changed since it was loaded is never overwritten.
     /// </summary>
-    DateRuleSaveResult SaveUserRules(UserDateRules rules);
+    /// <param name="rules">The rules to write.</param>
+    /// <param name="expected">The fingerprint from the load (or the previous save) the rules are based on.</param>
+    UserDateRulesSave SaveUserRules(UserDateRules rules, UserRulesFingerprint expected);
 }
