@@ -153,7 +153,20 @@ public sealed class FileNameDateTests(HeadlessSession headless)
         Assert.Contains("06.07.2016", item.DatesDifferTip, StringComparison.Ordinal);
         Assert.Contains("23.06.2026", item.DatesDifferTip, StringComparison.Ordinal);
         Assert.Contains("Der Name wurde verwendet", item.DatesDifferTip, StringComparison.Ordinal);
-        Assert.Contains("Regel: WhatsApp (Android)", item.BadgeTip, StringComparison.Ordinal);
+        Assert.Contains("nach der Regel „WhatsApp (Android)“", item.BadgeTip, StringComparison.Ordinal);
+        Assert.Equal("Aufnahmedatum", vm.L.FilterCamera);
+    });
+
+    [Fact]
+    public Task German_camera_case_speaks_of_the_capture_date() => RunOnUi(async () =>
+    {
+        using var temp = new TempFolder();
+        Jpeg(temp, "in/IMG-20160706-WA0002.jpg", new DateTime(2016, 7, 9, 18, 0, 0), camera: "Pixel 8");
+
+        var item = (await ScanAsync(temp, "de-DE")).VisibleItems.Single();
+
+        Assert.StartsWith("Das Aufnahmedatum (09.07.2016", item.DatesDifferTip, StringComparison.Ordinal);
+        Assert.Contains("der Name sagt 06.07.2016", item.DatesDifferTip, StringComparison.Ordinal);
     });
 
     [Fact]
@@ -168,8 +181,27 @@ public sealed class FileNameDateTests(HeadlessSession headless)
 
         Assert.Equal(BadgeKind.FileName, item.Badge);
         Assert.StartsWith("2023-02-01", item.NewName, StringComparison.Ordinal);
-        Assert.Contains("My scanner", item.BadgeTip, StringComparison.Ordinal);
+        Assert.Equal("The date was read from the file name using the rule \"My scanner\".", item.BadgeTip);
     });
+
+    [Fact]
+    public void Memory_rule_store_detects_changes_by_another_writer()
+    {
+        var store = new MemoryDateRuleStore();
+        var first = DateRuleCatalog.Load(store);
+        var second = DateRuleCatalog.Load(store);
+        Assert.True(first.SetEnabled("whatsapp-android", false));
+        Assert.True(second.SetEnabled("whatsapp-desktop", false));
+
+        Assert.Equal(DateRuleSaveResult.Saved, first.Save(store));
+        Assert.Equal(DateRuleSaveResult.Saved, first.Save(store));
+        Assert.Equal(DateRuleSaveResult.Conflict, second.Save(store));
+
+        // The same content written again by someone else is still a change.
+        store.Write(store.User!);
+        Assert.Equal(DateRuleSaveResult.Conflict, first.Save(store));
+        Assert.Equal(2, store.Saves);
+    }
 
     [Fact]
     public Task Switched_off_system_rules_are_not_used() => RunOnUi(async () =>

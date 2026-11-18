@@ -318,11 +318,15 @@
     <Setter Property="Foreground" Value="{DynamicResource SdWarningBrush}" />
   </Style>
   <!-- "Date from name": information, not a warning -->
+  <!-- The 1 px border keeps the pill visible on a selected row, which has the same primary-soft background. -->
   <Style Selector="Border.badge.info">
     <Setter Property="Background" Value="{DynamicResource SdPrimarySoftBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource SdInfoBorderBrush}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="Padding" Value="7,1" />
   </Style>
   <Style Selector="Border.badge.info > TextBlock">
-    <Setter Property="Foreground" Value="{DynamicResource SdPrimaryBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource SdInfoBrush}" />
   </Style>
   <!-- "Dates differ" hint under a badge: icon + text, never colour alone -->
   <Style Selector="StackPanel.datesDiffer">

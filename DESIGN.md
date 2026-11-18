@@ -39,8 +39,10 @@ Used only for: logo, primary button, progress bar, selected token chip glow.
 | `border` | `#E4E1F0` | `#302E48` | 1 px separators |
 | `text` | `#1B1A2E` | `#F2F1FA` | Primary text |
 | `text-muted` | `#6B6880` | `#A3A0B8` | Secondary text, labels |
-| `primary` | `#5B4BF5` | `#8B7DFF` | Links, focus ring, active states, "Date from name" badge text and filter dot |
+| `primary` | `#5B4BF5` | `#8B7DFF` | Links, focus ring, active states, "Date from name" filter dot |
 | `primary-soft` | `#ECE9FF` | `#2E2A5C` | Selected chip, "Date from name" (info) badge background |
+| `info` | `#5B4BF5` | `#A99EFF` | "Date from name" badge text (4.69:1 light, 5.63:1 dark on `primary-soft`, which is also the selected-row background) |
+| `info-border` | `#7B6EF6` | `#7A6EE6` | 1 px border of the "Date from name" badge, so the pill stays visible on a selected row (3.27:1 light, 3.25:1 dark on `primary-soft`) |
 | `success` | `#1FA971` | `#3CCB8F` | "Camera date" badge, done state |
 | `warning` | `#D98A0B` | `#F2B13C` | "File date" fallback badge, duplicates, "Dates differ" hint |
 | `danger` | `#E5484D` | `#FF6B70` | Errors |
@@ -153,7 +155,7 @@ Validation inline below the row (e.g. "Target is inside the source folder").
 Virtualised list. Row: 40 px thumbnail (rounded 8), original name (muted),
 arrow, new name (mono, bold), date-source badge:
 - green **Camera date** (metadata), primary/info **Date from name** (read from the file name by a date rule;
-  `Border.badge.info`, `primary-soft` background, `primary` text; tooltip names the rule), amber **File date**
+  `Border.badge.info`, `primary-soft` background, `info` text, 1 px `info-border`; tooltip names the rule), amber **File date**
   (fallback), amber **Numbered** (collision), red **Skipped** (error, tooltip with reason).
 - **Dates differ**: when metadata and file name give different days, a small hint sits under the badge: warning icon +
   "Dates differ" / "Daten weichen ab" in `warning` (never colour alone). Its tooltip names both dates, which one was

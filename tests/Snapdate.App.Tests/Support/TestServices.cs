@@ -121,12 +121,18 @@ internal sealed class MemoryDateRuleStore(IReadOnlyList<DateRule>? systemRules =
 
     private readonly IReadOnlyList<DateRule> _system = systemRules ?? BuiltIn;
 
+    // Bumped on every write, like a file that changes on disk; the fingerprint is derived from it.
+    private int _version = userRules is null ? 0 : 1;
+
     public UserDateRules? User { get; private set; } = userRules;
+
+    /// <summary>Number of successful saves.</summary>
+    public int Saves { get; private set; }
 
     public IReadOnlyList<DateRule> LoadSystemRules() => _system;
 
     public UserDateRulesLoad LoadUserRules() =>
-        User is null ? UserDateRulesLoad.Missing : new UserDateRulesLoad(User, UserRulesStatus.Ok, Fingerprint(User));
+        User is null ? UserDateRulesLoad.Missing : new UserDateRulesLoad(User, UserRulesStatus.Ok, Fingerprint());
 
     public UserDateRulesSave SaveUserRules(UserDateRules rules, UserRulesFingerprint expected)
     {
@@ -135,12 +141,20 @@ internal sealed class MemoryDateRuleStore(IReadOnlyList<DateRule>? systemRules =
             return new UserDateRulesSave(DateRuleSaveResult.Conflict, expected);
         }
 
-        User = rules;
-        return new UserDateRulesSave(DateRuleSaveResult.Saved, Fingerprint(rules));
+        Write(rules);
+        Saves++;
+        return new UserDateRulesSave(DateRuleSaveResult.Saved, Fingerprint());
     }
 
-    private static UserRulesFingerprint Fingerprint(UserDateRules rules) =>
-        UserRulesFingerprint.ForContent(rules.CustomRules.Count, rules.GetHashCode().ToString("X8", CultureInfo.InvariantCulture));
+    /// <summary>Simulates another app instance (or an editor) changing the file: earlier fingerprints no longer match.</summary>
+    public void Write(UserDateRules rules)
+    {
+        User = rules;
+        _version++;
+    }
+
+    private UserRulesFingerprint Fingerprint() =>
+        UserRulesFingerprint.ForContent(_version, _version.ToString("X8", CultureInfo.InvariantCulture));
 }
 
 internal sealed class FakeFeed : IReleaseFeed

@@ -11,6 +11,8 @@
       <SolidColorBrush x:Key="SdMutedBrush" Color="#6B6880" />
       <SolidColorBrush x:Key="SdPrimaryBrush" Color="#5B4BF5" />
       <SolidColorBrush x:Key="SdPrimarySoftBrush" Color="#ECE9FF" />
+      <SolidColorBrush x:Key="SdInfoBrush" Color="#5B4BF5" />
+      <SolidColorBrush x:Key="SdInfoBorderBrush" Color="#7B6EF6" />
       <SolidColorBrush x:Key="SdSuccessBrush" Color="#137A50" />
       <SolidColorBrush x:Key="SdSuccessSoftBrush" Color="#E3F6EE" />
       <SolidColorBrush x:Key="SdWarningBrush" Color="#8A5A00" />
@@ -28,6 +30,8 @@
       <SolidColorBrush x:Key="SdMutedBrush" Color="#A3A0B8" />
       <SolidColorBrush x:Key="SdPrimaryBrush" Color="#8B7DFF" />
       <SolidColorBrush x:Key="SdPrimarySoftBrush" Color="#2E2A5C" />
+      <SolidColorBrush x:Key="SdInfoBrush" Color="#A99EFF" />
+      <SolidColorBrush x:Key="SdInfoBorderBrush" Color="#7A6EE6" />
       <SolidColorBrush x:Key="SdSuccessBrush" Color="#3CCB8F" />
       <SolidColorBrush x:Key="SdSuccessSoftBrush" Color="#173A2C" />
       <SolidColorBrush x:Key="SdWarningBrush" Color="#F2B13C" />
