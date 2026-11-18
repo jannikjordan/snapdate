@@ -102,7 +102,9 @@ internal static class SelfTest
                 var dialog = new DateRulesDialog { DataContext = rules };
                 dialog.Measure(new Avalonia.Size(980, 720));
 
-                // The rule editor: its template, blocks, validation and tester.
+                // The rule editor: its template, blocks, validation and tester (answering at once: there is no
+                // message loop here for the debounced background run).
+                rules.EditorSampleDelay = TimeSpan.Zero;
                 rules.AddRuleCommand.Execute(null);
                 if (rules.Editor is not { } editor)
                 {
@@ -114,6 +116,14 @@ internal static class SelfTest
                 if (!editor.IsValid || editor.SampleKind != RuleSampleKind.Match)
                 {
                     return 5; // rule editor cannot validate or test a pattern
+                }
+
+                // Regex mode: the grammar and the NonBacktracking engine in the published (trimmed) build.
+                editor.IsRegex = true;
+                editor.PatternsText = editor.RegexExample;
+                if (!editor.IsValid || editor.SampleKind != RuleSampleKind.Match)
+                {
+                    return 5; // rule editor cannot validate or test a regular expression
                 }
 
                 dialog.Measure(new Avalonia.Size(980, 720));

@@ -496,6 +496,56 @@ public sealed class LocalizedStrings(CultureInfo culture)
 
     public string RuleSampleNoMatch => Get(nameof(RuleSampleNoMatch));
 
+    public string RuleRegexToggle => Get(nameof(RuleRegexToggle));
+
+    public string RuleRegexToggleTip => Get(nameof(RuleRegexToggleTip));
+
+    public string RuleRegexLabel => Get(nameof(RuleRegexLabel));
+
+    public string RuleRegexHint => Get(nameof(RuleRegexHint));
+
+    public string RuleRegexExample => Get(nameof(RuleRegexExample));
+
+    public string RuleRegexExampleName => Get(nameof(RuleRegexExampleName));
+
+    public string RuleRegexNoPatterns => Get(nameof(RuleRegexNoPatterns));
+
+    public string RuleRegexOk => Get(nameof(RuleRegexOk));
+
+    public string RuleRegexSampleNoPatterns => Get(nameof(RuleRegexSampleNoPatterns));
+
+    public string RuleRegexSampleNoMatch => Get(nameof(RuleRegexSampleNoMatch));
+
+    public string RxErrTooLong => Get(nameof(RxErrTooLong));
+
+    public string RxErrInvalid => Get(nameof(RxErrInvalid));
+
+    public string RxErrSyntax => Get(nameof(RxErrSyntax));
+
+    public string RxErrUnsupported => Get(nameof(RxErrUnsupported));
+
+    public string RxErrRepetition => Get(nameof(RxErrRepetition));
+
+    public string RxErrUnknownGroup => Get(nameof(RxErrUnknownGroup));
+
+    public string RxErrMissingYear => Get(nameof(RxErrMissingYear));
+
+    public string RxErrMissingMonth => Get(nameof(RxErrMissingMonth));
+
+    public string RxErrMissingDay => Get(nameof(RxErrMissingDay));
+
+    public string RxErrHourWithoutMinute => Get(nameof(RxErrHourWithoutMinute));
+
+    public string RxErrMinuteWithoutHour => Get(nameof(RxErrMinuteWithoutHour));
+
+    public string RxErrSecondWithoutMinute => Get(nameof(RxErrSecondWithoutMinute));
+
+    public string RuleRegexEditorIntro => Get(nameof(RuleRegexEditorIntro));
+
+    public string RxErrNested => Get(nameof(RxErrNested));
+
+    public string RxErrTooComplex => Get(nameof(RxErrTooComplex));
+
     public string TipRulesHint => Get(nameof(TipRulesHint));
 
     /// <summary>Looks up a key; falls back to the key itself so missing strings are visible, not fatal.</summary>

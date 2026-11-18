@@ -245,5 +245,30 @@
   <data name="RuleSampleInvalid" xml:space="preserve"><value>Zeile {0} passt, aber {1} ist kein gültiges Datum.</value></data>
   <data name="RuleSampleImplausible" xml:space="preserve"><value>Zeile {0} passt, aber {1} liegt vor 1900 oder in der Zukunft.</value></data>
   <data name="RuleSampleNoMatch" xml:space="preserve"><value>Kein Muster passt zu diesem Namen.</value></data>
+  <data name="RuleRegexToggle" xml:space="preserve"><value>Erweitert: reguläre Ausdrücke</value></data>
+  <data name="RuleRegexToggleTip" xml:space="preserve"><value>Für Nutzer, die reguläre Ausdrücke kennen. Ihr Text bleibt beim Umschalten erhalten.</value></data>
+  <data name="RuleRegexLabel" xml:space="preserve"><value>Reguläre Ausdrücke (einer pro Zeile, bis zu {0})</value></data>
+  <data name="RuleRegexHint" xml:space="preserve"><value>Kennzeichnen Sie die Datumsteile mit benannten Gruppen: year (oder yy für zwei Ziffern), month und day; hour, minute und second sind optional. Der Ausdruck muss zum ganzen Namen passen (ohne Dateiendung); Groß- und Kleinschreibung spielen keine Rolle. Beispiel:</value></data>
+  <data name="RuleRegexExample" xml:space="preserve"><value>^IMG-(?&lt;year&gt;\d{{4}})(?&lt;month&gt;\d{{2}})(?&lt;day&gt;\d{{2}})-WA\d+$</value></data>
+  <data name="RuleRegexExampleName" xml:space="preserve"><value>Beispiel: {0}</value></data>
+  <data name="RuleRegexNoPatterns" xml:space="preserve"><value>Geben Sie mindestens einen regulären Ausdruck ein, zum Beispiel {0}</value></data>
+  <data name="RuleRegexOk" xml:space="preserve"><value>Alle regulären Ausdrücke können verwendet werden.</value></data>
+  <data name="RuleRegexSampleNoPatterns" xml:space="preserve"><value>Geben Sie zuerst einen gültigen regulären Ausdruck ein und probieren Sie dann einen Dateinamen aus.</value></data>
+  <data name="RuleRegexSampleNoMatch" xml:space="preserve"><value>Kein regulärer Ausdruck passt zu diesem Namen.</value></data>
+  <data name="RxErrTooLong" xml:space="preserve"><value>Dieser Ausdruck ist zu lang (höchstens {0} Zeichen).</value></data>
+  <data name="RxErrInvalid" xml:space="preserve"><value>Dieser Ausdruck kann nicht verwendet werden. Bitte prüfen Sie ihn.</value></data>
+  <data name="RxErrSyntax" xml:space="preserve"><value>Das ist kein gültiger regulärer Ausdruck. Prüfen Sie die Klammern und Sonderzeichen um Zeichen {0}.</value></data>
+  <data name="RxErrUnsupported" xml:space="preserve"><value>„{0}“ (bei Zeichen {1}) kann nicht verwendet werden. Snapdate erlaubt normale Zeichen, maskierte Zeichen wie \. oder \(, \d, \s, \w, ., einfache Klassen wie [a-z_-], Gruppen (…), (?:…) und (?&lt;name&gt;…), | zwischen Alternativen, ^ und $ sowie die Wiederholungen * + ? {{n}} {{n,}} {{n,m}}. Schreiben Sie \{{, \}} und \] für die Zeichen selbst.</value></data>
+  <data name="RxErrRepetition" xml:space="preserve"><value>Die Wiederholung {0} ist zu groß. Höchstens {1} Wiederholungen sind möglich.</value></data>
+  <data name="RxErrUnknownGroup" xml:space="preserve"><value>Die Gruppe „{0}“ ist kein Datumsteil. Verwenden Sie year, yy, month, day, hour, minute oder second, kleingeschrieben.</value></data>
+  <data name="RxErrMissingYear" xml:space="preserve"><value>Der Ausdruck braucht eine Gruppe für das Jahr: (?&lt;year&gt;…) oder (?&lt;yy&gt;…).</value></data>
+  <data name="RxErrMissingMonth" xml:space="preserve"><value>Der Ausdruck braucht eine Gruppe für den Monat: (?&lt;month&gt;…).</value></data>
+  <data name="RxErrMissingDay" xml:space="preserve"><value>Der Ausdruck braucht eine Gruppe für den Tag: (?&lt;day&gt;…).</value></data>
+  <data name="RxErrHourWithoutMinute" xml:space="preserve"><value>Zur Gruppe für die Stunde gehört auch eine für die Minuten: Fügen Sie (?&lt;minute&gt;…) hinzu.</value></data>
+  <data name="RxErrMinuteWithoutHour" xml:space="preserve"><value>Zur Gruppe für die Minuten gehört auch eine für die Stunde: Fügen Sie (?&lt;hour&gt;…) hinzu.</value></data>
+  <data name="RxErrSecondWithoutMinute" xml:space="preserve"><value>Zur Gruppe für die Sekunden gehört auch eine für die Minuten: Fügen Sie (?&lt;minute&gt;…) hinzu.</value></data>
+  <data name="RuleRegexEditorIntro" xml:space="preserve"><value>Beschreiben Sie, wie Ihre Dateinamen aussehen. Snapdate probiert die Ausdrücke von oben nach unten aus und liest das Datum mit dem ersten, der zum ganzen Namen passt (ohne Dateiendung).</value></data>
+  <data name="RxErrNested" xml:space="preserve"><value>Die Wiederholung {0} wiederholt etwas, dessen Länge sich ändern kann, etwa *, +, ? oder unterschiedlich lange Alternativen wie (?:a|bc). Snapdate erlaubt das nicht, weil es den Vergleich sehr langsam machen kann. Schreiben Sie die Teile stattdessen nacheinander aus.</value></data>
+  <data name="RxErrTooComplex" xml:space="preserve"><value>Dieser Ausdruck ist zu komplex, um schnell ausgeführt zu werden. Verwenden Sie weniger * und +, insgesamt weniger Wiederholungen und kleinere Zahlen in {{…}}, oder kürzen Sie ihn.</value></data>
   <data name="TipRulesHint" xml:space="preserve"><value>Die Regeln finden Sie unter „Datum aus Dateinamen“ über der Liste.</value></data>
 </root>

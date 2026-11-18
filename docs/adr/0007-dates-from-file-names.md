@@ -58,8 +58,9 @@ placeholders the user already knows from the file-name builder, for example
   must appear together (neither `{HH}` without `{mm}` nor `{mm}` without
   `{HH}`; error kinds `HourWithoutMinute`, `MinuteWithoutHour`); seconds
   require minutes (`SecondWithoutMinute`); ambiguous neighbours
-  (`AmbiguousNeighbours`, see below); an expression that fails to build
-  (`InvalidExpression`, used by regex mode, see below). A rule with one
+  (`AmbiguousNeighbours`, see below). Regex mode adds `InvalidSyntax`,
+  `UnsupportedConstruct`, `RepetitionTooLarge`, `UnknownGroup` and the
+  fallback `InvalidExpression` (see below). A rule with one
   invalid pattern still uses its valid ones.
 - **Ambiguity rule (runs).** A run is a maximal sequence of placeholders, `?`
   and literal digits 0–9 (it ends at any other literal character, at `*`, and
@@ -86,6 +87,15 @@ placeholders the user already knows from the file-name builder, for example
   **50 ms match timeout** (a timeout counts as no match) and no
   `RegexOptions.Compiled`. Digits are `[0-9]` (never `\d`, which matches
   non-ASCII digits). Names longer than 260 characters are not matched.
+- **What protects matching.** `NonBacktracking` has no catastrophic
+  backtracking: its time grows linearly with the name, but the factor depends
+  on the expression, and it checks the timeout only now and then (not at all
+  while it fills in the groups after a match is found). The timeout is
+  therefore a last resort, not a guarantee. The real protection is that the
+  expressions are small: token patterns produce only fixed-width groups,
+  `[0-9]{1,2}` and `.*?` (measured worst case on hostile 260-character names
+  with 200-character patterns: under 10 ms), and regular expressions get the
+  structural limits below.
 - Values are parsed with `NumberStyles.None` and the invariant culture. A
   match only counts if it forms a real calendar date and time (month 1–12, day
   within the month, hour 0–23, minute and second 0–59) and passes the
@@ -96,18 +106,91 @@ placeholders the user already knows from the file-name builder, for example
   current year (whole years are compared, not full dates).
 
 **Advanced mode: regular expression.** A rule can set `"syntax": "regex"`
-instead of the default `"pattern"`. The user's expression is wrapped as
-`^(?:…)$`, limited to 300 characters, compiled with the same options, and
-must use the named groups `year`, `month`, `day` (required) and `hour`,
-`minute`, `second` (optional); no other group names. Counted repetition is
-capped (`{n}` / `{n,m}` with n, m ≤ 100). **Any failure while building the
-regex** — constructs that `NonBacktracking` does not support
-(backreferences, lookarounds, atomic groups; `NotSupportedException`), syntax
-errors (`ArgumentException`), a too-large repetition or anything else — becomes
-a plain-language validation error (`InvalidExpression`), never a crash. The 50 ms timeout applies to
-matching, as for patterns. Group values go through the
-same ASCII-digit, calendar and plausibility checks. Implemented in #21 in the
-same release (v0.3.0); until then such rules are kept but inactive.
+instead of the default `"pattern"` (in the editor: the "Advanced: regular
+expressions" check box, off by default; switching keeps the text and checks it
+again). The editor keeps regex lines as typed (only the `\r` of a line break is
+dropped), as spaces can matter. Each line is one expression (`DateExpression`).
+
+*Why an allowlist.* `NonBacktracking` has no catastrophic backtracking, but its
+time per character grows with how many places of the expression can be active
+at once, and it checks the timeout only now and then (not while it fills in the
+groups). Two review rounds found accepted expressions that took 0.5–18 s and up
+to 660 MB for one 260-character name and never timed out: repeated groups that
+repeat something (`(?:.*a.{0,99}){0,10}`), alternatives of different length
+acting as hidden repetitions (`(?:(?:|.|..)a){20}`), and character classes the
+checker read differently from the engine (`[\-[x]…]`). Guessing how the engine
+reads the text is therefore replaced by Snapdate's own parser
+(`ExpressionGrammar`): only what it understands is accepted, and the engine
+must agree.
+
+Checks, in order:
+1. Not empty, at most **300 characters**.
+2. **Allowed subset** (recursive-descent parser; anything else →
+   `UnsupportedConstruct` naming the construct and its position, or
+   `InvalidSyntax` with the position):
+   - atoms: literal characters (not `\ . [ ] ( ) { } * + ? | ^ $`, no control
+     characters), escaped characters that are not letters, digits or `_`
+     (`\.`, `\(`, `\ `), `\d \s \w`, `.`, anchors `^ $`;
+   - classes `[…]`/`[^…]` of literal characters, ranges (`a-z`), escaped
+     characters and `\d \s \w` — no `[` inside (so no nesting or subtraction),
+     no `\p{…}`, a `]` only as `\]`, not empty;
+   - groups `(…)` (not capturing, `ExplicitCapture`), `(?:…)` and
+     `(?<name>…)` with `name` one of `year`, `yy`, `month`, `day`, `hour`,
+     `minute`, `second` (case-sensitive; else `UnknownGroup`) — no other `(?`
+     form: no inline options (so no `(?x)` comments), lookarounds, atomic
+     groups, conditionals, comments or balancing groups; no backreferences,
+     `\b`, `\G` or other letter escapes;
+   - alternation `|`;
+   - quantifiers `* + ? {n} {n,} {n,m}` and their lazy forms, n ≤ m ≤ **20**
+     (`RepetitionTooLarge`; dates need at most 4). A `{` that is no
+     quantifier must be written `\{`.
+3. **Width rule.** Every node knows its shortest and longest width (unbounded
+   for `* + {n,}`); an alternation whose branches differ in length is variable
+   too. A quantifier on anything whose width varies, or that contains such a
+   part, → `NestedQuantifier` (`(?:.*a)+`, `(?:x?){3}`, `(?:|.){3}`,
+   `(?:(?:.|..)a){20}`). Fixed-width parts may be repeated
+   (`(?:_\d{2}\d{2})?`, `(?:ab|cd){3}`). Repeating something of width 0
+   (`^*`, `()?`) → `UnsupportedConstruct`.
+4. **Budget** → `TooComplex`: at most **30 quantifiers**, at most **8
+   unbounded** ones, and unbounded quantifiers × positions ≤ **120**, where
+   positions = single-character steps once counts are written out (`\d{4}` = 4,
+   `.{0,20}` = 20, `.*` = 1, a fixed-count group counts its content each time,
+   an alternation counts all its branches). Without an unbounded quantifier
+   there is no cost: bounded parts alone measured cheap. Realistic expressions
+   stay far below: `.*(?<year>\d{4})[-_.]?(?<month>\d{2})[-_.]?(?<day>\d{2})[-_ T]?(?<hour>\d{2})[-_.:]?(?<minute>\d{2})[-_.:]?(?<second>\d{2}).*`
+   costs 2 × 21 = 42.
+5. **The engine must agree:** the text is compiled on its own (so it cannot
+   close the `^(?:…)$` wrapper from inside, e.g. `a)|(?:b`) and then wrapped,
+   with `NonBacktracking | IgnoreCase | CultureInvariant | ExplicitCapture` and
+   the 50 ms timeout. Any exception → `InvalidExpression`; never a crash.
+6. **Required groups:** `year` or `yy`, `month`, `day`; the same time
+   dependencies as patterns (hour ⇔ minute, second ⇒ minute). A name may
+   appear in several alternatives (`(?<year>…)-…|…(?<year>…)`).
+
+*Measured* (tests in `MatchTimeTests`, `DateRuleSetTests`; hostile names of 260
+characters such as runs of one letter with one odd letter, repeating pairs,
+digits only, random text): every expression from both review rounds is now
+rejected or takes under 20 ms; the slowest accepted expressions found by
+fuzzing (thousands of combinations including empty and different-length
+alternatives, classes with escapes and `[`, fixed-count groups) and at the
+budget's edges take up to about 45 ms per match on a developer machine (a lazy
+ending such as `.*a.{0,20}…{0,10}?` is the slowest kind). The tests take the best of
+three runs, run alone, and require under 200 ms per match. The budget was
+lowered from 240 to 120 after budget-edge expressions reached 130–212 ms under
+parallel test load.
+
+*Per-name budget.* `DateRuleSet.Match` stops trying regex rules for a name once
+they have used **200 ms** together (`DefaultRegexBudget`); token-pattern rules
+are cheap and still run. So 100 rules × 10 expressions cannot add up to
+seconds per file; one name costs at most the budget plus the one expression
+that was running. The rule editor's tester runs off the UI thread, 150 ms after
+the last change, and shows only the latest result.
+
+Matching is shared with patterns: names longer than 260 characters are not
+matched, a timeout (when the engine notices it) counts as no match, and group
+values must be 1–4 **ASCII** digits (`\d` may match other scripts' digits;
+those never give a date), then pass the calendar and plausibility checks.
+Implemented in #21 (v0.3.0).
 
 ### Date priority and conflicts
 1. **Camera EXIF** (metadata from a file with a camera model) always wins, as
@@ -214,10 +297,12 @@ predictable and lets the user see what was ignored.
   or file-name date) stays visible in its hint.
 - Rule ids are a permanent contract; renaming or reusing a system id would
   re-enable rules users had switched off.
-- File-name input is untrusted: the generated regexes run with
-  `NonBacktracking` and a timeout, and every date passes the calendar and
-  plausibility checks, so a hostile name cannot hang the scan or inject an
-  absurd date.
+- File-name input is untrusted: the regexes run with `NonBacktracking` (no
+  catastrophic backtracking) on names of at most 260 characters, token patterns
+  and regular expressions are kept small enough (structural limits above) that
+  a hostile name costs milliseconds, the timeout is a last resort the engine
+  checks only approximately, and every date passes the calendar and
+  plausibility checks, so a hostile name cannot inject an absurd date.
 - The uninstaller's "delete settings" option also deletes the user's custom
   rules (`date-rules.json` is in the settings folder); the prompt says so.
 - More seeded rules (Signal, Telegram, `IMG_YYYYMMDD_HHMMSS`, `PXL_…` in UTC)

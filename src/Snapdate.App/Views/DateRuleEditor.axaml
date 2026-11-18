@@ -33,7 +33,7 @@
       <StackPanel Spacing="10" Margin="0,0,4,0">
         <StackPanel Spacing="4">
           <TextBlock Text="{Binding Title}" FontSize="15" FontWeight="SemiBold" />
-          <TextBlock Text="{Binding L.RuleEditorIntro}" Classes="muted" TextWrapping="Wrap" />
+          <TextBlock Text="{Binding Intro}" Classes="muted" TextWrapping="Wrap" />
         </StackPanel>
 
         <!-- Name -->
@@ -45,17 +45,21 @@
                    AutomationProperties.Name="{Binding L.RuleNameLabel}" />
         </Grid>
 
-        <!-- Patterns: one per line, blocks insert at the caret -->
+        <!-- Patterns: one per line, blocks insert at the caret (regular expressions: hint with an example instead) -->
         <StackPanel Spacing="6">
           <TextBlock Classes="label" Text="{Binding PatternsLabel}" />
           <TextBox x:Name="PatternsBox" Classes="rulePatterns" Classes.invalid="{Binding HasProblems}"
                    Text="{Binding PatternsText}" CaretIndex="{Binding CaretIndex}"
                    AcceptsReturn="True" AcceptsTab="False" TextWrapping="NoWrap"
-                   ToolTip.Tip="{Binding L.RulePatternsHint}"
+                   ToolTip.Tip="{Binding PatternsHint}"
                    AutomationProperties.Name="{Binding PatternsLabel}"
-                   AutomationProperties.HelpText="{Binding L.RulePatternsHint}" />
-          <TextBlock Text="{Binding L.RulePatternsHint}" Classes="muted" FontSize="12" TextWrapping="Wrap" />
-          <ItemsControl x:Name="ChipList" ItemsSource="{Binding Chips}" AutomationProperties.Name="{Binding L.RuleChipsName}">
+                   AutomationProperties.HelpText="{Binding PatternsHint}" />
+          <TextBlock x:Name="PatternsHintText" Text="{Binding PatternsHint}" Classes="muted" FontSize="12" TextWrapping="Wrap" />
+          <TextBlock x:Name="RegexExampleText" Classes="mono muted" FontSize="12" TextWrapping="Wrap"
+                     Text="{Binding RegexExample}" IsVisible="{Binding IsRegex}"
+                     AutomationProperties.Name="{Binding RegexExampleName}" />
+          <ItemsControl x:Name="ChipList" ItemsSource="{Binding Chips}" IsVisible="{Binding IsPattern}"
+                        AutomationProperties.Name="{Binding L.RuleChipsName}">
             <ItemsControl.ItemsPanel>
               <ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate>
             </ItemsControl.ItemsPanel>
@@ -68,6 +72,12 @@
               </DataTemplate>
             </ItemsControl.ItemTemplate>
           </ItemsControl>
+
+          <!-- Advanced mode: the text is kept and checked again in the other syntax -->
+          <CheckBox x:Name="RegexToggle" IsChecked="{Binding IsRegex}" Content="{Binding L.RuleRegexToggle}"
+                    ToolTip.Tip="{Binding L.RuleRegexToggleTip}"
+                    AutomationProperties.Name="{Binding L.RuleRegexToggle}"
+                    AutomationProperties.HelpText="{Binding L.RuleRegexToggleTip}" />
 
           <!-- What is wrong, line by line (or that all patterns can be used) -->
           <Panel x:Name="ValidationPanel"
@@ -85,7 +95,7 @@
             </ItemsControl>
             <Grid Classes="testResult match" ColumnDefinitions="Auto,*" IsVisible="{Binding ShowPatternsOk}">
               <PathIcon Data="{StaticResource IconCheck}" Margin="0,0,8,0" />
-              <TextBlock Grid.Column="1" Text="{Binding L.RulePatternsOk}" TextWrapping="Wrap" />
+              <TextBlock Grid.Column="1" Text="{Binding PatternsOkText}" TextWrapping="Wrap" />
             </Grid>
           </Panel>
         </StackPanel>

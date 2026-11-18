@@ -130,11 +130,58 @@ public sealed class DateRuleSetTests
     }
 
     [Fact]
+    public void Regex_rules_match_with_their_expressions()
+    {
+        var rule = new DateRule(
+            "custom-1",
+            "Regex",
+            RuleOrigin.Custom,
+            Enabled: true,
+            [@"(?=x)(?<year>\d{4})", @"^IMG-(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})-WA\d+$"],
+            DateRuleSyntax.Regex);
+
+        var match = new DateRuleSet([rule]).Match("IMG-20240714-WA0001", Now);
+
+        Assert.True(rule.IsSyntaxSupported);
+        Assert.NotNull(match);
+        Assert.Equal(1, match.PatternIndex);
+        Assert.Equal(new DateOnly(2024, 7, 14), match.Date.Date);
+    }
+
+    [Fact]
+    public void Once_the_regex_time_budget_is_spent_further_regex_rules_are_skipped_but_patterns_still_run()
+    {
+        var regex = new DateRule("custom-1", "Regex", RuleOrigin.Custom, Enabled: true, [@"IMG-(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})-WA\d+"], DateRuleSyntax.Regex);
+        var pattern = new DateRule("custom-2", "Pattern", RuleOrigin.Custom, Enabled: true, ["IMG-{YYYY}{MM}{DD}-WA*"]);
+
+        var spent = new DateRuleSet([regex, pattern], regexBudget: TimeSpan.Zero).Match("IMG-20240714-WA0001", Now);
+        var normal = new DateRuleSet([regex, pattern]).Match("IMG-20240714-WA0001", Now);
+
+        Assert.Equal("custom-2", spent?.RuleId);
+        Assert.Equal("custom-1", normal?.RuleId);
+        Assert.Equal(TimeSpan.FromMilliseconds(200), DateRuleSet.DefaultRegexBudget);
+    }
+
+    [Fact]
+    public void The_syntax_decides_how_a_line_is_read()
+    {
+        // A token pattern is no valid regex rule (no named groups), and a regex is no valid token pattern.
+        var pattern = new DateRule("custom-1", "P", RuleOrigin.Custom, Enabled: true, ["IMG-{YYYY}{MM}{DD}-WA*"], DateRuleSyntax.Regex);
+        var regex = new DateRule("custom-2", "R", RuleOrigin.Custom, Enabled: true, [@"IMG-(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})-WA\d+"]);
+
+        Assert.Null(new DateRuleSet([pattern, regex]).Match("IMG-20240714-WA0001", Now));
+    }
+
+    [Fact]
     public void Default_syntax_is_pattern()
     {
         Assert.Equal(DateRuleSyntax.Pattern, WhatsAppAndroid.Syntax);
         Assert.Equal("pattern", DateRuleSyntax.Pattern);
+        Assert.Equal("regex", DateRuleSyntax.Regex);
         Assert.True(WhatsAppAndroid.IsSyntaxSupported);
+        Assert.True(DateRuleSyntax.IsSupported(DateRuleSyntax.Regex));
+        Assert.False(DateRuleSyntax.IsSupported("Regex"));
+        Assert.False(DateRuleSyntax.IsSupported(null));
     }
 
     [Fact]

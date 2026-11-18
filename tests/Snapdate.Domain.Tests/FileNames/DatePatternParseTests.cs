@@ -133,8 +133,18 @@ public sealed class DatePatternParseTests
 
         var seen = samples.SelectMany(sample => DatePattern.Parse(sample).Errors).Select(error => error.Kind).ToHashSet();
 
-        // InvalidExpression is reserved for syntaxes with user-written expressions; token patterns never produce it.
-        var expected = Enum.GetValues<DatePatternErrorKind>().Where(kind => kind != DatePatternErrorKind.InvalidExpression).ToHashSet();
+        // These are reserved for regular expressions (DateExpression); token patterns never produce them.
+        DatePatternErrorKind[] expressionOnly =
+        [
+            DatePatternErrorKind.InvalidExpression,
+            DatePatternErrorKind.InvalidSyntax,
+            DatePatternErrorKind.UnsupportedConstruct,
+            DatePatternErrorKind.RepetitionTooLarge,
+            DatePatternErrorKind.UnknownGroup,
+            DatePatternErrorKind.NestedQuantifier,
+            DatePatternErrorKind.TooComplex,
+        ];
+        var expected = Enum.GetValues<DatePatternErrorKind>().Except(expressionOnly).ToHashSet();
         Assert.Equal(expected, seen);
     }
 

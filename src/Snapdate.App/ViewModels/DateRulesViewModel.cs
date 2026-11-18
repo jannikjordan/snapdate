@@ -151,6 +151,12 @@ public sealed partial class DateRulesViewModel : ObservableObject
     /// <summary>The id of the rule that should get keyboard focus after the list was rebuilt; null for none.</summary>
     public string? FocusRuleId { get; private set; }
 
+    /// <summary>
+    /// Debounce of the rule editor's tester: it tries a name this long after the last change, off the UI thread.
+    /// Zero (tests, screenshots) tries at once.
+    /// </summary>
+    internal TimeSpan EditorSampleDelay { get; set; } = TimeSpan.FromMilliseconds(150);
+
     /// <summary>Opens the dialog.</summary>
     /// <param name="sampleNames">File names (with extension) from the current folder, those with a file date first.</param>
     public void Open(IEnumerable<string>? sampleNames)
@@ -324,7 +330,7 @@ public sealed partial class DateRulesViewModel : ObservableObject
         }
 
         MessageText = string.Empty;
-        Editor = new DateRuleEditorViewModel(this, _l, _clock, rule, patterns, TestName, SampleNames);
+        Editor = new DateRuleEditorViewModel(this, _l, _clock, rule, patterns, TestName, SampleNames, EditorSampleDelay);
     }
 
     /// <summary>
@@ -344,6 +350,7 @@ public sealed partial class DateRulesViewModel : ObservableObject
         if (editor.RuleId is { } id && Catalog.CustomRules.FirstOrDefault(r => string.Equals(r.Id, id, StringComparison.Ordinal)) is { } existing)
         {
             if (string.Equals(existing.Name, editor.EffectiveName, StringComparison.Ordinal)
+                && string.Equals(existing.Syntax, editor.Syntax, StringComparison.Ordinal)
                 && (existing.Patterns ?? []).SequenceEqual(editor.Patterns, StringComparer.Ordinal))
             {
                 // Nothing changed: no save, so closing the dialog does not scan again.
@@ -351,7 +358,7 @@ public sealed partial class DateRulesViewModel : ObservableObject
                 return;
             }
 
-            var updated = existing with { Name = editor.EffectiveName, Patterns = editor.Patterns };
+            var updated = existing with { Name = editor.EffectiveName, Patterns = editor.Patterns, Syntax = editor.Syntax };
             saved = Catalog.Update(updated) ? updated : null;
         }
         else if (!Catalog.IsReadOnly && Catalog.CustomRules.Count >= UserDateRules.MaxCustomRules)

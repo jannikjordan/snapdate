@@ -48,6 +48,25 @@ To report a vulnerability, see [SECURITY.md](../SECURITY.md).
 - Scanning skips hidden/system files and **does not follow symbolic links or
   junctions**.
 - Implausible dates (before 1900 or in the future) are ignored.
+- Dates from file names: file names and the user's own rules are untrusted. Every rule — token pattern or
+  user-written regular expression ("Advanced" mode) — runs as a `NonBacktracking` regex (no catastrophic
+  backtracking; time linear in the name, with a factor that depends on the expression) on names of at most 260
+  characters. The 50 ms timeout is only a last resort: the engine checks it only now and then, not while it fills
+  in the groups. What keeps matching fast is the shape of the expressions:
+  - token patterns only produce small fixed groups, `[0-9]{1,2}` and `.*?` (under 10 ms on hostile names);
+  - regular expressions are an **allowlist**: Snapdate's own parser accepts only literals, escaped
+    non-letters, `\d \s \w .`, simple classes (no nesting, subtraction or `\p{…}`), `(…)`, `(?:…)`,
+    `(?<date-part>…)`, `|`, `^ $` and quantifiers up to 20; nothing whose width varies (including alternatives
+    of different length) may be repeated; at most 30 quantifiers, 8 unbounded ones, and unbounded × positions
+    ≤ 120; at most 300 characters. The engine must then compile the same text (on its own and wrapped as
+    `^(?:…)$`), or it is rejected. Every problem is a validation message, never a crash.
+  - Every expression from two security reviews (0.5–18 s before) is rejected or under 20 ms; fuzzing and the
+    budget's edges find no accepted expression above about 45 ms per hostile name; tests (best of three runs,
+    run alone) require under 200 ms per match.
+  - Per file name, regex rules together get **200 ms**; after that further regex rules are skipped (token
+    patterns still run), so many rules cannot add up. The rule editor's tester runs off the UI thread.
+  - Captured values must be ASCII digits and pass the calendar and plausibility checks
+    ([ADR 0007](adr/0007-dates-from-file-names.md)).
 - The settings file is size-limited and parsed with source-generated
   `System.Text.Json`; corrupt settings fall back to defaults.
 

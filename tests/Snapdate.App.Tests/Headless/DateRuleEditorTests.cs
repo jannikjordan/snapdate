@@ -42,7 +42,8 @@ public sealed class DateRuleEditorTests(HeadlessSession headless)
 
     private static DateRulesViewModel Dialog(IDateRuleStore store, string culture = "en-US")
     {
-        var dialog = new DateRulesViewModel(store, Strings(culture), TimeProvider.System);
+        // The tester answers at once here; the debounced background run has its own tests.
+        var dialog = new DateRulesViewModel(store, Strings(culture), TimeProvider.System) { EditorSampleDelay = TimeSpan.Zero };
         dialog.Open([]);
         return dialog;
     }
@@ -79,6 +80,197 @@ public sealed class DateRuleEditorTests(HeadlessSession headless)
         }
 
         Assert.Equal(messages.Count, messages.Select(m => m.Text).Distinct(StringComparer.Ordinal).Count());
+    }
+
+    [Theory]
+    [InlineData("en-US")]
+    [InlineData("de-DE")]
+    public void Every_regex_error_has_its_own_plain_message(string culture)
+    {
+        var editor = NewRule(Dialog(new MemoryDateRuleStore(), culture));
+        var patternMessages = Enum.GetValues<DatePatternErrorKind>().Select(kind => editor.Describe(new DatePatternError(kind, 0, "M"))).ToList();
+        editor.IsRegex = true;
+
+        var messages = Enum.GetValues<DatePatternErrorKind>()
+            .Select(kind => (Kind: kind, Text: editor.Describe(new DatePatternError(kind, 0, "M"))))
+            .ToList();
+
+        Assert.All(messages, m => Assert.DoesNotContain("{0}", m.Text, StringComparison.Ordinal));
+        Assert.Equal(messages.Count, messages.Select(m => m.Text).Distinct(StringComparer.Ordinal).Count());
+
+        // Regex mode talks about groups, not blocks.
+        foreach (var kind in new[] { DatePatternErrorKind.MissingYear, DatePatternErrorKind.MissingMonth, DatePatternErrorKind.MissingDay, DatePatternErrorKind.HourWithoutMinute, DatePatternErrorKind.MinuteWithoutHour, DatePatternErrorKind.SecondWithoutMinute })
+        {
+            var text = messages.Single(m => m.Kind == kind).Text;
+            Assert.Contains("(?<", text, StringComparison.Ordinal);
+            Assert.DoesNotContain(text, patternMessages);
+        }
+    }
+
+    [Theory]
+    [InlineData(@"IMG-(?<year>\d{4})(?<day>\d{2})", "Line 1: The expression needs a group for the month: (?<month>…).")]
+    [InlineData(@"(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})(?<counter>\d+)", "Line 1: The group “counter” is not a date part. Use year, yy, month, day, hour, minute or second, in lower case.")]
+    [InlineData(@"(?<year>\d{4})(?<month>\d{2})(?<day>\d{2}", "Line 1: This is not a valid regular expression. Check the brackets and special characters around character 41.")]
+    [InlineData(@"(?<=x)(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})", "Line 1: “(?<” (at character 1) cannot be used. Snapdate allows plain characters, escaped characters such as \\. or \\(, \\d, \\s, \\w, ., simple classes such as [a-z_-], groups (…), (?:…) and (?<name>…), | between alternatives, ^ and $, and the repetitions * + ? {n} {n,} {n,m}. Write \\{, \\} and \\] for the characters themselves.")]
+    [InlineData(@"(?<year>\d{4})(?<month>\d{2})(?<day>\d{2}).{1,500}", "Line 1: The repetition {1,500} is too large. At most 20 repetitions are possible.")]
+    [InlineData(@"(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})(?:.*a.{0,20}){0,10}", "Line 1: The repetition {0,10} repeats something whose length can vary, such as *, +, ? or alternatives of different length like (?:a|bc). Snapdate does not allow this because it can make matching very slow. Write the parts out one after another instead.")]
+    [InlineData(@"(?<year>\d{4})(?<month>\d{2})(?<day>\d{2}).*a.{0,20}.*a.{0,20}.*a.{0,20}.*a.{0,20}", "Line 1: This expression is too complex to run quickly. Use fewer * and +, fewer repetitions overall and smaller counts in {…}, or shorten it.")]
+    [InlineData(@"(?x)(?<year>\d{4})(?<month>\d{2})(?<day>\d{2}) # date", "Line 1: “(?x” (at character 1) cannot be used. Snapdate allows plain characters, escaped characters such as \\. or \\(, \\d, \\s, \\w, ., simple classes such as [a-z_-], groups (…), (?:…) and (?<name>…), | between alternatives, ^ and $, and the repetitions * + ? {n} {n,} {n,m}. Write \\{, \\} and \\] for the characters themselves.")]
+    public void A_regular_expression_that_cannot_be_used_is_explained(string expression, string message)
+    {
+        var editor = NewRule(Dialog(new MemoryDateRuleStore()));
+        editor.IsRegex = true;
+
+        editor.PatternsText = expression;
+
+        Assert.False(editor.IsValid);
+        Assert.Equal([message], editor.Problems);
+        Assert.False(editor.SaveCommand.CanExecute(null));
+    }
+
+    [Theory]
+    [InlineData("en-US", @"(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})(?:.*a.{0,99}){0,10}")]
+    [InlineData("de-DE", @"(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})(?:.*a.{0,99}){0,10}")]
+    [InlineData("en-US", @"(.*a.{0,99})?(.*a.{0,99})?(.*a.{0,99})?(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})")]
+    [InlineData("de-DE", @"(.*a.{0,99})?(.*a.{0,99})?(.*a.{0,99})?(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})")]
+    [InlineData("en-US", @"(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})(?:.*a.{0,99}){0,3}")]
+    [InlineData("de-DE", @"(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})(?:.*a.{0,99}){0,3}")]
+    [InlineData("en-US", @"(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})(?:a*b*a*){0,100}")]
+    [InlineData("de-DE", @"(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})(?:a*b*a*){0,100}")]
+    [InlineData("en-US", @"(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})(?:.*a.{0,20}){0,10}")]
+    [InlineData("de-DE", @"(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})(?:.*a.{0,20}){0,10}")]
+    public void Expressions_that_could_hang_are_explained_in_plain_words(string culture, string expression)
+    {
+        var editor = NewRule(Dialog(new MemoryDateRuleStore(), culture));
+        editor.IsRegex = true;
+        var generic = editor.Describe(new DatePatternError(DatePatternErrorKind.InvalidExpression, 0));
+
+        editor.PatternsText = expression;
+
+        Assert.False(editor.IsValid);
+        var problem = Assert.Single(editor.Problems);
+        Assert.DoesNotContain(generic, problem, StringComparison.Ordinal);
+        Assert.Contains(culture == "de-DE" ? "Wiederholung" : "repetition", problem, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Regular_expressions_are_kept_as_typed()
+    {
+        var store = new MemoryDateRuleStore();
+        var dialog = Dialog(store);
+        var editor = NewRule(dialog);
+        editor.IsRegex = true;
+        Assert.StartsWith("Describe how your file names look. Snapdate tries the expressions", editor.Intro, StringComparison.Ordinal);
+
+        // Trimmed, the trailing "\ " (an escaped space) would become a lone "\" and the expression invalid.
+        editor.PatternsText = "IMG (?<year>\\d{4})(?<month>\\d{2})(?<day>\\d{2})\\ \r\n   \r\n";
+        Assert.True(editor.IsValid, editor.ValidationText);
+        editor.SaveCommand.Execute(null);
+
+        Assert.Equal(["IMG (?<year>\\d{4})(?<month>\\d{2})(?<day>\\d{2})\\ "], store.User!.CustomRules.Single().Patterns);
+        dialog.TestName = "IMG 20240714 .jpg";
+        Assert.Equal("Rule \"My rule\": Sunday, July 14, 2024", dialog.TestResult);
+    }
+
+    [Fact]
+    public void Switching_to_regular_expressions_keeps_the_text_and_checks_it_again()
+    {
+        var editor = NewRule(Dialog(new MemoryDateRuleStore()));
+        editor.PatternsText = "IMG-{YYYY}{MM}{DD}-WA*";
+        Assert.True(editor.IsValid);
+        Assert.Equal("Patterns (one per line, up to 10)", editor.PatternsLabel);
+        Assert.True(editor.IsPattern);
+
+        editor.IsRegex = true;
+
+        Assert.Equal(DateRuleSyntax.Regex, editor.Syntax);
+        Assert.False(editor.IsPattern);
+        Assert.Equal("IMG-{YYYY}{MM}{DD}-WA*", editor.PatternsText);
+        Assert.Equal("Regular expressions (one per line, up to 10)", editor.PatternsLabel);
+        Assert.Contains("named groups", editor.PatternsHint, StringComparison.Ordinal);
+        Assert.Equal(@"^IMG-(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})-WA\d+$", editor.RegexExample);
+        Assert.False(editor.IsValid);
+        Assert.StartsWith("Line 1: ", editor.Problems[0], StringComparison.Ordinal);
+
+        editor.PatternsText = editor.RegexExample;
+        Assert.True(editor.IsValid);
+        Assert.Equal("All regular expressions can be used.", editor.ValidationText);
+
+        editor.Sample = "IMG-20240714-WA0001.jpg";
+        Assert.Equal(RuleSampleKind.Match, editor.SampleKind);
+        Assert.StartsWith("Matches line 1 → Sunday, July 14, 2024", editor.SampleResult, StringComparison.Ordinal);
+        editor.Sample = "IMG_4711.jpg";
+        Assert.Equal("No regular expression matches this name.", editor.SampleResult);
+        editor.Sample = "IMG-٢٠٢٤٠٧١٤-WA0001.jpg";
+        Assert.Equal(RuleSampleKind.NotADate, editor.SampleKind);
+
+        editor.IsRegex = false;
+        Assert.Equal(DateRuleSyntax.Pattern, editor.Syntax);
+        Assert.Equal(editor.RegexExample, editor.PatternsText);
+        Assert.Equal("Patterns (one per line, up to 10)", editor.PatternsLabel);
+    }
+
+    [Fact]
+    public void A_new_regex_rule_starts_with_an_example_hint()
+    {
+        var editor = NewRule(Dialog(new MemoryDateRuleStore(), "de-DE"));
+
+        editor.IsRegex = true;
+        editor.Sample = "IMG-20240714-WA0001.jpg";
+
+        Assert.Equal([@"Geben Sie mindestens einen regulären Ausdruck ein, zum Beispiel ^IMG-(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})-WA\d+$"], editor.Problems);
+        Assert.Equal("Geben Sie zuerst einen gültigen regulären Ausdruck ein und probieren Sie dann einen Dateinamen aus.", editor.SampleResult);
+        Assert.Equal(@"Beispiel: ^IMG-(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})-WA\d+$", editor.RegexExampleName);
+    }
+
+    [Fact]
+    public void A_regex_rule_is_saved_as_regex_and_opens_in_regex_mode_again()
+    {
+        var store = new MemoryDateRuleStore();
+        var dialog = Dialog(store);
+        var editor = NewRule(dialog);
+        editor.Name = "WhatsApp regex";
+        editor.IsRegex = true;
+        editor.PatternsText = @"^IMG-(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})-WA\d+$";
+        editor.SaveCommand.Execute(null);
+
+        var saved = Assert.Single(store.User!.CustomRules);
+        Assert.Equal(DateRuleSyntax.Regex, saved.Syntax);
+        Assert.True(dialog.Items[0].CanEdit);
+        dialog.TestName = "IMG-20160706-WA0002.jpg";
+        Assert.Equal("Rule \"WhatsApp regex\": Wednesday, July 6, 2016", dialog.TestResult);
+
+        dialog.Items[0].EditCommand.Execute(null);
+        editor = dialog.Editor!;
+        Assert.True(editor.IsRegex);
+        Assert.False(editor.IsDirty);
+        Assert.True(editor.IsValid);
+        editor.SaveCommand.Execute(null);
+        Assert.Equal(1, store.Saves);
+    }
+
+    [Fact]
+    public void Switching_an_existing_rule_to_regex_is_a_change_that_is_saved()
+    {
+        var store = new MemoryDateRuleStore(userRules: new UserDateRules([], [MyScanner]));
+        var dialog = Dialog(store);
+        dialog.Items[0].EditCommand.Execute(null);
+        var editor = dialog.Editor!;
+        Assert.False(editor.IsRegex);
+
+        editor.IsRegex = true;
+        Assert.True(editor.IsDirty);
+        editor.IsRegex = false;
+        Assert.False(editor.IsDirty);
+
+        editor.IsRegex = true;
+        editor.PatternsText = @"Scan_(?<year>\d{4})-(?<month>\d\d)-(?<day>\d\d)_.*";
+        editor.SaveCommand.Execute(null);
+
+        var saved = Assert.Single(store.User!.CustomRules);
+        Assert.Equal(MyScanner.Id, saved.Id);
+        Assert.Equal(DateRuleSyntax.Regex, saved.Syntax);
+        Assert.Equal([@"Scan_(?<year>\d{4})-(?<month>\d\d)-(?<day>\d\d)_.*"], saved.Patterns);
     }
 
     [Theory]
@@ -175,6 +367,50 @@ public sealed class DateRuleEditorTests(HeadlessSession headless)
         Assert.Equal(kind, editor.SampleKind);
         // The space before AM/PM differs between ICU versions.
         Assert.StartsWith(result, editor.SampleResult, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Tester_waits_for_a_pause_and_shows_only_the_latest_name()
+    {
+        var dialog = new DateRulesViewModel(new MemoryDateRuleStore(), Strings(), TimeProvider.System) { EditorSampleDelay = TimeSpan.FromMilliseconds(150) };
+        dialog.Open([]);
+        var editor = NewRule(dialog);
+        Assert.Equal(TimeSpan.FromMilliseconds(150), editor.SampleDelay);
+        editor.PatternsText = "IMG_{YYYY}{MM}{DD}_*";
+        await editor.SampleCompletion;
+        var before = editor.SampleResult;
+
+        editor.Sample = "IMG_20240714_1.jpg";
+        var first = editor.SampleCompletion;
+        editor.Sample = "IMG_4711.jpg";
+
+        // Nothing changes until the pause is over; the first request is dropped, the second one shown.
+        Assert.Equal(before, editor.SampleResult);
+        await first;
+        Assert.Equal(before, editor.SampleResult);
+        await editor.SampleCompletion;
+        Assert.Equal(RuleSampleKind.NoMatch, editor.SampleKind);
+        Assert.Equal("No pattern matches this name.", editor.SampleResult);
+
+        editor.Sample = "IMG_20240714_1.jpg";
+        await editor.SampleCompletion;
+        Assert.Equal(RuleSampleKind.Match, editor.SampleKind);
+    }
+
+    [Fact]
+    public void An_empty_name_is_answered_at_once_and_cancels_a_pending_try()
+    {
+        var dialog = new DateRulesViewModel(new MemoryDateRuleStore(), Strings(), TimeProvider.System) { EditorSampleDelay = TimeSpan.FromSeconds(30) };
+        dialog.Open([]);
+        var editor = NewRule(dialog);
+        editor.PatternsText = "IMG_{YYYY}{MM}{DD}_*";
+        editor.Sample = "IMG_20240714_1.jpg";
+        Assert.False(editor.SampleCompletion.IsCompleted);
+
+        editor.Sample = string.Empty;
+
+        Assert.True(editor.SampleCompletion.IsCompleted);
+        Assert.Equal(RuleSampleKind.Empty, editor.SampleKind);
     }
 
     [Fact]
@@ -616,10 +852,39 @@ public sealed class DateRuleEditorTests(HeadlessSession headless)
         window.Close();
     });
 
+    [Fact]
+    public Task The_regex_switch_replaces_the_blocks_with_help_and_an_example() => RunOnUi(() =>
+    {
+        var vm = new TestServices().CreateViewModel();
+        var window = new MainWindow { DataContext = vm, Width = 980, Height = 720 };
+        window.Show();
+        vm.OpenDateRulesCommand.Execute(null);
+        vm.RulesDialog!.AddRuleCommand.Execute(null);
+        Settle(window);
+        var view = window.FindControl<DateRulesDialog>("DateRulesDialog")!.FindControl<DateRuleEditor>("RuleEditor")!;
+        var toggle = view.FindControl<CheckBox>("RegexToggle")!;
+        Assert.True(toggle.IsEffectivelyVisible);
+        Assert.Equal("Advanced: regular expressions", AutomationProperties.GetName(toggle));
+        Assert.True(view.FindControl<Control>("ChipList")!.IsEffectivelyVisible);
+        Assert.False(view.FindControl<Control>("RegexExampleText")!.IsEffectivelyVisible);
+
+        toggle.Focus();
+        Press(window, PhysicalKey.Space);
+
+        Assert.True(vm.RulesDialog.Editor!.IsRegex);
+        Assert.False(view.FindControl<Control>("ChipList")!.IsEffectivelyVisible);
+        Assert.True(view.FindControl<Control>("RegexExampleText")!.IsEffectivelyVisible);
+        Assert.Equal("Regular expressions (one per line, up to 10)", AutomationProperties.GetName(view.FindControl<Control>("PatternsBox")!));
+        Assert.StartsWith("Mark the date parts", AutomationProperties.GetHelpText(view.FindControl<Control>("PatternsBox")!), StringComparison.Ordinal);
+        window.Close();
+    });
+
     [Theory]
-    [InlineData("en-US")]
-    [InlineData("de-DE")]
-    public Task Editor_fits_the_smallest_window(string culture) => RunOnUi(async () =>
+    [InlineData("en-US", false)]
+    [InlineData("de-DE", false)]
+    [InlineData("en-US", true)]
+    [InlineData("de-DE", true)]
+    public Task Editor_fits_the_smallest_window(string culture, bool regex) => RunOnUi(async () =>
     {
         using var temp = new TempFolder();
         Jpeg(temp, "in/IMG_20240714_153208.jpg");
@@ -630,17 +895,21 @@ public sealed class DateRuleEditorTests(HeadlessSession headless)
         await vm.ScanCompletion;
         vm.OpenDateRulesCommand.Execute(null);
         var dialog = vm.RulesDialog!;
+        dialog.EditorSampleDelay = TimeSpan.Zero;
         dialog.SelectedSample = dialog.SampleNames[0];
         dialog.AddRuleCommand.Execute(null);
         // A tall state: several problems, a long name, the tester explaining a wrong date.
         var editor = dialog.Editor!;
         editor.Name = new string('W', UserDateRules.MaxNameLength);
-        editor.PatternsText = "IMG_{YYYY}{DD}{MM}_*\n{YYYY}{M}{D}\n{YYYY}{MM}{DD}{name}\n{YYYY}-{MM}\n" + new string('x', 150) + "{YYYY}{MM}{DD}";
+        editor.IsRegex = regex;
+        editor.PatternsText = regex
+            ? @"IMG_(?<year>\d{4})(?<day>\d\d)(?<month>\d\d)_.*" + "\n(?=x)(?<year>1)(?<month>1)(?<day>1)\n(?<year>1)(?<month>1)(?<day>1)(?<tag>x)\n(?<year>1)(?<month>1)(?<day>1)x{500}\n(?<year>1)(?<month>1)(?<day>1)(" + new string('x', 150)
+            : "IMG_{YYYY}{DD}{MM}_*\n{YYYY}{M}{D}\n{YYYY}{MM}{DD}{name}\n{YYYY}-{MM}\n" + new string('x', 150) + "{YYYY}{MM}{DD}";
         editor.CancelCommand.Execute(null);
         Settle(window);
 
         Assert.True(editor.IsConfirmingDiscard);
-        Assert.Equal(3, editor.Problems.Count);
+        Assert.Equal(regex ? 4 : 3, editor.Problems.Count);
         Assert.Equal(RuleSampleKind.NotADate, editor.SampleKind);
         var root = DialogRoot(window);
         var rootTopLeft = root.TranslatePoint(default, window)!.Value;

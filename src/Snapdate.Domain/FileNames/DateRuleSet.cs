@@ -7,11 +7,26 @@ namespace Snapdate.Domain.FileNames;
 /// </summary>
 public sealed class DateRuleSet
 {
+    /// <summary>
+    /// Time that regular-expression rules may take together for one name. Once spent, further regex rules are skipped
+    /// for that name (token patterns still run: they are cheap). Keeps 100 rules × 10 expressions from adding up.
+    /// </summary>
+    public static readonly TimeSpan DefaultRegexBudget = TimeSpan.FromMilliseconds(200);
+
     private readonly IReadOnlyList<CompiledRule> _compiled;
+    private readonly TimeSpan _regexBudget;
 
     /// <param name="rules">Rules in precedence order (custom rules first, then system rules).</param>
     public DateRuleSet(IEnumerable<DateRule> rules)
+        : this(rules, DefaultRegexBudget)
     {
+    }
+
+    /// <param name="rules">Rules in precedence order (custom rules first, then system rules).</param>
+    /// <param name="regexBudget">See <see cref="DefaultRegexBudget"/>.</param>
+    internal DateRuleSet(IEnumerable<DateRule> rules, TimeSpan regexBudget)
+    {
+        _regexBudget = regexBudget;
         Rules = [.. (rules ?? []).Where(rule => rule is not null)];
         _compiled = [.. Rules.Where(rule => rule.Enabled).Select(Compile).Where(rule => rule.Patterns.Count > 0)];
     }
@@ -24,7 +39,8 @@ public sealed class DateRuleSet
 
     /// <summary>
     /// Reads a date from <paramref name="name"/> (file name without extension). Never throws;
-    /// null when no rule gives a valid, plausible date.
+    /// null when no rule gives a valid, plausible date. Regular-expression rules share a time budget per name
+    /// (<see cref="DefaultRegexBudget"/>); once it is spent they are skipped.
     /// </summary>
     public DateRuleMatch? Match(string? name, DateTime localNow)
     {
@@ -33,11 +49,25 @@ public sealed class DateRuleSet
             return null;
         }
 
+        var regexTime = TimeSpan.Zero;
         foreach (var rule in _compiled)
         {
             foreach (var (index, matcher) in rule.Patterns)
             {
-                if (matcher.TryMatch(name, localNow, out var date))
+                var isRegex = matcher is DateExpression;
+                if (isRegex && regexTime >= _regexBudget)
+                {
+                    continue;
+                }
+
+                var started = System.Diagnostics.Stopwatch.GetTimestamp();
+                var found = matcher.TryMatch(name, localNow, out var date);
+                if (isRegex)
+                {
+                    regexTime += System.Diagnostics.Stopwatch.GetElapsedTime(started);
+                }
+
+                if (found)
                 {
                     return new DateRuleMatch(date, rule.Rule.Id, rule.Rule.Name, index);
                 }
@@ -62,11 +92,11 @@ public sealed class DateRuleSet
         return new CompiledRule(rule, patterns);
     }
 
-    // One case per supported syntax; more syntaxes (regex) return other matcher types.
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1859", Justification = "Extension point for further rule syntaxes.")]
+    // One case per supported syntax.
     private static IFileNameDateMatcher? CompilePattern(string syntax, string? text) => syntax switch
     {
         DateRuleSyntax.Pattern => DatePattern.Parse(text).Pattern,
+        DateRuleSyntax.Regex => DateExpression.Parse(text).Expression,
         _ => null,
     };
 
