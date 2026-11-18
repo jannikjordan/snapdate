@@ -35,7 +35,7 @@ internal static class SamplePhotos
         new("Screenshot 2024-07-15.png", null, null, 260, new DateTime(2024, 7, 15, 21, 4, 40)),
         new("IMG_4741.JPG", new DateTime(2024, 7, 16, 12, 30, 0), "iPhone 15 Pro", 45, new DateTime(2024, 8, 2)),
         new("IMG-20240716-WA0003.jpg", null, null, 330, new DateTime(2024, 7, 16, 19, 5, 22)),
-        new("IMG-20240716-WA0007.jpg", new DateTime(2024, 8, 4, 10, 30, 12), null, 80, new DateTime(2024, 8, 4, 10, 30, 12)),
+        new("IMG-20240716-WA0007.jpg", new DateTime(2024, 8, 4, 10, 30, 12), null, 80, new DateTime(2024, 7, 16, 18, 42, 10)),
         new("DSC00031.JPG", new DateTime(2024, 7, 17, 18, 44, 31), "ILCE-7M4", 12, new DateTime(2024, 8, 3)),
         new("MVI_0021.MP4", null, null, 280, new DateTime(2024, 7, 17, 11, 20, 0)),
         new("IMG_4790.JPG", new DateTime(2024, 7, 18, 10, 2, 47), "iPhone 15 Pro", 140, new DateTime(2024, 8, 2)),
