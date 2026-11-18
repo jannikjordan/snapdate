@@ -66,14 +66,16 @@ placeholders the user already knows from the file-name builder, for example
   fixed-width digits. A run ends only at a literal non-digit, at `*`, or at the
   start or end of the pattern. Each run may contain **at most one
   variable-width token** (`{M}`, `{D}`, `{H}`, `{m}`, `{s}`), and a run that
-  contains one must not touch `*`. Fixed-width tokens may touch `*`.
-  Violations are reported as `AmbiguousNeighbours`.
+  contains one must not touch `*`. In addition, a `?` must not sit directly
+  next to a variable-width token (stricter than the run rule, but harmless).
+  Fixed-width tokens may touch `*`. Violations are reported as
+  `AmbiguousNeighbours`.
   - Valid: `WhatsApp * {YYYY}-{MM}-{DD} * {HH}.{mm}.{ss}*`,
     `{YYYY}{M}{DD}-*`.
   - Invalid: `{YYYY}{M}{D}` (two variable-width tokens in one run),
     `{YYYY}-{M}1{D}` (the digit `1` joins `{M}` and `{D}` into one run),
     `*{D}.{MM}.{YYYY}` and `{YYYY}{M}{DD}?*` (a run with a variable-width
-    token touches `*`).
+    token touches `*`), `{YYYY}-{M}?-{DD}` (a `?` directly next to `{M}`).
 - Each pattern is compiled once to a `Regex` with
   `NonBacktracking | IgnoreCase | CultureInvariant | ExplicitCapture`, a
   **50 ms match timeout** (a timeout counts as no match) and no
