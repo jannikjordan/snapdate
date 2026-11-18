@@ -54,9 +54,11 @@ placeholders the user already knows from the file-name builder, for example
 - Validation (errors are values with a character position, never exceptions):
   empty; longer than 200 characters; unclosed brace; unknown token; unsupported
   token (e.g. `{MMM}`, `{name}`); a token used twice; year, month or day
-  missing; hour without minute; second without minute; **`*` or `?` directly
-  next to a date token, or two variable-width tokens (`{M}`, `{D}`, `{H}`,
-  `{m}`, `{s}`) next to each other** (ambiguous). A rule with one invalid
+  missing; hour and minute must appear together (neither `{HH}` without `{mm}`
+  nor `{mm}` without `{HH}`; error kinds `HourWithoutMinute`,
+  `MinuteWithoutHour`); seconds require minutes (`SecondWithoutMinute`);
+  **`*` or `?` directly next to a date token, or two variable-width tokens
+  (`{M}`, `{D}`, `{H}`, `{m}`, `{s}`) next to each other** (ambiguous). A rule with one invalid
   pattern still uses its valid ones.
 - Each pattern is compiled once to a `Regex` with
   `NonBacktracking | IgnoreCase | CultureInvariant | ExplicitCapture`, a
@@ -74,25 +76,36 @@ placeholders the user already knows from the file-name builder, for example
 
 **Advanced mode: regular expression.** A rule can set `"syntax": "regex"`
 instead of the default `"pattern"`. The user's expression is wrapped as
-`^(?:…)$`, limited to 300 characters, compiled with the same options and
-timeout, and must use the named groups `year`, `month`, `day` (required) and
-`hour`, `minute`, `second` (optional); no other group names. Constructs that
-`NonBacktracking` does not support (backreferences, lookarounds, atomic
-groups) are reported as a plain-language error. Group values go through the
+`^(?:…)$`, limited to 300 characters, compiled with the same options, and
+must use the named groups `year`, `month`, `day` (required) and `hour`,
+`minute`, `second` (optional); no other group names. Counted repetition is
+capped (`{n}` / `{n,m}` with n, m ≤ 100). **Any failure while building the
+regex** — constructs that `NonBacktracking` does not support
+(backreferences, lookarounds, atomic groups; `NotSupportedException`), syntax
+errors (`ArgumentException`), a too-large repetition or anything else — becomes
+a plain-language validation error, never a crash. The 50 ms timeout applies to
+matching, as for patterns. Group values go through the
 same ASCII-digit, calendar and plausibility checks. Implemented in #21 in the
 same release (v0.3.0); until then such rules are kept but inactive.
 
 ### Date priority and conflicts
 1. **Camera EXIF** (metadata from a file with a camera model) always wins, as
    before. If a file-name date is on a different day, the photo is flagged
-   **"Dates differ"**.
-2. Otherwise a **file-name date** wins over **app-written metadata** (no camera
-   model, e.g. written by a gallery or backup app) and over the file timestamp.
+   **"Dates differ"** and the ignored file-name date is shown.
+2. Otherwise a **file-name date** wins over **app-written metadata** and over
+   the file timestamp. App-written metadata is any metadata date without a
+   camera model — e.g. written by a gallery or backup app, and also QuickTime,
+   XMP or PNG dates without a camera model, which matters for `VID-…-WA`
+   videos.
 3. **Same day** (file-name date and app-written metadata): the metadata date is
-   kept unchanged (it has the same day and the more precise time).
+   kept unchanged; the metadata time wins.
 4. **Different days:** the file-name date is used with the new source
    `DateSource.FileName`, the photo is flagged **"Dates differ"** and the
-   ignored metadata date is shown (hint/tooltip).
+   ignored metadata date is shown.
+
+The "Dates differ" hint (tooltip) always shows the date that was **not** used:
+the ignored metadata date when the file name won, or the ignored file-name
+date when camera EXIF won.
 5. **Date-only file name** (no time in the name, no same-day metadata): the
    time is taken from the **file timestamp if it is on the same day**,
    otherwise it is **00:00:00**. The file timestamp is only read when needed.
@@ -176,7 +189,8 @@ predictable and lets the user see what was ignored.
 - A new `DateSource.FileName` ("Date from name" / "Datum aus Name") appears as a
   badge and filter in the UI and as `FileName` in the `date_source` column of
   the CSV log.
-- Photos can carry a "Dates differ" flag; the ignored date stays visible.
+- Photos can carry a "Dates differ" flag; the date that was not used (metadata
+  or file-name date) stays visible in its hint.
 - Rule ids are a permanent contract; renaming or reusing a system id would
   re-enable rules users had switched off.
 - File-name input is untrusted: the generated regexes run with
