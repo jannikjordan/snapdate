@@ -77,6 +77,11 @@ public sealed class DatePatternParseTests
     [InlineData("IMG-{YYYY}?{M}-{DD}", DatePatternErrorKind.AmbiguousNeighbours, 10, "M")]
     [InlineData("IMG-{YYYY}-{M}{D}", DatePatternErrorKind.AmbiguousNeighbours, 14, "D")]
     [InlineData("IMG-{YYYY}-{MM}-{DD} {H}{m}", DatePatternErrorKind.AmbiguousNeighbours, 24, "m")]
+    [InlineData("{YYYY}{M}{DD}*", DatePatternErrorKind.AmbiguousNeighbours, 13, "M")]
+    [InlineData("*{DD}{M}{YYYY}", DatePatternErrorKind.AmbiguousNeighbours, 0, "M")]
+    [InlineData("{M}{YYYY}{D}", DatePatternErrorKind.AmbiguousNeighbours, 9, "D")]
+    [InlineData("{D}{MM}{YYYY}*", DatePatternErrorKind.AmbiguousNeighbours, 13, "D")]
+    [InlineData("x{YYYY}{MM}{DD}{H}{mm}{s}x", DatePatternErrorKind.AmbiguousNeighbours, 22, "s")]
     public void Invalid_patterns_report_kind_and_position(string text, DatePatternErrorKind kind, int position, string? detail)
     {
         var result = DatePattern.Parse(text);
@@ -115,7 +120,9 @@ public sealed class DatePatternParseTests
 
         var seen = samples.SelectMany(sample => DatePattern.Parse(sample).Errors).Select(error => error.Kind).ToHashSet();
 
-        Assert.Equal(Enum.GetValues<DatePatternErrorKind>().ToHashSet(), seen);
+        // InvalidExpression is reserved for syntaxes with user-written expressions; token patterns never produce it.
+        var expected = Enum.GetValues<DatePatternErrorKind>().Where(kind => kind != DatePatternErrorKind.InvalidExpression).ToHashSet();
+        Assert.Equal(expected, seen);
     }
 
     [Fact]
@@ -132,6 +139,10 @@ public sealed class DatePatternParseTests
     [InlineData("*{YYYY}{MM}{DD}")]
     [InlineData("WhatsApp * {YYYY}-{MM}-{DD} * {HH}.{mm}.{ss}*")]
     [InlineData("{YYYY}-{M}-{D} *")]
+    [InlineData("{YYYY}{M}{DD}")]
+    [InlineData("{YYYY}{M}{DD}-*")]
+    [InlineData("?{YYYY}{M}{DD}")]
+    [InlineData("{YYYY}{MM}{DD}?{HH}{m}-x")]
     public void Wildcards_next_to_fixed_width_tokens_are_allowed(string text)
     {
         Assert.True(DatePattern.Parse(text).IsValid);

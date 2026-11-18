@@ -179,6 +179,23 @@ public sealed class DatePatternMatchTests
     }
 
     [Fact]
+    public void Pathological_pattern_still_finds_a_real_date_quickly()
+    {
+        // A timeout also gives "no match", so this positive case proves the time bound covers real matching.
+        var pattern = DatePattern.Parse("*a*a*a*a*a*a*a*a*a*a*{YYYY}{MM}{DD}").Pattern!;
+        var name = new string('a', DatePattern.MaxNameLength - 8) + "20240714";
+        pattern.TryMatch("a20240714", Now, out _);
+
+        var stopwatch = Stopwatch.StartNew();
+        var matched = pattern.TryMatch(name, Now, out var date);
+        stopwatch.Stop();
+
+        Assert.True(matched);
+        Assert.Equal(new FileNameDate(new DateOnly(2024, 7, 14), null), date);
+        Assert.True(stopwatch.ElapsedMilliseconds < 100, $"Took {stopwatch.ElapsedMilliseconds} ms.");
+    }
+
+    [Fact]
     public void Failed_match_returns_default_date()
     {
         var pattern = DatePattern.Parse(WhatsAppAndroid).Pattern!;

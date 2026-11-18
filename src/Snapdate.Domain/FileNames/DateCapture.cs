@@ -69,7 +69,9 @@ internal static class DateCapture
 
         if (TryRead(match, TwoDigitYear, out var twoDigits) && twoDigits <= 99)
         {
-            // 20YY, unless that year has not begun yet: then 19YY.
+            // 20YY, unless that year has not begun yet: then 19YY. The pivot compares whole years only, so a
+            // date later in the current year (e.g. 26-12-31 on 2026-11-18) stays 2026 and is then rejected
+            // by DatePlausibility: no match, rather than a guess of 1926.
             year = 2000 + twoDigits > localNow.Year ? 1900 + twoDigits : 2000 + twoDigits;
             return true;
         }

@@ -67,9 +67,32 @@ public sealed class DatePattern : IFileNameDateMatcher
             CheckNeighbours(elements, errors);
         }
 
-        return errors.Count > 0
-            ? DatePatternParseResult.Failed([.. errors])
-            : DatePatternParseResult.Succeeded(new DatePattern(text, new Regex(ToRegex(elements), MatchOptions, MatchTimeout)));
+        if (errors.Count > 0)
+        {
+            return DatePatternParseResult.Failed([.. errors]);
+        }
+
+        return TryCreateRegex(ToRegex(elements)) is { } regex
+            ? DatePatternParseResult.Succeeded(new DatePattern(text, regex))
+            : DatePatternParseResult.Failed(new DatePatternError(DatePatternErrorKind.InvalidExpression, 0));
+    }
+
+    /// <summary>Compiles an expression with <see cref="MatchOptions"/>; null when it cannot be compiled.</summary>
+    internal static Regex? TryCreateRegex(string expression)
+    {
+        try
+        {
+            return new Regex(expression, MatchOptions, MatchTimeout);
+        }
+        catch (ArgumentException)
+        {
+            return null;
+        }
+        catch (NotSupportedException)
+        {
+            // NonBacktracking rejects constructs such as backreferences and lookarounds.
+            return null;
+        }
     }
 
     /// <summary>
@@ -215,22 +238,57 @@ public sealed class DatePattern : IFileNameDateMatcher
         }
     }
 
+    /// <summary>
+    /// Checks every run (consecutive tokens with no literal text or wildcard between them) so its digits can
+    /// only be split one way: at most one variable-width token per run, a run with one must not touch
+    /// <c>*</c>, and <c>?</c> must not sit directly next to a variable-width token.
+    /// </summary>
     private static void CheckNeighbours(List<Element> elements, List<DatePatternError> errors)
     {
-        for (var i = 1; i < elements.Count; i++)
+        var start = 0;
+        while (start < elements.Count)
         {
-            switch (elements[i - 1], elements[i])
+            if (elements[start] is not Element.Token)
             {
-                case (Element.Wildcard wildcard, Element.Token { IsVariableWidth: true } token):
-                    errors.Add(new DatePatternError(DatePatternErrorKind.AmbiguousNeighbours, wildcard.Position, token.Name));
-                    break;
-                case (Element.Token { IsVariableWidth: true } token, Element.Wildcard wildcard):
-                    errors.Add(new DatePatternError(DatePatternErrorKind.AmbiguousNeighbours, wildcard.Position, token.Name));
-                    break;
-                case (Element.Token { IsVariableWidth: true }, Element.Token { IsVariableWidth: true } token):
-                    errors.Add(new DatePatternError(DatePatternErrorKind.AmbiguousNeighbours, token.Position, token.Name));
-                    break;
+                start++;
+                continue;
             }
+
+            var end = start;
+            while (end < elements.Count && elements[end] is Element.Token)
+            {
+                end++;
+            }
+
+            var run = elements[start..end].Cast<Element.Token>().ToList();
+            var variable = run.Where(token => token.IsVariableWidth).ToList();
+            if (variable.Count > 1)
+            {
+                errors.Add(new DatePatternError(DatePatternErrorKind.AmbiguousNeighbours, variable[1].Position, variable[1].Name));
+            }
+
+            if (variable.Count > 0)
+            {
+                var before = start > 0 ? elements[start - 1] as Element.Wildcard : null;
+                var after = end < elements.Count ? elements[end] as Element.Wildcard : null;
+                CheckWildcard(before, run[0], variable[0], errors);
+                CheckWildcard(after, run[^1], variable[0], errors);
+            }
+
+            start = end;
+        }
+    }
+
+    private static void CheckWildcard(Element.Wildcard? wildcard, Element.Token neighbour, Element.Token variable, List<DatePatternError> errors)
+    {
+        switch (wildcard)
+        {
+            case { Character: '*' }:
+                errors.Add(new DatePatternError(DatePatternErrorKind.AmbiguousNeighbours, wildcard.Position, variable.Name));
+                break;
+            case { Character: '?' } when neighbour.IsVariableWidth:
+                errors.Add(new DatePatternError(DatePatternErrorKind.AmbiguousNeighbours, wildcard.Position, neighbour.Name));
+                break;
         }
     }
 

@@ -43,8 +43,15 @@ public enum DatePatternErrorKind
     SecondWithoutMinute,
 
     /// <summary>
-    /// <c>*</c> or <c>?</c> directly next to a placeholder without leading zero (e.g. <c>*{M}</c>), or two such
-    /// placeholders next to each other (e.g. <c>{M}{D}</c>): the digits could be split in more than one way.
+    /// The digits could be split in more than one way: two placeholders without leading zero in one run of
+    /// adjacent placeholders (e.g. <c>{M}{YYYY}{D}</c>), <c>*</c> next to a run that contains one
+    /// (e.g. <c>{YYYY}{M}{DD}*</c>), or <c>?</c> directly next to one (e.g. <c>{M}?</c>).
     /// </summary>
     AmbiguousNeighbours,
+
+    /// <summary>
+    /// The pattern could not be compiled into an expression. Not expected for token patterns; used by
+    /// syntaxes whose expressions the user writes.
+    /// </summary>
+    InvalidExpression,
 }
