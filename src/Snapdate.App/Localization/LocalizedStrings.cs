@@ -412,6 +412,90 @@ public sealed class LocalizedStrings(CultureInfo culture)
 
     public string TesterDateTime => Get(nameof(TesterDateTime));
 
+    public string TesterCreateRule => Get(nameof(TesterCreateRule));
+
+    public string TesterCreateRuleTip => Get(nameof(TesterCreateRuleTip));
+
+    public string RuleNewTitle => Get(nameof(RuleNewTitle));
+
+    public string RuleEditTitle => Get(nameof(RuleEditTitle));
+
+    public string RuleEditorIntro => Get(nameof(RuleEditorIntro));
+
+    public string RuleNameLabel => Get(nameof(RuleNameLabel));
+
+    public string RuleDefaultName => Get(nameof(RuleDefaultName));
+
+    public string RulePatternsLabel => Get(nameof(RulePatternsLabel));
+
+    public string RulePatternsHint => Get(nameof(RulePatternsHint));
+
+    public string RuleChipsName => Get(nameof(RuleChipsName));
+
+    public string TokAnyText => Get(nameof(TokAnyText));
+
+    public string TokAnyTextTip => Get(nameof(TokAnyTextTip));
+
+    public string RuleSave => Get(nameof(RuleSave));
+
+    public string RuleDiscardQuestion => Get(nameof(RuleDiscardQuestion));
+
+    public string RuleDiscard => Get(nameof(RuleDiscard));
+
+    public string RuleKeepEditing => Get(nameof(RuleKeepEditing));
+
+    public string RulePatternsOk => Get(nameof(RulePatternsOk));
+
+    public string RuleProblemLine => Get(nameof(RuleProblemLine));
+
+    public string RuleNoPatterns => Get(nameof(RuleNoPatterns));
+
+    public string RuleTooManyPatterns => Get(nameof(RuleTooManyPatterns));
+
+    public string RuleNameTooLong => Get(nameof(RuleNameTooLong));
+
+    public string PatErrEmpty => Get(nameof(PatErrEmpty));
+
+    public string PatErrTooLong => Get(nameof(PatErrTooLong));
+
+    public string PatErrUnclosedBrace => Get(nameof(PatErrUnclosedBrace));
+
+    public string PatErrClosingBrace => Get(nameof(PatErrClosingBrace));
+
+    public string PatErrUnknownToken => Get(nameof(PatErrUnknownToken));
+
+    public string PatErrUnsupportedToken => Get(nameof(PatErrUnsupportedToken));
+
+    public string PatErrDuplicateToken => Get(nameof(PatErrDuplicateToken));
+
+    public string PatErrMissingYear => Get(nameof(PatErrMissingYear));
+
+    public string PatErrMissingMonth => Get(nameof(PatErrMissingMonth));
+
+    public string PatErrMissingDay => Get(nameof(PatErrMissingDay));
+
+    public string PatErrHourWithoutMinute => Get(nameof(PatErrHourWithoutMinute));
+
+    public string PatErrMinuteWithoutHour => Get(nameof(PatErrMinuteWithoutHour));
+
+    public string PatErrSecondWithoutMinute => Get(nameof(PatErrSecondWithoutMinute));
+
+    public string PatErrAmbiguous => Get(nameof(PatErrAmbiguous));
+
+    public string PatErrInvalid => Get(nameof(PatErrInvalid));
+
+    public string RuleSampleEmpty => Get(nameof(RuleSampleEmpty));
+
+    public string RuleSampleNoPatterns => Get(nameof(RuleSampleNoPatterns));
+
+    public string RuleSampleMatch => Get(nameof(RuleSampleMatch));
+
+    public string RuleSampleInvalid => Get(nameof(RuleSampleInvalid));
+
+    public string RuleSampleImplausible => Get(nameof(RuleSampleImplausible));
+
+    public string RuleSampleNoMatch => Get(nameof(RuleSampleNoMatch));
+
     public string TipRulesHint => Get(nameof(TipRulesHint));
 
     /// <summary>Looks up a key; falls back to the key itself so missing strings are visible, not fatal.</summary>

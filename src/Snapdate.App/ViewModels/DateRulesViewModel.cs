@@ -80,11 +80,18 @@ public sealed partial class DateRulesViewModel : ObservableObject
     /// <summary>False while the user's rules are read-only (file written by a newer version, or not accessible).</summary>
     public bool CanChange => !Catalog.IsReadOnly;
 
-    /// <summary>Adding rules arrives with the rule editor (#20); hidden until then.</summary>
-    public bool CanAdd => CanChange && IsEditorAvailable;
+    /// <summary>"Add rule" is offered unless the user's rules are read-only.</summary>
+    public bool CanAdd => CanChange;
 
-    /// <summary>The rule editor (#20) is not there yet: "Edit" and "Add rule" stay hidden.</summary>
-    internal static bool IsEditorAvailable => false;
+    /// <summary>The rule editor while it is open (it replaces the list); null otherwise.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsEditing), nameof(IsListing))]
+    public partial DateRuleEditorViewModel? Editor { get; private set; }
+
+    public bool IsEditing => Editor is not null;
+
+    /// <summary>True while the list, the tester and the Close button are shown (the editor is not open).</summary>
+    public bool IsListing => Editor is null;
 
     /// <summary>Lasting state of the user's file (unreadable, newer version, not accessible); empty when all is well.</summary>
     [ObservableProperty]
@@ -133,6 +140,14 @@ public sealed partial class DateRulesViewModel : ObservableObject
     [ObservableProperty]
     public partial string TestResult { get; private set; } = string.Empty;
 
+    /// <summary>A pattern for the tested name when no rule matches it but it contains a YYYYMMDD date; null otherwise.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(CanCreateFromName))]
+    public partial string? SuggestedPattern { get; private set; }
+
+    /// <summary>"Create a rule from this name" is offered.</summary>
+    public bool CanCreateFromName => SuggestedPattern is not null && CanAdd;
+
     /// <summary>The id of the rule that should get keyboard focus after the list was rebuilt; null for none.</summary>
     public string? FocusRuleId { get; private set; }
 
@@ -143,6 +158,7 @@ public sealed partial class DateRulesViewModel : ObservableObject
         SampleNames = [.. (sampleNames ?? []).Distinct(StringComparer.OrdinalIgnoreCase).Take(MaxSampleNames)];
         SelectedSample = null;
         MessageText = string.Empty;
+        Editor = null;
         _changed = false;
         foreach (var item in Items)
         {
@@ -165,16 +181,24 @@ public sealed partial class DateRulesViewModel : ObservableObject
             item.CancelPendingDelete();
         }
 
+        Editor = null;
         IsOpen = false;
         var changed = _changed;
         _changed = false;
         Closed?.Invoke(this, changed);
     }
 
-    /// <summary>Esc: cancels an open delete confirmation first, otherwise closes the dialog.</summary>
+    /// <summary>
+    /// Esc: in the editor it cancels (asking first when something was changed; Esc on that question keeps editing).
+    /// Otherwise it cancels an open delete confirmation first, then closes the dialog.
+    /// </summary>
     public void Escape()
     {
-        if (!Items.Any(item => item.CancelPendingDelete()))
+        if (Editor is { } editor)
+        {
+            editor.Escape();
+        }
+        else if (!Items.Any(item => item.CancelPendingDelete()))
         {
             Close();
         }
@@ -192,6 +216,7 @@ public sealed partial class DateRulesViewModel : ObservableObject
         UpdateStatus();
         MessageText = string.Empty;
         UpdateTestResult();
+        Editor?.UpdateStrings(l);
     }
 
     /// <summary>Clears the focus request once the view has handled it.</summary>
@@ -261,6 +286,105 @@ public sealed partial class DateRulesViewModel : ObservableObject
         }
     }
 
+    // ---------- Editor ----------
+
+    internal void Edit(DateRuleItemViewModel item) => OpenEditor(Catalog.Find(item.Id), patterns: null);
+
+    [RelayCommand]
+    private void AddRule() => OpenEditor(rule: null, patterns: null);
+
+    /// <summary>"Create a rule from this name": a new rule with the suggested pattern, tried on the tested name.</summary>
+    [RelayCommand]
+    private void CreateFromName()
+    {
+        if (SuggestedPattern is { } pattern)
+        {
+            OpenEditor(rule: null, pattern);
+        }
+    }
+
+    /// <summary>Opens the editor for one of the user's rules, or for a new rule when <paramref name="rule"/> is null.</summary>
+    private void OpenEditor(DateRule? rule, string? patterns)
+    {
+        if (Catalog.IsReadOnly || rule is { Origin: not RuleOrigin.Custom } || rule is { IsSyntaxSupported: false })
+        {
+            MessageText = _l.RulesReadOnly;
+            return;
+        }
+
+        if (rule is null && Catalog.CustomRules.Count >= UserDateRules.MaxCustomRules)
+        {
+            MessageText = _l.Format(nameof(LocalizedStrings.RulesFull), UserDateRules.MaxCustomRules);
+            return;
+        }
+
+        foreach (var item in Items)
+        {
+            item.CancelPendingDelete();
+        }
+
+        MessageText = string.Empty;
+        Editor = new DateRuleEditorViewModel(this, _l, _clock, rule, patterns, TestName, SampleNames);
+    }
+
+    /// <summary>
+    /// Saves the editor's rule: replaces the user's rule it was opened for, or adds a new one (also when that rule
+    /// was deleted elsewhere meanwhile, so nothing typed is lost). When saving fails the editor stays open with the
+    /// reason above it; the rules were reloaded, so Save can simply be pressed again.
+    /// </summary>
+    internal void SaveEditor(DateRuleEditorViewModel editor)
+    {
+        if (!ReferenceEquals(editor, Editor))
+        {
+            return;
+        }
+
+        DateRule? saved;
+        if (editor.RuleId is { } id && Catalog.CustomRules.FirstOrDefault(r => string.Equals(r.Id, id, StringComparison.Ordinal)) is { } existing)
+        {
+            var updated = existing with { Name = editor.EffectiveName, Patterns = editor.Patterns };
+            saved = Catalog.Update(updated) ? updated : null;
+        }
+        else if (!Catalog.IsReadOnly && Catalog.CustomRules.Count >= UserDateRules.MaxCustomRules)
+        {
+            MessageText = _l.Format(nameof(LocalizedStrings.RulesFull), UserDateRules.MaxCustomRules);
+            return;
+        }
+        else
+        {
+            saved = Catalog.Add(editor.EffectiveName, editor.Patterns, editor.Syntax);
+        }
+
+        if (saved is null)
+        {
+            MessageText = _l.RulesReadOnly;
+            return;
+        }
+
+        var index = Catalog.Rules.ToList().FindIndex(r => string.Equals(r.Id, saved.Id, StringComparison.Ordinal));
+        if (!Save(saved.Id, index))
+        {
+            return;
+        }
+
+        FocusRuleId = saved.Id;
+        Editor = null;
+        RebuildItems();
+        RefreshRuleSets();
+    }
+
+    /// <summary>Leaves the editor without saving; the keyboard returns to the edited rule (or to "Add rule").</summary>
+    internal void CloseEditor()
+    {
+        if (Editor is not { } editor)
+        {
+            return;
+        }
+
+        FocusRuleId = editor.RuleId is { } id && Items.Any(i => string.Equals(i.Id, id, StringComparison.Ordinal)) ? id : null;
+        Editor = null;
+    }
+
     /// <summary>"&lt;name&gt; (copy)", shortened so it stays a valid rule name.</summary>
     private string CopyName(string name)
     {
@@ -280,7 +404,9 @@ public sealed partial class DateRulesViewModel : ObservableObject
     /// is really stored, and the user is told why. The keyboard stays on <paramref name="item"/>'s row (or the row now
     /// in its place).
     /// </summary>
-    private bool Save(DateRuleItemViewModel item)
+    private bool Save(DateRuleItemViewModel item) => Save(item.Id, Items.IndexOf(item));
+
+    private bool Save(string focusId, int focusIndex)
     {
         var result = Catalog.Save(_store);
         if (result == DateRuleSaveResult.Saved)
@@ -291,9 +417,8 @@ public sealed partial class DateRulesViewModel : ObservableObject
             return true;
         }
 
-        var index = Items.IndexOf(item);
         // Only a conflict means the file changed elsewhere; otherwise the reloaded rules are the ones scanned already.
-        Reload(changedElsewhere: result == DateRuleSaveResult.Conflict, focusId: item.Id, focusIndex: index);
+        Reload(changedElsewhere: result == DateRuleSaveResult.Conflict, focusId: focusId, focusIndex: focusIndex);
         MessageText = result switch
         {
             DateRuleSaveResult.Conflict => _l.RulesConflict,
@@ -319,6 +444,8 @@ public sealed partial class DateRulesViewModel : ObservableObject
             : rules.Count == 0 ? null : rules[Math.Clamp(focusIndex, 0, rules.Count - 1)].Id;
         OnPropertyChanged(nameof(Catalog));
         OnPropertyChanged(nameof(CanChange));
+        OnPropertyChanged(nameof(CanAdd));
+        OnPropertyChanged(nameof(CanCreateFromName));
         RebuildItems();
         RefreshRuleSets();
         UpdateStatus();
@@ -377,6 +504,7 @@ public sealed partial class DateRulesViewModel : ObservableObject
     private void UpdateTestResult()
     {
         var name = NameWithoutExtension(TestName);
+        SuggestedPattern = null;
         if (name.Length == 0)
         {
             TestKind = RuleTestKind.Empty;
@@ -388,25 +516,27 @@ public sealed partial class DateRulesViewModel : ObservableObject
         if (_effective.Match(name, now) is { } match)
         {
             TestKind = RuleTestKind.Match;
-            TestResult = _l.Format(nameof(LocalizedStrings.TesterMatch), match.RuleName, FormatDate(match.Date));
+            TestResult = _l.Format(nameof(LocalizedStrings.TesterMatch), match.RuleName, FormatDate(_l, match.Date));
         }
         else if (_allSwitchedOn.Match(name, now) is { } off)
         {
             TestKind = RuleTestKind.MatchSwitchedOff;
-            TestResult = _l.Format(nameof(LocalizedStrings.TesterMatchOff), off.RuleName, FormatDate(off.Date));
+            TestResult = _l.Format(nameof(LocalizedStrings.TesterMatchOff), off.RuleName, FormatDate(_l, off.Date));
         }
         else
         {
             TestKind = RuleTestKind.NoMatch;
             TestResult = _l.TesterNoMatch;
+            SuggestedPattern = DatePattern.SuggestFor(name);
         }
     }
 
-    private string FormatDate(FileNameDate date)
+    /// <summary>The long date in the UI culture, with the time when the name has one.</summary>
+    internal static string FormatDate(LocalizedStrings l, FileNameDate date)
     {
-        var day = date.Date.ToString("D", _l.Culture);
+        var day = date.Date.ToString("D", l.Culture);
         return date.Time is { } time
-            ? _l.Format(nameof(LocalizedStrings.TesterDateTime), day, time.ToString("T", _l.Culture))
+            ? l.Format(nameof(LocalizedStrings.TesterDateTime), day, time.ToString("T", l.Culture))
             : day;
     }
 

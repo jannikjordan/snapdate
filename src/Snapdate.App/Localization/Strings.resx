@@ -203,5 +203,47 @@
   <data name="TesterMatchOff" xml:space="preserve"><value>Rule &quot;{0}&quot;: {1} (rule is switched off)</value></data>
   <data name="TesterNoMatch" xml:space="preserve"><value>No rule matches</value></data>
   <data name="TesterDateTime" xml:space="preserve"><value>{0}, {1}</value></data>
+  <data name="TesterCreateRule" xml:space="preserve"><value>Create a rule from this name</value></data>
+  <data name="TesterCreateRuleTip" xml:space="preserve"><value>Opens a new rule with a pattern for names like this one. You can change it before saving.</value></data>
+  <data name="RuleNewTitle" xml:space="preserve"><value>New rule</value></data>
+  <data name="RuleEditTitle" xml:space="preserve"><value>Edit rule</value></data>
+  <data name="RuleEditorIntro" xml:space="preserve"><value>Describe how your file names look. Snapdate tries the patterns from top to bottom and reads the date with the first one that fits the whole name (without the extension).</value></data>
+  <data name="RuleNameLabel" xml:space="preserve"><value>Name</value></data>
+  <data name="RuleDefaultName" xml:space="preserve"><value>My rule</value></data>
+  <data name="RulePatternsLabel" xml:space="preserve"><value>Patterns (one per line, up to {0})</value></data>
+  <data name="RulePatternsHint" xml:space="preserve"><value>Click a block to insert it at the cursor. * stands for any text. Everything else must be in the name exactly like this; upper and lower case do not matter.</value></data>
+  <data name="RuleChipsName" xml:space="preserve"><value>Blocks to insert</value></data>
+  <data name="TokAnyText" xml:space="preserve"><value>any text *</value></data>
+  <data name="TokAnyTextTip" xml:space="preserve"><value>* = any text, also none</value></data>
+  <data name="RuleSave" xml:space="preserve"><value>Save rule</value></data>
+  <data name="RuleDiscardQuestion" xml:space="preserve"><value>Discard your changes?</value></data>
+  <data name="RuleDiscard" xml:space="preserve"><value>Discard</value></data>
+  <data name="RuleKeepEditing" xml:space="preserve"><value>Keep editing</value></data>
+  <data name="RulePatternsOk" xml:space="preserve"><value>All patterns can be used.</value></data>
+  <data name="RuleProblemLine" xml:space="preserve"><value>Line {0}: {1}</value></data>
+  <data name="RuleNoPatterns" xml:space="preserve"><value>Type at least one pattern, for example IMG-{{YYYY}}{{MM}}{{DD}}-WA*</value></data>
+  <data name="RuleTooManyPatterns" xml:space="preserve"><value>A rule can have at most {0} patterns. Please remove {1}.</value></data>
+  <data name="RuleNameTooLong" xml:space="preserve"><value>The name can be at most {0} characters long.</value></data>
+  <data name="PatErrEmpty" xml:space="preserve"><value>This line is empty.</value></data>
+  <data name="PatErrTooLong" xml:space="preserve"><value>This pattern is too long (at most {0} characters).</value></data>
+  <data name="PatErrUnclosedBrace" xml:space="preserve"><value>There is a “{{” without a closing “}}”.</value></data>
+  <data name="PatErrClosingBrace" xml:space="preserve"><value>There is a “}}” without an opening “{{”. To use a brace as text, type it twice: }}}}</value></data>
+  <data name="PatErrUnknownToken" xml:space="preserve"><value>“{{{0}}}” is not a block Snapdate knows. Use the blocks below, such as {{YYYY}}.</value></data>
+  <data name="PatErrUnsupportedToken" xml:space="preserve"><value>“{{{0}}}” cannot be read from a file name. Use number blocks such as {{MM}} for the month.</value></data>
+  <data name="PatErrDuplicateToken" xml:space="preserve"><value>“{{{0}}}” repeats a part of the date that is already in the pattern. Each part may appear only once.</value></data>
+  <data name="PatErrMissingYear" xml:space="preserve"><value>The pattern needs a year: {{YYYY}} or {{YY}}.</value></data>
+  <data name="PatErrMissingMonth" xml:space="preserve"><value>The pattern needs a month: {{MM}} or {{M}}.</value></data>
+  <data name="PatErrMissingDay" xml:space="preserve"><value>The pattern needs a day: {{DD}} or {{D}}.</value></data>
+  <data name="PatErrHourWithoutMinute" xml:space="preserve"><value>An hour also needs minutes: add {{mm}}.</value></data>
+  <data name="PatErrMinuteWithoutHour" xml:space="preserve"><value>Minutes also need an hour: add {{HH}}.</value></data>
+  <data name="PatErrSecondWithoutMinute" xml:space="preserve"><value>Seconds also need minutes: add {{mm}}.</value></data>
+  <data name="PatErrAmbiguous" xml:space="preserve"><value>The digits around “{{{0}}}” could be read in more than one way. Put a separator such as - or _ between the parts, or use two-digit blocks like {{MM}} and {{DD}}, and do not put * or ? right next to them.</value></data>
+  <data name="PatErrInvalid" xml:space="preserve"><value>This pattern cannot be used. Please check it.</value></data>
+  <data name="RuleSampleEmpty" xml:space="preserve"><value>Type a file name to try your patterns.</value></data>
+  <data name="RuleSampleNoPatterns" xml:space="preserve"><value>Type a valid pattern first, then try a file name.</value></data>
+  <data name="RuleSampleMatch" xml:space="preserve"><value>Matches line {0} → {1}</value></data>
+  <data name="RuleSampleInvalid" xml:space="preserve"><value>Line {0} matches, but {1} is not a valid date.</value></data>
+  <data name="RuleSampleImplausible" xml:space="preserve"><value>Line {0} matches, but {1} is before 1900 or in the future.</value></data>
+  <data name="RuleSampleNoMatch" xml:space="preserve"><value>No pattern matches this name.</value></data>
   <data name="TipRulesHint" xml:space="preserve"><value>The rules are under &quot;Dates from file names&quot; above the list.</value></data>
 </root>

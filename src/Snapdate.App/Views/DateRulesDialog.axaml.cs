@@ -16,6 +16,7 @@ namespace Snapdate.App.Views;
 public partial class DateRulesDialog : UserControl
 {
     private DateRulesViewModel? _viewModel;
+    private DateRuleEditorViewModel? _editor;
     private IInputElement? _focusBeforeOpen;
 
     public DateRulesDialog()
@@ -52,6 +53,12 @@ public partial class DateRulesDialog : UserControl
 
     private void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
+        if (e.PropertyName == nameof(DateRulesViewModel.Editor))
+        {
+            OnEditorChanged();
+            return;
+        }
+
         if (e.PropertyName != nameof(DateRulesViewModel.IsOpen) || _viewModel is null)
         {
             return;
@@ -100,7 +107,8 @@ public partial class DateRulesDialog : UserControl
 
     private void FocusRequestedRule()
     {
-        if (_viewModel?.FocusRuleId is not { } id)
+        // While the editor is open the list is hidden; the request is handled when the editor closes.
+        if (_viewModel?.FocusRuleId is not { } id || _viewModel.IsEditing)
         {
             return;
         }
@@ -122,6 +130,70 @@ public partial class DateRulesDialog : UserControl
         else
         {
             CloseButton.Focus(NavigationMethod.Tab);
+        }
+    }
+
+    /// <summary>
+    /// The editor opened: the name box gets the keyboard. It closed: the keyboard goes to the saved or edited rule,
+    /// otherwise back to "Add rule".
+    /// </summary>
+    private void OnEditorChanged()
+    {
+        if (_editor is not null)
+        {
+            _editor.PropertyChanged -= OnEditorPropertyChanged;
+        }
+
+        _editor = _viewModel?.Editor;
+        if (_editor is not null)
+        {
+            _editor.PropertyChanged += OnEditorPropertyChanged;
+            Dispatcher.UIThread.Post(() => FocusInEditor("RuleNameBox"), DispatcherPriority.Loaded);
+        }
+        else if (_viewModel is { IsOpen: true })
+        {
+            Dispatcher.UIThread.Post(
+                () =>
+                {
+                    // Closing the whole dialog also leaves the editor; then focus returns to where it was before.
+                    if (_viewModel is not { IsOpen: true, IsEditing: false })
+                    {
+                        return;
+                    }
+
+                    if (_viewModel.FocusRuleId is not null)
+                    {
+                        FocusRequestedRule();
+                    }
+                    else if (AddRuleButton.IsEffectivelyVisible)
+                    {
+                        AddRuleButton.Focus(NavigationMethod.Tab);
+                    }
+                    else
+                    {
+                        FocusFirst();
+                    }
+                },
+                DispatcherPriority.Loaded);
+        }
+    }
+
+    /// <summary>"Discard your changes?" takes the keyboard to Discard; answering it returns to Cancel.</summary>
+    private void OnEditorPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(DateRuleEditorViewModel.IsConfirmingDiscard) && _editor is { } editor)
+        {
+            var target = editor.IsConfirmingDiscard ? "DiscardButton" : "EditorCancelButton";
+            Dispatcher.UIThread.Post(() => FocusInEditor(target), DispatcherPriority.Loaded);
+        }
+    }
+
+    private void FocusInEditor(string name)
+    {
+        TopLevel.GetTopLevel(this)?.UpdateLayout();
+        if (RuleEditor.FindControl<Control>(name) is { } control)
+        {
+            control.Focus(NavigationMethod.Tab);
         }
     }
 }

@@ -101,6 +101,22 @@ internal static class SelfTest
 
                 var dialog = new DateRulesDialog { DataContext = rules };
                 dialog.Measure(new Avalonia.Size(980, 720));
+
+                // The rule editor: its template, blocks, validation and tester.
+                rules.AddRuleCommand.Execute(null);
+                if (rules.Editor is not { } editor)
+                {
+                    return 5; // rule editor cannot be opened
+                }
+
+                editor.PatternsText = "IMG-{YYYY}{MM}{DD}-WA*";
+                editor.Sample = "IMG-20240714-WA0001.jpg";
+                if (!editor.IsValid || editor.SampleKind != RuleSampleKind.Match)
+                {
+                    return 5; // rule editor cannot validate or test a pattern
+                }
+
+                dialog.Measure(new Avalonia.Size(980, 720));
             }
 
             // Exercises the metadata parser (any file works; a non-image yields "no metadata").

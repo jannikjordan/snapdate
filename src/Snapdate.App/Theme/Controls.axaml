@@ -570,6 +570,56 @@
   <Style Selector="Grid.testResult.none PathIcon">
     <Setter Property="Foreground" Value="{DynamicResource SdDangerBrush}" />
   </Style>
+  <!-- Rule editor: name, multi-line pattern box, per-line problems, Discard -->
+  <Style Selector="TextBox.ruleName">
+    <Setter Property="CornerRadius" Value="{StaticResource SdRadiusMedium}" />
+    <Setter Property="Background" Value="{DynamicResource SdSurfaceBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource SdBorderBrush}" />
+    <Setter Property="MinHeight" Value="36" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
+  </Style>
+  <Style Selector="TextBox.rulePatterns">
+    <Setter Property="FontFamily" Value="{StaticResource SdMonoFont}" />
+    <Setter Property="FontSize" Value="13" />
+    <Setter Property="CornerRadius" Value="{StaticResource SdRadiusMedium}" />
+    <Setter Property="BorderThickness" Value="2" />
+    <Setter Property="BorderBrush" Value="{DynamicResource SdBorderBrush}" />
+    <Setter Property="Background" Value="{DynamicResource SdSurfaceBrush}" />
+    <Setter Property="Padding" Value="10,8" />
+    <Setter Property="Height" Value="104" />
+    <Setter Property="VerticalContentAlignment" Value="Top" />
+    <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
+    <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto" />
+  </Style>
+  <Style Selector="TextBox.rulePatterns:focus /template/ Border#PART_BorderElement">
+    <Setter Property="BorderBrush" Value="{DynamicResource SdPrimaryBrush}" />
+    <Setter Property="BorderThickness" Value="2" />
+    <Setter Property="Background" Value="{DynamicResource SdSurfaceBrush}" />
+  </Style>
+  <Style Selector="TextBox.rulePatterns.invalid /template/ Border#PART_BorderElement">
+    <Setter Property="BorderBrush" Value="{DynamicResource SdDangerBrush}" />
+  </Style>
+  <Style Selector="Grid.ruleProblem">
+    <Setter Property="Margin" Value="0,0,0,4" />
+  </Style>
+  <Style Selector="Grid.ruleProblem PathIcon">
+    <Setter Property="Width" Value="14" />
+    <Setter Property="Height" Value="14" />
+    <Setter Property="Margin" Value="0,2,8,0" />
+    <Setter Property="VerticalAlignment" Value="Top" />
+    <Setter Property="Foreground" Value="{DynamicResource SdDangerBrush}" />
+  </Style>
+  <Style Selector="Grid.ruleProblem > TextBlock">
+    <Setter Property="Foreground" Value="{DynamicResource SdDangerBrush}" />
+    <Setter Property="FontSize" Value="12" />
+  </Style>
+  <Style Selector="Button.secondary.danger">
+    <Setter Property="Foreground" Value="{DynamicResource SdDangerBrush}" />
+  </Style>
+  <Style Selector="Button.secondary.danger:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Foreground" Value="{DynamicResource SdDangerBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource SdDangerBrush}" />
+  </Style>
 
   <!-- Drop target highlight -->
   <Style Selector="Button.folderRow.dragover /template/ ContentPresenter#PART_ContentPresenter">

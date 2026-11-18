@@ -197,4 +197,46 @@ TesterMatch	Rule "{0}": {1}	Regel „{0}“: {1}
 TesterMatchOff	Rule "{0}": {1} (rule is switched off)	Regel „{0}“: {1} (Regel ist ausgeschaltet)
 TesterNoMatch	No rule matches	Keine Regel passt
 TesterDateTime	{0}, {1}	{0}, {1} Uhr
+TesterCreateRule	Create a rule from this name	Regel aus diesem Namen erstellen
+TesterCreateRuleTip	Opens a new rule with a pattern for names like this one. You can change it before saving.	Öffnet eine neue Regel mit einem Muster für Namen wie diesen. Sie können es vor dem Speichern ändern.
+RuleNewTitle	New rule	Neue Regel
+RuleEditTitle	Edit rule	Regel bearbeiten
+RuleEditorIntro	Describe how your file names look. Snapdate tries the patterns from top to bottom and reads the date with the first one that fits the whole name (without the extension).	Beschreiben Sie, wie Ihre Dateinamen aussehen. Snapdate probiert die Muster von oben nach unten aus und liest das Datum mit dem ersten, das zum ganzen Namen passt (ohne Dateiendung).
+RuleNameLabel	Name	Name
+RuleDefaultName	My rule	Meine Regel
+RulePatternsLabel	Patterns (one per line, up to {0})	Muster (eins pro Zeile, bis zu {0})
+RulePatternsHint	Click a block to insert it at the cursor. * stands for any text. Everything else must be in the name exactly like this; upper and lower case do not matter.	Klicken Sie auf einen Baustein, um ihn an der Cursorposition einzufügen. * steht für beliebigen Text. Alles andere muss genau so im Namen stehen; Groß- und Kleinschreibung spielen keine Rolle.
+RuleChipsName	Blocks to insert	Bausteine zum Einfügen
+TokAnyText	any text *	beliebiger Text *
+TokAnyTextTip	* = any text, also none	* = beliebiger Text, auch keiner
+RuleSave	Save rule	Regel speichern
+RuleDiscardQuestion	Discard your changes?	Änderungen verwerfen?
+RuleDiscard	Discard	Verwerfen
+RuleKeepEditing	Keep editing	Weiter bearbeiten
+RulePatternsOk	All patterns can be used.	Alle Muster können verwendet werden.
+RuleProblemLine	Line {0}: {1}	Zeile {0}: {1}
+RuleNoPatterns	Type at least one pattern, for example IMG-{{YYYY}}{{MM}}{{DD}}-WA*	Geben Sie mindestens ein Muster ein, zum Beispiel IMG-{{YYYY}}{{MM}}{{DD}}-WA*
+RuleTooManyPatterns	A rule can have at most {0} patterns. Please remove {1}.	Eine Regel kann höchstens {0} Muster haben. Bitte entfernen Sie {1}.
+RuleNameTooLong	The name can be at most {0} characters long.	Der Name darf höchstens {0} Zeichen lang sein.
+PatErrEmpty	This line is empty.	Diese Zeile ist leer.
+PatErrTooLong	This pattern is too long (at most {0} characters).	Dieses Muster ist zu lang (höchstens {0} Zeichen).
+PatErrUnclosedBrace	There is a “{{” without a closing “}}”.	Zu einer „{{“ fehlt die schließende „}}“.
+PatErrClosingBrace	There is a “}}” without an opening “{{”. To use a brace as text, type it twice: }}}}	Es gibt eine „}}“ ohne öffnende „{{“. Um eine Klammer als Text zu verwenden, tippen Sie sie zweimal: }}}}
+PatErrUnknownToken	“{{{0}}}” is not a block Snapdate knows. Use the blocks below, such as {{YYYY}}.	„{{{0}}}“ ist kein Baustein, den Snapdate kennt. Verwenden Sie die Bausteine unten, zum Beispiel {{YYYY}}.
+PatErrUnsupportedToken	“{{{0}}}” cannot be read from a file name. Use number blocks such as {{MM}} for the month.	„{{{0}}}“ lässt sich nicht aus einem Dateinamen lesen. Verwenden Sie Zahlen-Bausteine wie {{MM}} für den Monat.
+PatErrDuplicateToken	“{{{0}}}” repeats a part of the date that is already in the pattern. Each part may appear only once.	„{{{0}}}“ wiederholt einen Teil des Datums, der schon im Muster steht. Jeder Teil darf nur einmal vorkommen.
+PatErrMissingYear	The pattern needs a year: {{YYYY}} or {{YY}}.	Das Muster braucht ein Jahr: {{YYYY}} oder {{YY}}.
+PatErrMissingMonth	The pattern needs a month: {{MM}} or {{M}}.	Das Muster braucht einen Monat: {{MM}} oder {{M}}.
+PatErrMissingDay	The pattern needs a day: {{DD}} or {{D}}.	Das Muster braucht einen Tag: {{DD}} oder {{D}}.
+PatErrHourWithoutMinute	An hour also needs minutes: add {{mm}}.	Zur Stunde gehören auch Minuten: Fügen Sie {{mm}} hinzu.
+PatErrMinuteWithoutHour	Minutes also need an hour: add {{HH}}.	Zu Minuten gehört auch eine Stunde: Fügen Sie {{HH}} hinzu.
+PatErrSecondWithoutMinute	Seconds also need minutes: add {{mm}}.	Zu Sekunden gehören auch Minuten: Fügen Sie {{mm}} hinzu.
+PatErrAmbiguous	The digits around “{{{0}}}” could be read in more than one way. Put a separator such as - or _ between the parts, or use two-digit blocks like {{MM}} and {{DD}}, and do not put * or ? right next to them.	Die Ziffern um „{{{0}}}“ lassen sich auf mehr als eine Weise lesen. Setzen Sie ein Trennzeichen wie - oder _ zwischen die Teile oder verwenden Sie zweistellige Bausteine wie {{MM}} und {{DD}}, und setzen Sie * oder ? nicht direkt daneben.
+PatErrInvalid	This pattern cannot be used. Please check it.	Dieses Muster kann nicht verwendet werden. Bitte prüfen Sie es.
+RuleSampleEmpty	Type a file name to try your patterns.	Geben Sie einen Dateinamen ein, um Ihre Muster auszuprobieren.
+RuleSampleNoPatterns	Type a valid pattern first, then try a file name.	Geben Sie zuerst ein gültiges Muster ein und probieren Sie dann einen Dateinamen aus.
+RuleSampleMatch	Matches line {0} → {1}	Passt zu Zeile {0} → {1}
+RuleSampleInvalid	Line {0} matches, but {1} is not a valid date.	Zeile {0} passt, aber {1} ist kein gültiges Datum.
+RuleSampleImplausible	Line {0} matches, but {1} is before 1900 or in the future.	Zeile {0} passt, aber {1} liegt vor 1900 oder in der Zukunft.
+RuleSampleNoMatch	No pattern matches this name.	Kein Muster passt zu diesem Namen.
 TipRulesHint	The rules are under "Dates from file names" above the list.	Die Regeln finden Sie unter „Datum aus Dateinamen“ über der Liste.

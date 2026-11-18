@@ -89,8 +89,9 @@ public sealed class DateRulesDialogTests(HeadlessSession headless)
         Assert.False(dialog.Items[1].CanDelete);
         Assert.Equal(toggle, dialog.Items[1].ToggleName);
         Assert.All(dialog.Items, i => Assert.True(i.IsEnabled));
-        Assert.All(dialog.Items, i => Assert.False(i.CanEdit));
-        Assert.False(dialog.CanAdd);
+        Assert.True(dialog.Items[0].CanEdit);
+        Assert.All(dialog.Items.Skip(1), i => Assert.False(i.CanEdit));
+        Assert.True(dialog.CanAdd);
         Assert.Contains("IMG-{YYYY}{MM}{DD}-WA*", dialog.Items[1].PatternsText, StringComparison.Ordinal);
         Assert.False(dialog.HasStatus);
     }
@@ -441,7 +442,8 @@ public sealed class DateRulesDialogTests(HeadlessSession headless)
 
         Assert.Equal(Strings().Get(message), dialog.StatusText);
         Assert.False(dialog.CanChange);
-        Assert.All(dialog.Items, i => Assert.False(i.CanChange || i.CanDuplicate || i.CanDelete));
+        Assert.All(dialog.Items, i => Assert.False(i.CanChange || i.CanDuplicate || i.CanDelete || i.CanEdit));
+        Assert.False(dialog.CanAdd);
 
         dialog.Items[0].IsEnabled = false;
 
