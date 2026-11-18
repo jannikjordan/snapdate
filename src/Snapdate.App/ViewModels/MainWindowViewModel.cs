@@ -49,7 +49,7 @@ public sealed partial class MainWindowViewModel : ObservableObject
     private readonly BuildPlanUseCase _planner;
     private readonly ExecutePlanUseCase _executor;
 
-    private readonly DateRuleSet _dateRuleSet;
+    private DateRuleSet _dateRuleSet;
     private List<ScannedPhoto> _photos = [];
     private RenamePlan? _plan;
     private List<PreviewItemViewModel> _allItems = [];
@@ -63,9 +63,6 @@ public sealed partial class MainWindowViewModel : ObservableObject
     public MainWindowViewModel(AppServices services, CultureInfo systemUiCulture)
     {
         _services = services;
-        // Built once; every scan uses its rule set. Without a store no dates are read from file names.
-        DateRules = services.DateRules is null ? null : DateRuleCatalog.Load(services.DateRules);
-        _dateRuleSet = DateRules?.ToRuleSet() ?? DateRuleSet.Empty;
         _planner = new BuildPlanUseCase(services.FileSystem);
         _executor = new ExecutePlanUseCase(services.FileSystem, services.Clock);
 
@@ -84,6 +81,16 @@ public sealed partial class MainWindowViewModel : ObservableObject
 
         Update = new UpdateViewModel(services, L);
 
+        // Every scan uses this rule set; the dialog replaces it after a change. Without a store no dates are read
+        // from file names and there is no dialog.
+        if (services.DateRules is not null)
+        {
+            RulesDialog = new DateRulesViewModel(services.DateRules, L, services.Clock);
+            RulesDialog.Closed += (_, changed) => OnRulesDialogClosed(changed);
+        }
+
+        _dateRuleSet = RulesDialog?.RuleSet ?? DateRuleSet.Empty;
+
         _initializing = false;
         if (SourceFolder is not null)
         {
@@ -96,7 +103,13 @@ public sealed partial class MainWindowViewModel : ObservableObject
     }
 
     /// <summary>The user's and the built-in file-name date rules; null when no rule store is wired.</summary>
-    public DateRuleCatalog? DateRules { get; }
+    public DateRuleCatalog? DateRules => RulesDialog?.Catalog;
+
+    /// <summary>The "Dates from file names" dialog; null when no rule store is wired.</summary>
+    public DateRulesViewModel? RulesDialog { get; }
+
+    /// <summary>The link to the rules dialog is shown when there is a rule store.</summary>
+    public bool HasRulesDialog => RulesDialog is not null;
 
     /// <summary>Completes when the most recent folder scan has finished (used by tests and tools).</summary>
     public Task ScanCompletion { get; private set; } = Task.CompletedTask;
@@ -447,6 +460,46 @@ public sealed partial class MainWindowViewModel : ObservableObject
     [RelayCommand]
     private void ToggleAbout() => IsAboutOpen = !IsAboutOpen;
 
+    /// <summary>Opens "Dates from file names"; the tester offers names from the folder, those with a file date first.</summary>
+    [RelayCommand]
+    private void OpenDateRules()
+    {
+        if (RulesDialog is null || !CanEdit)
+        {
+            return;
+        }
+
+        var names = _photos
+            .OrderBy(photo => IsFromFileTimestamp(photo.Date) ? 0 : 1)
+            .Select(photo => photo.OriginalName + photo.Extension)
+            .Take(DateRulesViewModel.MaxSampleNames * 2);
+        RulesDialog.Open(names);
+    }
+
+    /// <summary>After a change the folder is scanned again with the new rules (once, when the dialog closes).</summary>
+    private void OnRulesDialogClosed(bool changed)
+    {
+        if (!changed || RulesDialog is null)
+        {
+            return;
+        }
+
+        _dateRuleSet = RulesDialog.RuleSet;
+        if (SourceFolder is null || Phase == Phase.Running)
+        {
+            return;
+        }
+
+        if (Phase == Phase.Done)
+        {
+            _result = null;
+            OnPropertyChanged(nameof(HasLog));
+            Phase = Phase.Setup;
+        }
+
+        StartScan();
+    }
+
     /// <summary>Called when the window closes: cancels a running update check.</summary>
     public void Shutdown()
     {
@@ -482,6 +535,7 @@ public sealed partial class MainWindowViewModel : ObservableObject
 
         Pattern.UpdateStrings(L);
         Update.UpdateStrings(L);
+        RulesDialog?.UpdateStrings(L);
         OnPropertyChanged(nameof(SourceDisplay));
         OnPropertyChanged(nameof(TargetDisplay));
         OnPropertyChanged(nameof(ScanCountText));

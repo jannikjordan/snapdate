@@ -470,6 +470,107 @@
     <Setter Property="BoxShadow" Value="0 24 64 0 #40100C24" />
   </Style>
 
+  <!-- Wide dialog ("Dates from file names", §5.8): never taller than the window, its list scrolls -->
+  <Style Selector="Border.dialog.wide">
+    <Setter Property="Width" Value="720" />
+    <Setter Property="Padding" Value="24" />
+    <Setter Property="Margin" Value="0,24" />
+  </Style>
+  <!-- Notice strip inside a dialog: warning icon + text (never colour alone) -->
+  <Style Selector="Border.notice">
+    <Setter Property="Background" Value="{DynamicResource SdWarningSoftBrush}" />
+    <Setter Property="CornerRadius" Value="{StaticResource SdRadiusMedium}" />
+    <Setter Property="Padding" Value="12,8" />
+    <Setter Property="Margin" Value="0,0,0,12" />
+  </Style>
+  <Style Selector="Border.notice PathIcon">
+    <Setter Property="Width" Value="15" />
+    <Setter Property="Height" Value="15" />
+    <Setter Property="Margin" Value="0,2,10,0" />
+    <Setter Property="VerticalAlignment" Value="Top" />
+    <Setter Property="Foreground" Value="{DynamicResource SdWarningBrush}" />
+  </Style>
+  <!-- A rule row -->
+  <Style Selector="Border.ruleRow">
+    <Setter Property="Background" Value="{DynamicResource SdSurfaceBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource SdBorderBrush}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="CornerRadius" Value="{StaticResource SdRadiusMedium}" />
+    <Setter Property="Padding" Value="12,8" />
+  </Style>
+  <Style Selector="ToggleSwitch.rule">
+    <Setter Property="OnContent" Value="{x:Null}" />
+    <Setter Property="OffContent" Value="{x:Null}" />
+    <Setter Property="MinWidth" Value="0" />
+  </Style>
+  <!-- "Built-in" source badge: neutral, the user's own rules use badge.info -->
+  <Style Selector="Border.badge.neutral">
+    <Setter Property="Background" Value="{DynamicResource SdSurface2Brush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource SdBorderBrush}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="Padding" Value="7,1" />
+  </Style>
+  <Style Selector="Border.badge.neutral > TextBlock">
+    <Setter Property="Foreground" Value="{DynamicResource SdTextBrush}" />
+  </Style>
+  <Style Selector="Button.link.danger">
+    <Setter Property="Foreground" Value="{DynamicResource SdDangerBrush}" />
+  </Style>
+  <Style Selector="Button.link.danger:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Foreground" Value="{DynamicResource SdDangerBrush}" />
+  </Style>
+  <!-- Tester: name field, picker and live result -->
+  <Style Selector="Border.tester">
+    <Setter Property="Background" Value="{DynamicResource SdSurface2Brush}" />
+    <Setter Property="CornerRadius" Value="{StaticResource SdRadiusMedium}" />
+    <Setter Property="Padding" Value="12,10" />
+  </Style>
+  <Style Selector="TextBox.tester">
+    <Setter Property="FontFamily" Value="{StaticResource SdMonoFont}" />
+    <Setter Property="FontSize" Value="12.5" />
+    <Setter Property="CornerRadius" Value="{StaticResource SdRadiusMedium}" />
+    <Setter Property="Background" Value="{DynamicResource SdSurfaceBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource SdBorderBrush}" />
+    <Setter Property="MinHeight" Value="36" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
+  </Style>
+  <Style Selector="ComboBox.tester">
+    <Setter Property="CornerRadius" Value="{StaticResource SdRadiusMedium}" />
+    <Setter Property="Background" Value="{DynamicResource SdSurfaceBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource SdBorderBrush}" />
+    <Setter Property="MinHeight" Value="36" />
+    <Setter Property="VerticalAlignment" Value="Stretch" />
+  </Style>
+  <Style Selector="Grid.testResult">
+    <Setter Property="MinHeight" Value="20" />
+  </Style>
+  <Style Selector="Grid.testResult PathIcon">
+    <Setter Property="Width" Value="14" />
+    <Setter Property="Height" Value="14" />
+    <Setter Property="VerticalAlignment" Value="Center" />
+  </Style>
+  <Style Selector="Grid.testResult > TextBlock">
+    <Setter Property="VerticalAlignment" Value="Center" />
+    <Setter Property="Foreground" Value="{DynamicResource SdMutedBrush}" />
+  </Style>
+  <Style Selector="Grid.testResult.match PathIcon">
+    <Setter Property="Foreground" Value="{DynamicResource SdSuccessBrush}" />
+  </Style>
+  <Style Selector="Grid.testResult.match > TextBlock">
+    <Setter Property="Foreground" Value="{DynamicResource SdSuccessBrush}" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+  </Style>
+  <Style Selector="Grid.testResult.off PathIcon">
+    <Setter Property="Foreground" Value="{DynamicResource SdWarningBrush}" />
+  </Style>
+  <Style Selector="Grid.testResult.off > TextBlock">
+    <Setter Property="Foreground" Value="{DynamicResource SdWarningBrush}" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+  </Style>
+  <Style Selector="Grid.testResult.none PathIcon">
+    <Setter Property="Foreground" Value="{DynamicResource SdDangerBrush}" />
+  </Style>
+
   <!-- Drop target highlight -->
   <Style Selector="Button.folderRow.dragover /template/ ContentPresenter#PART_ContentPresenter">
     <Setter Property="BorderBrush" Value="{DynamicResource SdPrimaryBrush}" />

@@ -163,4 +163,43 @@
   <data name="UpdateFailedMissing" xml:space="preserve"><value>Diese Version hat kein Installationsprogramm für Ihren PC. Bitte laden Sie sie von der Download-Seite.</value></data>
   <data name="UpdateFailedStart" xml:space="preserve"><value>Das Installationsprogramm konnte nicht gestartet werden. Bitte laden Sie die neue Version von der Download-Seite.</value></data>
   <data name="UpdateFailedInstaller" xml:space="preserve"><value>Die Installation wurde abgebrochen. Es wurde nichts verändert.</value></data>
+  <data name="RulesLink" xml:space="preserve"><value>Datum aus Dateinamen</value></data>
+  <data name="RulesLinkTip" xml:space="preserve"><value>Regeln ansehen und schalten, mit denen Snapdate Daten aus Dateinamen liest, und einen Dateinamen ausprobieren.</value></data>
+  <data name="RulesTitle" xml:space="preserve"><value>Datum aus Dateinamen</value></data>
+  <data name="RulesIntro" xml:space="preserve"><value>Hat ein Foto kein Datum von einer Kamera, liest Snapdate es mit der ersten passenden Regel aus dem Dateinamen (Ihre eigenen Regeln zuerst). Hinweis: Das Datum im Namen ist oft der Tag, an dem das Bild empfangen wurde, nicht der Aufnahmetag.</value></data>
+  <data name="RulesListName" xml:space="preserve"><value>Regeln</value></data>
+  <data name="RulesSourceSystem" xml:space="preserve"><value>Mitgeliefert</value></data>
+  <data name="RulesSourceCustom" xml:space="preserve"><value>Eigene</value></data>
+  <data name="RulesSourceSystemTip" xml:space="preserve"><value>Kommt mit Snapdate. Sie können sie ausschalten oder duplizieren, um eine eigene Version zu erstellen.</value></data>
+  <data name="RulesSourceCustomTip" xml:space="preserve"><value>Ihre eigene Regel. Sie wird vor den mitgelieferten Regeln geprüft und von Updates nie verändert.</value></data>
+  <data name="RuleToggleName" xml:space="preserve"><value>{0} ein/aus</value></data>
+  <data name="RuleDuplicate" xml:space="preserve"><value>Duplizieren</value></data>
+  <data name="RuleDuplicateName" xml:space="preserve"><value>{0} duplizieren</value></data>
+  <data name="RuleCopyName" xml:space="preserve"><value>{0} (Kopie)</value></data>
+  <data name="RuleDelete" xml:space="preserve"><value>Löschen</value></data>
+  <data name="RuleDeleteName" xml:space="preserve"><value>{0} löschen</value></data>
+  <data name="RuleDeleteQuestion" xml:space="preserve"><value>Diese Regel löschen?</value></data>
+  <data name="RuleEdit" xml:space="preserve"><value>Bearbeiten</value></data>
+  <data name="RuleEditName" xml:space="preserve"><value>{0} bearbeiten</value></data>
+  <data name="RulesAdd" xml:space="preserve"><value>Regel hinzufügen</value></data>
+  <data name="RulePatternsName" xml:space="preserve"><value>Muster: {0}</value></data>
+  <data name="RuleSyntaxUnsupported" xml:space="preserve"><value>Diese Regel ist als „{0}“ geschrieben, was diese Snapdate-Version noch nicht verwenden kann. Sie bleibt erhalten, wird aber nicht verwendet.</value></data>
+  <data name="RulesUnreadable" xml:space="preserve"><value>Ihre eigenen Regeln konnten nicht gelesen werden. Die mitgelieferten Regeln funktionieren weiter. Beim Speichern wird eine Kopie der alten Datei behalten.</value></data>
+  <data name="RulesNewerVersion" xml:space="preserve"><value>Ihre Regeln wurden von einer neueren Snapdate-Version gespeichert. Sie können sie hier ansehen, aber nicht ändern.</value></data>
+  <data name="RulesInaccessible" xml:space="preserve"><value>Die Datei mit Ihren Regeln konnte nicht geöffnet werden, daher lassen sich die Regeln gerade nicht ändern. Bitte versuchen Sie es später erneut.</value></data>
+  <data name="RulesConflict" xml:space="preserve"><value>Ihre Regeln wurden an anderer Stelle geändert (zum Beispiel in einem anderen Snapdate-Fenster). Die Liste wurde neu geladen; bitte nehmen Sie Ihre Änderung erneut vor.</value></data>
+  <data name="RulesSaveFailed" xml:space="preserve"><value>Ihre Änderung konnte nicht gespeichert werden und wurde daher zurückgenommen. Bitte versuchen Sie es später erneut.</value></data>
+  <data name="RulesTooLarge" xml:space="preserve"><value>Ihre Änderung konnte nicht gespeichert werden, weil die Regeln zu groß würden. Sie wurde zurückgenommen.</value></data>
+  <data name="RulesReadOnly" xml:space="preserve"><value>Ihre Regeln können gerade nicht geändert werden.</value></data>
+  <data name="RulesFull" xml:space="preserve"><value>Sie haben bereits die höchstmögliche Zahl von {0} eigenen Regeln. Löschen Sie zuerst eine.</value></data>
+  <data name="TesterTitle" xml:space="preserve"><value>Dateinamen ausprobieren</value></data>
+  <data name="TesterPlaceholder" xml:space="preserve"><value>z. B. IMG-20240714-WA0001.jpg</value></data>
+  <data name="TesterPick" xml:space="preserve"><value>Datei aus dem Ordner wählen</value></data>
+  <data name="TesterPickName" xml:space="preserve"><value>Dateinamen aus dem gewählten Ordner</value></data>
+  <data name="TesterEmpty" xml:space="preserve"><value>Geben Sie einen Dateinamen ein, um zu sehen, welche Regel das Datum liest.</value></data>
+  <data name="TesterMatch" xml:space="preserve"><value>Regel „{0}“: {1}</value></data>
+  <data name="TesterMatchOff" xml:space="preserve"><value>Regel „{0}“: {1} (Regel ist ausgeschaltet)</value></data>
+  <data name="TesterNoMatch" xml:space="preserve"><value>Keine Regel passt</value></data>
+  <data name="TesterDateTime" xml:space="preserve"><value>{0}, {1} Uhr</value></data>
+  <data name="TipRulesHint" xml:space="preserve"><value>Die Regeln finden Sie unter „Datum aus Dateinamen“ über der Liste.</value></data>
 </root>

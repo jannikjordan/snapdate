@@ -38,13 +38,14 @@ public sealed partial class PreviewItemViewModel : ObservableObject
             BadgeKind.FileDate => l.BadgeFile,
             _ => l.BadgeRenamed,
         };
+        // "Date from name" and "File date" point to the rules dialog (link in the preview header).
         BadgeTip = Badge switch
         {
             BadgeKind.Camera => l.TipCamera,
-            BadgeKind.FileName => resolved.RuleName is { } rule
+            BadgeKind.FileName => (resolved.RuleName is { } rule
                 ? l.Format(nameof(LocalizedStrings.TipFileNameRule), rule)
-                : l.TipFileName,
-            BadgeKind.FileDate => l.TipFile,
+                : l.TipFileName) + " " + l.TipRulesHint,
+            BadgeKind.FileDate => l.TipFile + " " + l.TipRulesHint,
             _ => l.TipRenamed,
         };
         IsVideo = SupportedFormats.Videos.Contains(item.Photo.Extension);

@@ -199,6 +199,14 @@ internal static class ScreenshotRenderer
                         Wait(vm.Update.UpdateNowCommand.ExecuteAsync(null));
                     }, update: new UpdateShot(NewerVersion: true, Installer: new ScriptedInstaller(UpdateInstallResult.InstallerFailed)));
                     Shoot(dir, $"13-first-start-notice-{suffix}", ci, thumbnails, ArrangePreview, update: new UpdateShot(NoticeShown: false));
+                    Shoot(dir, $"17-date-rules-{suffix}", ci, thumbnails, vm =>
+                    {
+                        // "Dates from file names" with the tester showing a WhatsApp picture from the folder.
+                        ArrangePreview(vm);
+                        vm.OpenDateRulesCommand.Execute(null);
+                        var rules = vm.RulesDialog!;
+                        rules.SelectedSample = rules.SampleNames.First(n => n.StartsWith("WhatsApp", StringComparison.Ordinal));
+                    });
                 }
 
                 Avalonia.Application.Current!.RequestedThemeVariant = ThemeVariant.Light;

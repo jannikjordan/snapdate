@@ -332,6 +332,84 @@ public sealed class LocalizedStrings(CultureInfo culture)
 
     public string UpdateFailedInstaller => Get(nameof(UpdateFailedInstaller));
 
+    public string RulesLink => Get(nameof(RulesLink));
+
+    public string RulesLinkTip => Get(nameof(RulesLinkTip));
+
+    public string RulesTitle => Get(nameof(RulesTitle));
+
+    public string RulesIntro => Get(nameof(RulesIntro));
+
+    public string RulesListName => Get(nameof(RulesListName));
+
+    public string RulesSourceSystem => Get(nameof(RulesSourceSystem));
+
+    public string RulesSourceCustom => Get(nameof(RulesSourceCustom));
+
+    public string RulesSourceSystemTip => Get(nameof(RulesSourceSystemTip));
+
+    public string RulesSourceCustomTip => Get(nameof(RulesSourceCustomTip));
+
+    public string RuleToggleName => Get(nameof(RuleToggleName));
+
+    public string RuleDuplicate => Get(nameof(RuleDuplicate));
+
+    public string RuleDuplicateName => Get(nameof(RuleDuplicateName));
+
+    public string RuleCopyName => Get(nameof(RuleCopyName));
+
+    public string RuleDelete => Get(nameof(RuleDelete));
+
+    public string RuleDeleteName => Get(nameof(RuleDeleteName));
+
+    public string RuleDeleteQuestion => Get(nameof(RuleDeleteQuestion));
+
+    public string RuleEdit => Get(nameof(RuleEdit));
+
+    public string RuleEditName => Get(nameof(RuleEditName));
+
+    public string RulesAdd => Get(nameof(RulesAdd));
+
+    public string RulePatternsName => Get(nameof(RulePatternsName));
+
+    public string RuleSyntaxUnsupported => Get(nameof(RuleSyntaxUnsupported));
+
+    public string RulesUnreadable => Get(nameof(RulesUnreadable));
+
+    public string RulesNewerVersion => Get(nameof(RulesNewerVersion));
+
+    public string RulesInaccessible => Get(nameof(RulesInaccessible));
+
+    public string RulesConflict => Get(nameof(RulesConflict));
+
+    public string RulesSaveFailed => Get(nameof(RulesSaveFailed));
+
+    public string RulesTooLarge => Get(nameof(RulesTooLarge));
+
+    public string RulesReadOnly => Get(nameof(RulesReadOnly));
+
+    public string RulesFull => Get(nameof(RulesFull));
+
+    public string TesterTitle => Get(nameof(TesterTitle));
+
+    public string TesterPlaceholder => Get(nameof(TesterPlaceholder));
+
+    public string TesterPick => Get(nameof(TesterPick));
+
+    public string TesterPickName => Get(nameof(TesterPickName));
+
+    public string TesterEmpty => Get(nameof(TesterEmpty));
+
+    public string TesterMatch => Get(nameof(TesterMatch));
+
+    public string TesterMatchOff => Get(nameof(TesterMatchOff));
+
+    public string TesterNoMatch => Get(nameof(TesterNoMatch));
+
+    public string TesterDateTime => Get(nameof(TesterDateTime));
+
+    public string TipRulesHint => Get(nameof(TipRulesHint));
+
     /// <summary>Looks up a key; falls back to the key itself so missing strings are visible, not fatal.</summary>
     public string Get(string key) => Resources.GetString(key, Culture) ?? key;
 
