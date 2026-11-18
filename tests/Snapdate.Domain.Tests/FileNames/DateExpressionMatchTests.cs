@@ -143,8 +143,9 @@ public sealed class DateExpressionMatchTests
     [Fact]
     public void A_timeout_counts_as_no_match()
     {
-        // The real expressions run with NonBacktracking and cannot be made slow enough on a 260-character name, so a
-        // classic catastrophic expression stands in to prove the timeout path.
+        // NonBacktracking checks its timeout only now and then (and not while it fills in the groups), so a slow
+        // NonBacktracking expression does not reliably time out; the structural limits keep accepted ones fast instead
+        // (MatchTimeTests). A classic catastrophic backtracking expression, which does time out, proves the timeout path.
         var slow = new Regex("^(?<year>(a+)+)$", RegexOptions.None, TimeSpan.FromMilliseconds(1));
         var expression = new DateExpression("slow", slow);
         var name = new string('a', 40) + "!";

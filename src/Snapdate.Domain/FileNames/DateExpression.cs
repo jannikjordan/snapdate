@@ -9,10 +9,13 @@ namespace Snapdate.Domain.FileNames;
 /// The expression must match the whole name.
 /// </summary>
 /// <remarks>
-/// The text is untrusted input. It is limited to <see cref="MaxLength"/> characters and counted repetitions to
-/// <see cref="MaxRepetition"/>, wrapped as <c>^(?:…)$</c> and compiled with the same options and timeout as token
-/// patterns (<c>NonBacktracking</c>: linear time, no backreferences or lookarounds). Every problem while building it
-/// becomes a <see cref="DatePatternError"/>; nothing throws. The captured values pass the same ASCII-digit, calendar and
+/// The text is untrusted input. It is limited to <see cref="MaxLength"/> characters, counted repetitions to
+/// <see cref="MaxRepetition"/>, and its structure to the limits of <see cref="ExpressionStructure"/> (no repeated group
+/// that repeats something itself; a budget for repetitions). It is then wrapped as <c>^(?:…)$</c> and compiled with the
+/// same options and timeout as token patterns (<c>NonBacktracking</c>: no backreferences or lookarounds, time linear in
+/// the name but with a factor that depends on the expression — which is what the structural limits keep small; the
+/// engine checks the timeout only now and then, so it is a last resort). Every problem while building it becomes a
+/// <see cref="DatePatternError"/>; nothing throws. The captured values pass the same ASCII-digit, calendar and
 /// plausibility checks as token patterns.
 /// </remarks>
 public sealed class DateExpression : IFileNameDateMatcher
@@ -20,8 +23,8 @@ public sealed class DateExpression : IFileNameDateMatcher
     /// <summary>Maximum expression length in characters.</summary>
     public const int MaxLength = 300;
 
-    /// <summary>Largest count allowed in <c>{n}</c>, <c>{n,}</c> and <c>{n,m}</c>.</summary>
-    public const int MaxRepetition = 100;
+    /// <summary>Largest count allowed in <c>{n}</c>, <c>{n,}</c> and <c>{n,m}</c>; dates need at most 4.</summary>
+    public const int MaxRepetition = 20;
 
     /// <summary>The group names an expression may use.</summary>
     public static IReadOnlyList<string> GroupNames { get; } =
@@ -82,6 +85,12 @@ public sealed class DateExpression : IFileNameDateMatcher
         if (alone is not null)
         {
             return DateExpressionParseResult.Failed(alone);
+        }
+
+        // Valid syntax, but it must also be simple enough to run fast (see ExpressionStructure).
+        if (ExpressionStructure.Check(text) is { } structure)
+        {
+            return DateExpressionParseResult.Failed(structure);
         }
 
         var (regex, wrapped) = Build("^(?:" + text + ")$");

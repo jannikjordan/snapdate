@@ -75,6 +75,10 @@ public sealed partial class DateRuleEditorViewModel : ObservableObject
     /// <summary>True for token patterns: the blocks and the pattern hint are shown.</summary>
     public bool IsPattern => !IsRegex;
 
+    /// <summary>The sentence under the title ("Snapdate tries the patterns …" or "… the expressions …").</summary>
+    [ObservableProperty]
+    public partial string Intro { get; private set; } = string.Empty;
+
     /// <summary>Help text under the box: the pattern hint, or how to write a regular expression.</summary>
     [ObservableProperty]
     public partial string PatternsHint { get; private set; } = string.Empty;
@@ -279,6 +283,7 @@ public sealed partial class DateRuleEditorViewModel : ObservableObject
             IsRegex ? nameof(LocalizedStrings.RuleRegexLabel) : nameof(LocalizedStrings.RulePatternsLabel),
             DateRule.MaxPatterns);
         PatternsHint = IsRegex ? _l.RuleRegexHint : _l.RulePatternsHint;
+        Intro = IsRegex ? _l.RuleRegexEditorIntro : _l.RuleEditorIntro;
     }
 
     partial void OnSampleChanged(string value)
@@ -307,7 +312,7 @@ public sealed partial class DateRuleEditorViewModel : ObservableObject
     {
         _lines = [.. (PatternsText ?? string.Empty)
             .Split('\n')
-            .Select((text, index) => Compile(index + 1, text.Trim()))];
+            .Select((text, index) => Compile(index + 1, Clean(text)))];
 
         Problems.Clear();
         var used = _lines.Where(line => line.Text.Length > 0).ToList();
@@ -406,6 +411,9 @@ public sealed partial class DateRuleEditorViewModel : ObservableObject
         DatePatternErrorKind.UnsupportedConstruct => _l.Format(nameof(LocalizedStrings.RxErrUnsupported)),
         DatePatternErrorKind.RepetitionTooLarge => _l.Format(nameof(LocalizedStrings.RxErrRepetition), error.Detail, DateExpression.MaxRepetition),
         DatePatternErrorKind.UnknownGroup => _l.Format(nameof(LocalizedStrings.RxErrUnknownGroup), error.Detail),
+        DatePatternErrorKind.NestedQuantifier => _l.Format(nameof(LocalizedStrings.RxErrNested), error.Detail),
+        DatePatternErrorKind.TooComplex => _l.Format(nameof(LocalizedStrings.RxErrTooComplex)),
+        DatePatternErrorKind.FreeSpacing => _l.Format(nameof(LocalizedStrings.RxErrFreeSpacing)),
         _ => _l.PatErrInvalid,
     };
 
@@ -447,8 +455,22 @@ public sealed partial class DateRuleEditorViewModel : ObservableObject
         }
     }
 
-    private static string Normalise(string text) =>
-        string.Join('\n', text.Split('\n').Select(line => line.Trim()).Where(line => line.Length > 0));
+    private string Normalise(string text) =>
+        string.Join('\n', text.Split('\n').Select(Clean).Where(line => line.Length > 0));
+
+    /// <summary>
+    /// One line as it is used: patterns are trimmed; a regular expression is kept as typed (a trailing <c>\ </c> or a
+    /// space can matter), only the <c>\r</c> of a Windows line break is dropped. Lines of only white space are blank.
+    /// </summary>
+    private string Clean(string line)
+    {
+        if (string.IsNullOrWhiteSpace(line))
+        {
+            return string.Empty;
+        }
+
+        return IsRegex ? line.TrimEnd('\r') : line.Trim();
+    }
 
     /// <summary>One line of the pattern box: its 1-based number, trimmed text and either an error or a tester.</summary>
     private sealed record Line(int Number, string Text, DatePatternError? Error, Func<string, DateTime, PatternCheck>? Check);

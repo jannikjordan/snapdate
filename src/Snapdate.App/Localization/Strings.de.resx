@@ -267,5 +267,9 @@
   <data name="RxErrHourWithoutMinute" xml:space="preserve"><value>Zur Gruppe für die Stunde gehört auch eine für die Minuten: Fügen Sie (?&lt;minute&gt;…) hinzu.</value></data>
   <data name="RxErrMinuteWithoutHour" xml:space="preserve"><value>Zur Gruppe für die Minuten gehört auch eine für die Stunde: Fügen Sie (?&lt;hour&gt;…) hinzu.</value></data>
   <data name="RxErrSecondWithoutMinute" xml:space="preserve"><value>Zur Gruppe für die Sekunden gehört auch eine für die Minuten: Fügen Sie (?&lt;minute&gt;…) hinzu.</value></data>
+  <data name="RuleRegexEditorIntro" xml:space="preserve"><value>Beschreiben Sie, wie Ihre Dateinamen aussehen. Snapdate probiert die Ausdrücke von oben nach unten aus und liest das Datum mit dem ersten, der zum ganzen Namen passt (ohne Dateiendung).</value></data>
+  <data name="RxErrNested" xml:space="preserve"><value>Die Wiederholung {0} wiederholt eine Gruppe, die selbst schon eine Wiederholung wie *, + oder ? enthält. Snapdate erlaubt das nicht, weil es den Vergleich sehr langsam machen kann. Schreiben Sie die Teile stattdessen nacheinander aus.</value></data>
+  <data name="RxErrTooComplex" xml:space="preserve"><value>Dieser Ausdruck ist zu komplex, um ihn sicher auszuführen. Verwenden Sie weniger Wiederholungen (*, +, ?, {{…}}), vor allem weniger * und +, und kleinere Zahlen in {{…}}.</value></data>
+  <data name="RxErrFreeSpacing" xml:space="preserve"><value>Die Option x (Leerzeichen ignorieren, #-Kommentare) wird nicht unterstützt. Entfernen Sie das x aus (?x) und schreiben Sie den Ausdruck ohne Kommentare.</value></data>
   <data name="TipRulesHint" xml:space="preserve"><value>Die Regeln finden Sie unter „Datum aus Dateinamen“ über der Liste.</value></data>
 </root>

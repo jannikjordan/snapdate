@@ -220,12 +220,14 @@ is never taller than the window; only the rule list scrolls). From top to bottom
   `danger` border while something is wrong) with a muted hint; `Button.chip` blocks Year, Month, Day, Hour, Minute,
   Second ({YYYY} {MM} {DD} {HH} {mm} {ss}) and "any text *" that insert at the caret; a `CheckBox` "Advanced: regular
   expressions"/"Erweitert: reguläre Ausdrücke" (off by default; tooltip and help text: the text is kept when switching).
-  When ticked, the label reads "Regular expressions (one per line, up to 10)", the blocks are hidden and the hint explains
+  When ticked, the intro says "expressions", the label reads "Regular expressions (one per line, up to 10)", lines are
+  kept as typed (not trimmed), the blocks are hidden and the hint explains
   the named groups (year or yy, month, day; hour, minute, second optional), followed by the example
   `^IMG-(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})-WA\d+$` (mono, muted 12; automation name "Example: …"). Switching keeps
   the text and validates it again in the other syntax; a switch counts as a change (Save, Discard question). Messages in
   regex mode name groups (`(?<month>…)`) instead of blocks and explain syntax errors with a character position,
-  unsupported constructs (back-references, look-arounds, atomic groups, conditions) and repetitions above 100; then the validation (Polite live
+  unsupported constructs (back-references, look-arounds, atomic groups, conditions), `(?x)`, repetitions above 20,
+  repeated groups that repeat something themselves and expressions over the complexity budget; then the validation (Polite live
   region): one `Grid.ruleProblem` per problem (`danger` warning icon + 12 px text "Line 2: …", one plain-language message
   per error kind, including how to fix ambiguous digits), or the check icon + `success` "All patterns can be used.";
   then its own tester (`Border.tester`, prefilled from the dialog tester, same picker), trying only this rule: ✓

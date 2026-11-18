@@ -78,4 +78,19 @@ public enum DatePatternErrorKind
     /// Regular expressions: a named group that is not a date part; <see cref="DatePatternError.Detail"/> is its name.
     /// </summary>
     UnknownGroup,
+
+    /// <summary>
+    /// Regular expressions: a group that contains a variable repetition is repeated again, e.g. <c>(?:.*a)+</c> or
+    /// <c>(\d+)?</c>; <see cref="DatePatternError.Detail"/> is the outer quantifier as written.
+    /// </summary>
+    NestedQuantifier,
+
+    /// <summary>
+    /// Regular expressions: too many repetitions, or too many unbounded ones (<c>* + {n,}</c>) combined with bounded
+    /// ones, to run safely (see <see cref="DateExpression"/>).
+    /// </summary>
+    TooComplex,
+
+    /// <summary>Regular expressions: the <c>x</c> option (white space ignored, <c>#</c> comments) is not supported.</summary>
+    FreeSpacing,
 }

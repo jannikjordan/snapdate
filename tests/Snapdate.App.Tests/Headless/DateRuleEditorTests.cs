@@ -111,7 +111,10 @@ public sealed class DateRuleEditorTests(HeadlessSession headless)
     [InlineData(@"(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})(?<counter>\d+)", "Line 1: The group “counter” is not a date part. Use year, yy, month, day, hour, minute or second, in lower case.")]
     [InlineData(@"(?<year>\d{4})(?<month>\d{2})(?<day>\d{2}", "Line 1: This is not a valid regular expression. Check the brackets and special characters around character 41.")]
     [InlineData(@"(?<=x)(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})", "Line 1: Snapdate cannot run this expression safely. Leave out back-references such as \\1, look-arounds such as (?=…) or (?<=…), atomic groups (?>…) and conditions (?(…)…), and keep repetitions small.")]
-    [InlineData(@"(?<year>\d{4})(?<month>\d{2})(?<day>\d{2}).{1,500}", "Line 1: The repetition {1,500} is too large. At most 100 repetitions are possible.")]
+    [InlineData(@"(?<year>\d{4})(?<month>\d{2})(?<day>\d{2}).{1,500}", "Line 1: The repetition {1,500} is too large. At most 20 repetitions are possible.")]
+    [InlineData(@"(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})(?:.*a.{0,20}){0,10}", "Line 1: The repetition {0,10} repeats a group that already contains a repetition such as *, + or ?. Snapdate does not allow this because it can make matching very slow. Write the parts out one after another instead.")]
+    [InlineData(@"(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})[a-z]*.{0,20}[a-z]*.{0,20}[a-z]*.{0,20}", "Line 1: This expression is too complex to run safely. Use fewer repetitions (*, +, ?, {…}), especially fewer * and +, and smaller counts in {…}.")]
+    [InlineData(@"(?x)(?<year>\d{4})(?<month>\d{2})(?<day>\d{2}) # date", "Line 1: The option x (ignore spaces, # comments) is not supported. Remove the x from (?x) and write the expression without comments.")]
     public void A_regular_expression_that_cannot_be_used_is_explained(string expression, string message)
     {
         var editor = NewRule(Dialog(new MemoryDateRuleStore()));
@@ -122,6 +125,50 @@ public sealed class DateRuleEditorTests(HeadlessSession headless)
         Assert.False(editor.IsValid);
         Assert.Equal([message], editor.Problems);
         Assert.False(editor.SaveCommand.CanExecute(null));
+    }
+
+    [Theory]
+    [InlineData("en-US", @"(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})(?:.*a.{0,99}){0,10}")]
+    [InlineData("de-DE", @"(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})(?:.*a.{0,99}){0,10}")]
+    [InlineData("en-US", @"(.*a.{0,99})?(.*a.{0,99})?(.*a.{0,99})?(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})")]
+    [InlineData("de-DE", @"(.*a.{0,99})?(.*a.{0,99})?(.*a.{0,99})?(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})")]
+    [InlineData("en-US", @"(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})(?:.*a.{0,99}){0,3}")]
+    [InlineData("de-DE", @"(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})(?:.*a.{0,99}){0,3}")]
+    [InlineData("en-US", @"(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})(?:a*b*a*){0,100}")]
+    [InlineData("de-DE", @"(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})(?:a*b*a*){0,100}")]
+    [InlineData("en-US", @"(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})(?:.*a.{0,20}){0,10}")]
+    [InlineData("de-DE", @"(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})(?:.*a.{0,20}){0,10}")]
+    public void Expressions_that_could_hang_are_explained_in_plain_words(string culture, string expression)
+    {
+        var editor = NewRule(Dialog(new MemoryDateRuleStore(), culture));
+        editor.IsRegex = true;
+        var generic = editor.Describe(new DatePatternError(DatePatternErrorKind.InvalidExpression, 0));
+
+        editor.PatternsText = expression;
+
+        Assert.False(editor.IsValid);
+        var problem = Assert.Single(editor.Problems);
+        Assert.DoesNotContain(generic, problem, StringComparison.Ordinal);
+        Assert.Contains(culture == "de-DE" ? "Wiederholung" : "repetition", problem, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Regular_expressions_are_kept_as_typed()
+    {
+        var store = new MemoryDateRuleStore();
+        var dialog = Dialog(store);
+        var editor = NewRule(dialog);
+        editor.IsRegex = true;
+        Assert.StartsWith("Describe how your file names look. Snapdate tries the expressions", editor.Intro, StringComparison.Ordinal);
+
+        // Trimmed, the trailing "\ " (an escaped space) would become a lone "\" and the expression invalid.
+        editor.PatternsText = "IMG (?<year>\\d{4})(?<month>\\d{2})(?<day>\\d{2})\\ \r\n   \r\n";
+        Assert.True(editor.IsValid, editor.ValidationText);
+        editor.SaveCommand.Execute(null);
+
+        Assert.Equal(["IMG (?<year>\\d{4})(?<month>\\d{2})(?<day>\\d{2})\\ "], store.User!.CustomRules.Single().Patterns);
+        dialog.TestName = "IMG 20240714 .jpg";
+        Assert.Equal("Rule \"My rule\": Sunday, July 14, 2024", dialog.TestResult);
     }
 
     [Fact]

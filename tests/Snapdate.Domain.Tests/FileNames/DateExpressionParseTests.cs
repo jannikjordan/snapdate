@@ -65,7 +65,7 @@ public sealed class DateExpressionParseTests
     [InlineData(@"(?(x)a|b)(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})", "conditional")]
     [InlineData(@"\G(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})", "contiguous match")]
     [InlineData(@"(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})(?<-year>x)", "balancing group")]
-    [InlineData(@"((((?<year>\d{4})(?<month>\d{2})(?<day>\d{2})){100}){100}){100}", "too complex overall")]
+    [InlineData(@"((((?<year>\d{4})(?<month>\d{2})(?<day>\d{2})){20}){20}){20}", "too complex overall")]
     public void Constructs_the_safe_matcher_cannot_run_are_an_error(string text, string construct)
     {
         var result = DateExpression.Parse(text);
@@ -118,9 +118,9 @@ public sealed class DateExpressionParseTests
     }
 
     [Theory]
-    [InlineData(@"(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})x{101}", "{101}")]
-    [InlineData(@"(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})x{1,101}", "{1,101}")]
-    [InlineData(@"(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})x{101,}", "{101,}")]
+    [InlineData(@"(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})x{21}", "{21}")]
+    [InlineData(@"(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})x{1,21}", "{1,21}")]
+    [InlineData(@"(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})x{21,}", "{21,}")]
     [InlineData(@"(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})x{2147483648}", "{2147483648}")]
     [InlineData(@"(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})x{99999999999999999999}", "{99999999999999999999}")]
     [InlineData(@"(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})\\{500}", "{500}")]
@@ -133,12 +133,12 @@ public sealed class DateExpressionParseTests
     }
 
     [Theory]
-    [InlineData(@"(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})x{100}")]
-    [InlineData(@"(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})x{0,100}")]
-    [InlineData(@"(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})x{100,}")]
+    [InlineData(@"(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})x{20}")]
+    [InlineData(@"(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})x{0,20}")]
+    [InlineData(@"(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})x{20,}")]
     [InlineData(@"(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})\{500}")]
     [InlineData(@"(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})\p{L}*")]
-    public void Repetitions_up_to_100_and_literal_braces_are_fine(string text)
+    public void Repetitions_up_to_20_and_literal_braces_are_fine(string text)
     {
         var result = DateExpression.Parse(text);
 
@@ -193,7 +193,10 @@ public sealed class DateExpressionParseTests
             Valid + "\n",
             Valid + "(",
             Valid + "(?=x)",
-            Valid + "x{101}",
+            Valid + "x{21}",
+            Valid + "(?:x*)+",
+            Valid + string.Concat(Enumerable.Repeat(".*", 9)),
+            "(?x)" + Valid,
             Valid + "(?<foo>x)",
             "(?<month>1)(?<day>1)",
             "(?<year>1)(?<day>1)",
@@ -216,6 +219,120 @@ public sealed class DateExpressionParseTests
             DatePatternErrorKind.AmbiguousNeighbours,
         ];
         Assert.Equal(Enum.GetValues<DatePatternErrorKind>().Except(patternOnly).ToHashSet(), seen);
+    }
+
+    [Theory]
+    [InlineData(@"(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})(?:.*a.{0,99}){0,10}", DatePatternErrorKind.RepetitionTooLarge)]
+    [InlineData(@"(.*a.{0,99})?(.*a.{0,99})?(.*a.{0,99})?(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})", DatePatternErrorKind.RepetitionTooLarge)]
+    [InlineData(@"(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})(?:.*a.{0,99}){0,3}", DatePatternErrorKind.RepetitionTooLarge)]
+    [InlineData(@"(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})(?:a*b*a*){0,100}", DatePatternErrorKind.RepetitionTooLarge)]
+    [InlineData(@"(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})(?:.*a.{0,20}){0,10}", DatePatternErrorKind.NestedQuantifier)]
+    [InlineData(@"(.*a.{0,9})?(.*a.{0,9})?(.*a.{0,9})?(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})", DatePatternErrorKind.NestedQuantifier)]
+    [InlineData(@"(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})(?:a*b*a*){0,20}", DatePatternErrorKind.NestedQuantifier)]
+    [InlineData(@"(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})[a-z]*.{0,20}[a-z]*.{0,20}[a-z]*.{0,20}", DatePatternErrorKind.TooComplex)]
+    public void Expressions_that_were_slow_are_rejected(string text, DatePatternErrorKind kind)
+    {
+        var result = DateExpression.Parse(text);
+
+        Assert.False(result.IsValid);
+        Assert.Equal(kind, result.Errors[0].Kind);
+    }
+
+    [Theory]
+    [InlineData(@"(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})(?:x\d+)+", "+")]
+    [InlineData(@"(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})(?:x\d?)*", "*")]
+    [InlineData(@"(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})(x.*)?", "?")]
+    [InlineData(@"(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})(x.*)??", "??")]
+    [InlineData(@"(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})(?:x\d{1,2}){2}", "{2}")]
+    [InlineData(@"(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})(?:x\d{1,2}){0,2}?", "{0,2}?")]
+    [InlineData(@"(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})(?:(?:x\d*))+", "+")]
+    [InlineData(@"(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})(?:a|b*)+", "+")]
+    [InlineData(@"(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})(?i:x*)+", "+")]
+    public void A_repeated_group_must_not_repeat_anything_itself(string text, string quantifier)
+    {
+        var error = AssertSingleError(text, DatePatternErrorKind.NestedQuantifier);
+
+        Assert.Equal(quantifier, error.Detail);
+        Assert.Equal(text.Length - quantifier.Length, error.Position);
+    }
+
+    [Theory]
+    [InlineData(@"(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})(?:_(?<hour>\d{2})(?<minute>\d{2}))?")]
+    [InlineData(@"(?<year>\d{4})[-_ ]?(?<month>\d{2})[-_ ]?(?<day>\d{2})")]
+    [InlineData(@"(?:IMG|VID|PXL)[-_](?<year>\d{4})(?<month>\d{2})(?<day>\d{2})(?:[-_](?:WA|MP)\d{4})?")]
+    [InlineData(@".*(?<year>\d{4})[-_.]?(?<month>\d{2})[-_.]?(?<day>\d{2})[-_ T]?(?<hour>\d{2})[-_.:]?(?<minute>\d{2})[-_.:]?(?<second>\d{2}).*")]
+    [InlineData(@"(?:WhatsApp|Signal) .* (?<year>\d{4})-(?<month>\d{1,2})-(?<day>\d{1,2}) .* (?<hour>\d{1,2})\.(?<minute>\d{2})\.(?<second>\d{2}).*")]
+    [InlineData(@"(?:a|b|ab|ba)*(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})(?:x|y){3}")]
+    [InlineData(@"[^_]*_(?<day>\d{1,2})\.(?<month>\d{1,2})\.(?<yy>\d{2})(?: \(\d\))?")]
+    [InlineData(@"(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})[[\]x]*\{3}[a-z-[aeiou]]+")]
+    public void Realistic_expressions_stay_within_the_limits(string text)
+    {
+        var result = DateExpression.Parse(text);
+
+        Assert.True(result.IsValid, string.Join(", ", result.Errors));
+    }
+
+    [Theory]
+    [InlineData(31, false)]
+    [InlineData(30, true)]
+    public void At_most_30_quantifiers_are_allowed(int count, bool valid)
+    {
+        // Date groups use 3 fixed counts; "a?" adds one bounded quantifier each (no unbounded ones, so no budget).
+        var text = Valid + string.Concat(Enumerable.Repeat("a?", count - 3));
+
+        Assert.Equal(valid, DateExpression.Parse(text).IsValid);
+    }
+
+    [Theory]
+    [InlineData(9, false)]
+    [InlineData(8, true)]
+    public void At_most_8_unbounded_quantifiers_are_allowed(int count, bool valid)
+    {
+        var text = string.Concat(Enumerable.Repeat(".*a", count)) + "(?<year>....)(?<month>..)(?<day>..)";
+
+        var result = DateExpression.Parse(text);
+
+        Assert.Equal(valid, result.IsValid);
+        if (!valid)
+        {
+            Assert.Equal(DatePatternErrorKind.TooComplex, Assert.Single(result.Errors).Kind);
+        }
+    }
+
+    [Theory]
+    [InlineData(".{0,20}.{0,20}.{0,20}.{0,20}.{0,20}.{0,20}.{0,20}.{0,4}", true)] // no unbounded: 8 + 144 = 152
+    [InlineData(".{0,20}.{0,20}.{0,20}.{0,20}.{0,20}.{0,20}.{0,20}.{0,20}.?", false)] // 169
+    [InlineData("[a-z]*.{0,20}.{0,20}.{0,20}.{0,12}", true)] // (1 + 1) × (8 + 72) = 160
+    [InlineData("[a-z]*.{0,20}.{0,20}.{0,20}.{0,13}", false)] // 162
+    [InlineData(".*.*.*.*.*.*.*.*.?.?.?.?.?.?.?.?.?", true)] // (8 + 1) × (8 + 9) = 153
+    [InlineData(".*.*.*.*.*.*.*.*.?.?.?.?.?.?.?.?.?.?", false)] // (8 + 1) × (8 + 10) = 162
+    public void Unbounded_quantifiers_times_bounded_widths_have_a_budget(string tail, bool valid)
+    {
+        var result = DateExpression.Parse(Valid + tail);
+
+        Assert.Equal(valid, result.IsValid);
+        if (!valid)
+        {
+            Assert.Equal(DatePatternErrorKind.TooComplex, Assert.Single(result.Errors).Kind);
+        }
+    }
+
+    [Fact]
+    public void A_repeated_fixed_group_counts_its_content_each_time()
+    {
+        // A fixed count inside a fixed-count group is allowed; (?:x.{5}){n} counts n + n × 5.
+        Assert.True(DateExpression.Parse(Valid + "[a-z]*(?:x.{5}){10}").IsValid); // (1 + 1) × (8 + 10 + 50) = 136
+        Assert.False(DateExpression.Parse(Valid + "[a-z]*(?:x.{5}){14}").IsValid); // (1 + 1) × (8 + 14 + 70) = 184
+    }
+
+    [Theory]
+    [InlineData(@"(?x)(?<year>\d{4})(?<month>\d{2})(?<day>\d{2}) #")]
+    [InlineData(@"(?x)(?<year>\d{4}) (?<month>\d{2}) (?<day>\d{2})")]
+    [InlineData(@"(?ix:(?<year>\d{4})(?<month>\d{2})(?<day>\d{2}))")]
+    [InlineData(@"(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})(?-x)")]
+    public void Free_spacing_mode_is_not_supported(string text)
+    {
+        AssertSingleError(text, DatePatternErrorKind.FreeSpacing);
     }
 
     [Theory]

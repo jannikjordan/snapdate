@@ -49,12 +49,17 @@ To report a vulnerability, see [SECURITY.md](../SECURITY.md).
   junctions**.
 - Implausible dates (before 1900 or in the future) are ignored.
 - Dates from file names: file names and the user's own rules are untrusted. Every rule — token pattern or
-  user-written regular expression ("Advanced" mode) — runs as a `NonBacktracking` regex (linear time) with a
-  50 ms timeout on names of at most 260 characters. Regular expressions are limited to 300 characters and
-  repetitions of at most 100, must compile on their own before being wrapped as `^(?:…)$`, and every build
-  error (including unsupported constructs such as back-references) becomes a validation message, never a
-  crash. Captured values must be ASCII digits and pass the calendar and plausibility checks
-  ([ADR 0007](adr/0007-dates-from-file-names.md)).
+  user-written regular expression ("Advanced" mode) — runs as a `NonBacktracking` regex (no catastrophic
+  backtracking; time linear in the name, with a factor that depends on the expression) on names of at most 260
+  characters. The 50 ms timeout is only a last resort: the engine checks it only now and then, not while it fills
+  in the groups. What keeps matching fast is the size of the expressions: token patterns only produce small
+  groups and `.*?`; regular expressions are limited to 300 characters, counts of at most 20, no repeated group
+  that repeats something itself, no `(?x)`, and a budget of at most 30 quantifiers, 8 unbounded ones and
+  (unbounded + 1) × (bounded widths) ≤ 160. The slowest accepted expressions found by fuzzing take about 20 ms per
+  hostile name; tests require under 200 ms. Expressions must compile on their own before being wrapped as
+  `^(?:…)$`, and every build error (including unsupported constructs such as back-references) becomes a
+  validation message, never a crash. Captured values must be ASCII digits and pass the calendar and plausibility
+  checks ([ADR 0007](adr/0007-dates-from-file-names.md)).
 - The settings file is size-limited and parsed with source-generated
   `System.Text.Json`; corrupt settings fall back to defaults.
 

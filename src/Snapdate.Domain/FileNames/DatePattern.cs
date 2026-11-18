@@ -19,11 +19,17 @@ public sealed class DatePattern : IFileNameDateMatcher
     /// <summary>Longer names never match.</summary>
     public const int MaxNameLength = 260;
 
-    /// <summary>Options for every generated expression: linear time, no culture-dependent behaviour.</summary>
+    /// <summary>
+    /// Options for every expression: no catastrophic backtracking (time linear in the name, with a factor that depends
+    /// on the expression, so expressions must stay small), no culture-dependent behaviour.
+    /// </summary>
     internal const RegexOptions MatchOptions =
         RegexOptions.NonBacktracking | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.ExplicitCapture;
 
-    /// <summary>Upper bound for a single match; a timeout counts as no match.</summary>
+    /// <summary>
+    /// Timeout for a single match; a timeout counts as no match. A last resort only: <c>NonBacktracking</c> checks it
+    /// now and then, not while it fills in the groups.
+    /// </summary>
     internal static readonly TimeSpan MatchTimeout = TimeSpan.FromMilliseconds(50);
 
     private readonly Regex _regex;

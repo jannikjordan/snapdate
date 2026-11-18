@@ -141,6 +141,9 @@ public sealed class DatePatternParseTests
             DatePatternErrorKind.UnsupportedConstruct,
             DatePatternErrorKind.RepetitionTooLarge,
             DatePatternErrorKind.UnknownGroup,
+            DatePatternErrorKind.NestedQuantifier,
+            DatePatternErrorKind.TooComplex,
+            DatePatternErrorKind.FreeSpacing,
         ];
         var expected = Enum.GetValues<DatePatternErrorKind>().Except(expressionOnly).ToHashSet();
         Assert.Equal(expected, seen);

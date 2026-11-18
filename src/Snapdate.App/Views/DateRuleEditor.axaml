@@ -33,7 +33,7 @@
       <StackPanel Spacing="10" Margin="0,0,4,0">
         <StackPanel Spacing="4">
           <TextBlock Text="{Binding Title}" FontSize="15" FontWeight="SemiBold" />
-          <TextBlock Text="{Binding L.RuleEditorIntro}" Classes="muted" TextWrapping="Wrap" />
+          <TextBlock Text="{Binding Intro}" Classes="muted" TextWrapping="Wrap" />
         </StackPanel>
 
         <!-- Name -->
