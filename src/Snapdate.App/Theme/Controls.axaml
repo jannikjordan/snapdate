@@ -578,6 +578,9 @@
     <Setter Property="MinHeight" Value="36" />
     <Setter Property="VerticalContentAlignment" Value="Center" />
   </Style>
+  <Style Selector="TextBox.ruleName:focus /template/ Border#PART_BorderElement">
+    <Setter Property="Background" Value="{DynamicResource SdSurfaceBrush}" />
+  </Style>
   <Style Selector="TextBox.rulePatterns">
     <Setter Property="FontFamily" Value="{StaticResource SdMonoFont}" />
     <Setter Property="FontSize" Value="13" />
