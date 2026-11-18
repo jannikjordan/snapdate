@@ -570,7 +570,7 @@ public sealed class DateRuleEditorTests(HeadlessSession headless)
         Assert.Equal("Phone on/off", AutomationProperties.GetName(Focused(window)));
         Assert.Equal(["IMG_{YYYY}{MM}{DD}_*"], store.User!.CustomRules.Single().Patterns);
 
-        // Edit via keyboard, change something, Esc asks (focus on Discard), Enter discards, focus back on the rule.
+        // Edit via keyboard, change something, Esc asks (focus on Keep editing), Shift+Tab + Enter discards.
         Press(window, PhysicalKey.Tab);
         Assert.Equal("Edit Phone", AutomationProperties.GetName(Focused(window)));
         Press(window, PhysicalKey.Enter);
@@ -578,10 +578,13 @@ public sealed class DateRuleEditorTests(HeadlessSession headless)
         window.KeyTextInput("!");
         Press(window, PhysicalKey.Escape);
         Assert.True(vm.RulesDialog.Editor!.IsConfirmingDiscard);
-        Assert.Equal("DiscardButton", Focused(window).Name);
+        Assert.Equal("KeepEditingButton", Focused(window).Name);
         Press(window, PhysicalKey.Escape);
         Assert.Equal("EditorCancelButton", Focused(window).Name);
         Press(window, PhysicalKey.Escape);
+        Assert.Equal("KeepEditingButton", Focused(window).Name);
+        Press(window, PhysicalKey.Tab, RawInputModifiers.Shift);
+        Assert.Equal("DiscardButton", Focused(window).Name);
         Press(window, PhysicalKey.Enter);
         Assert.Null(vm.RulesDialog.Editor);
         Assert.True(vm.RulesDialog.IsOpen);

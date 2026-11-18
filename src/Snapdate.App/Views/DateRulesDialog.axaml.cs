@@ -178,12 +178,12 @@ public partial class DateRulesDialog : UserControl
         }
     }
 
-    /// <summary>"Discard your changes?" takes the keyboard to Discard; answering it returns to Cancel.</summary>
+    /// <summary>"Discard your changes?" takes the keyboard to "Keep editing" (the safe answer); answering it returns to Cancel.</summary>
     private void OnEditorPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
         if (e.PropertyName == nameof(DateRuleEditorViewModel.IsConfirmingDiscard) && _editor is { } editor)
         {
-            var target = editor.IsConfirmingDiscard ? "DiscardButton" : "EditorCancelButton";
+            var target = editor.IsConfirmingDiscard ? "KeepEditingButton" : "EditorCancelButton";
             Dispatcher.UIThread.Post(() => FocusInEditor(target), DispatcherPriority.Loaded);
         }
     }

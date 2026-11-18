@@ -225,7 +225,7 @@ is never taller than the window; only the rule list scrolls). From top to bottom
   "Matches line 2 → <date>", warning icon "Line 2 matches, but 2024-13-45 is not a valid date." / "… is before 1900 or
   in the future.", ✕ "No pattern matches this name."; Polite live region. Footer: secondary "Cancel" + primary "Save
   rule" (disabled while anything is wrong). Leaving with changes asks inline "Discard your changes?" + "Discard"
-  (`Button.secondary.danger`, gets focus) + "Keep editing"; Esc in the editor = Cancel, Esc on the question = keep
+  (`Button.secondary.danger`) + "Keep editing" (gets focus, the safe answer); Esc in the editor = Cancel, Esc on the question = keep
   editing. On open the name box gets focus; after Save or Cancel the edited/saved rule's switch (or "Add rule"). A
   refused save keeps the editor open with the reason in the notice above; Save can be pressed again.
 
