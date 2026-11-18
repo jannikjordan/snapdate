@@ -211,7 +211,7 @@
   <data name="RuleNameLabel" xml:space="preserve"><value>Name</value></data>
   <data name="RuleDefaultName" xml:space="preserve"><value>Meine Regel</value></data>
   <data name="RulePatternsLabel" xml:space="preserve"><value>Muster (eins pro Zeile, bis zu {0})</value></data>
-  <data name="RulePatternsHint" xml:space="preserve"><value>Klicken Sie auf einen Baustein, um ihn an der Cursorposition einzufügen. * steht für beliebigen Text. Alles andere muss genau so im Namen stehen; Groß- und Kleinschreibung spielen keine Rolle.</value></data>
+  <data name="RulePatternsHint" xml:space="preserve"><value>Klicken Sie auf einen Baustein, um ihn an der Cursorposition einzufügen. * steht für beliebigen Text, ? für genau ein Zeichen. Alles andere muss genau so im Namen stehen; Groß- und Kleinschreibung spielen keine Rolle.</value></data>
   <data name="RuleChipsName" xml:space="preserve"><value>Bausteine zum Einfügen</value></data>
   <data name="TokAnyText" xml:space="preserve"><value>beliebiger Text *</value></data>
   <data name="TokAnyTextTip" xml:space="preserve"><value>* = beliebiger Text, auch keiner</value></data>
@@ -222,7 +222,7 @@
   <data name="RulePatternsOk" xml:space="preserve"><value>Alle Muster können verwendet werden.</value></data>
   <data name="RuleProblemLine" xml:space="preserve"><value>Zeile {0}: {1}</value></data>
   <data name="RuleNoPatterns" xml:space="preserve"><value>Geben Sie mindestens ein Muster ein, zum Beispiel IMG-{{YYYY}}{{MM}}{{DD}}-WA*</value></data>
-  <data name="RuleTooManyPatterns" xml:space="preserve"><value>Eine Regel kann höchstens {0} Muster haben. Bitte entfernen Sie {1}.</value></data>
+  <data name="RuleTooManyPatterns" xml:space="preserve"><value>Eine Regel kann höchstens {0} Muster haben. Bitte entfernen Sie {1} Zeile(n).</value></data>
   <data name="RuleNameTooLong" xml:space="preserve"><value>Der Name darf höchstens {0} Zeichen lang sein.</value></data>
   <data name="PatErrEmpty" xml:space="preserve"><value>Diese Zeile ist leer.</value></data>
   <data name="PatErrTooLong" xml:space="preserve"><value>Dieses Muster ist zu lang (höchstens {0} Zeichen).</value></data>
@@ -237,7 +237,7 @@
   <data name="PatErrHourWithoutMinute" xml:space="preserve"><value>Zur Stunde gehören auch Minuten: Fügen Sie {{mm}} hinzu.</value></data>
   <data name="PatErrMinuteWithoutHour" xml:space="preserve"><value>Zu Minuten gehört auch eine Stunde: Fügen Sie {{HH}} hinzu.</value></data>
   <data name="PatErrSecondWithoutMinute" xml:space="preserve"><value>Zu Sekunden gehören auch Minuten: Fügen Sie {{mm}} hinzu.</value></data>
-  <data name="PatErrAmbiguous" xml:space="preserve"><value>Die Ziffern um „{{{0}}}“ lassen sich auf mehr als eine Weise lesen. Setzen Sie ein Trennzeichen wie - oder _ zwischen die Teile oder verwenden Sie zweistellige Bausteine wie {{MM}} und {{DD}}, und setzen Sie * oder ? nicht direkt daneben.</value></data>
+  <data name="PatErrAmbiguous" xml:space="preserve"><value>Die Ziffern um „{{{0}}}“ lassen sich auf mehr als eine Weise lesen. Setzen Sie ein Trennzeichen wie - oder _ zwischen die Teile oder verwenden Sie zweistellige Bausteine wie {{MM}} und {{DD}}. Außerdem darf * nicht direkt an diese Ziffern grenzen, und ? darf nirgends zwischen ihnen stehen.</value></data>
   <data name="PatErrInvalid" xml:space="preserve"><value>Dieses Muster kann nicht verwendet werden. Bitte prüfen Sie es.</value></data>
   <data name="RuleSampleEmpty" xml:space="preserve"><value>Geben Sie einen Dateinamen ein, um Ihre Muster auszuprobieren.</value></data>
   <data name="RuleSampleNoPatterns" xml:space="preserve"><value>Geben Sie zuerst ein gültiges Muster ein und probieren Sie dann einen Dateinamen aus.</value></data>

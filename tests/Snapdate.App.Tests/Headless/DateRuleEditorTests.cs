@@ -89,7 +89,8 @@ public sealed class DateRuleEditorTests(HeadlessSession headless)
     [InlineData("{YYYY}{MM}{DD}{name}", "Line 1: “{name}” cannot be read from a file name. Use number blocks such as {MM} for the month.")]
     [InlineData("{YYYY}{YY}{MM}{DD}", "Line 1: “{YY}” repeats a part of the date that is already in the pattern. Each part may appear only once.")]
     [InlineData("{YYYY}{MM}{DD} {HH}", "Line 1: An hour also needs minutes: add {mm}.")]
-    [InlineData("{YYYY}{M}{D}", "Line 1: The digits around “{D}” could be read in more than one way. Put a separator such as - or _ between the parts, or use two-digit blocks like {MM} and {DD}, and do not put * or ? right next to them.")]
+    [InlineData("{YYYY}{M}{D}", "Line 1: The digits around “{D}” could be read in more than one way. Put a separator such as - or _ between the parts, or use two-digit blocks like {MM} and {DD}. Also, * must not touch these digits, and ? must not be used anywhere among them.")]
+    [InlineData("{YYYY}?{MM}{D}", "Line 1: The digits around “{D}” could be read in more than one way. Put a separator such as - or _ between the parts, or use two-digit blocks like {MM} and {DD}. Also, * must not touch these digits, and ? must not be used anywhere among them.")]
     public void A_line_that_cannot_be_used_is_explained_and_save_is_disabled(string pattern, string message)
     {
         var editor = NewRule(Dialog(new MemoryDateRuleStore()));
@@ -129,7 +130,7 @@ public sealed class DateRuleEditorTests(HeadlessSession headless)
 
         editor.PatternsText = string.Join("\n", Enumerable.Range(0, 12).Select(i => $"P{i}_{{YYYY}}{{MM}}{{DD}}"));
 
-        Assert.Equal(["A rule can have at most 10 patterns. Please remove 2."], editor.Problems);
+        Assert.Equal(["A rule can have at most 10 patterns. Please remove 2 line(s)."], editor.Problems);
         Assert.False(editor.SaveCommand.CanExecute(null));
     }
 
@@ -149,6 +150,7 @@ public sealed class DateRuleEditorTests(HeadlessSession headless)
         editor.Chips.Single(c => !c.IsToken).InsertCommand.Execute(null);
 
         Assert.Equal("IMG-{YYYY}{MM}{DD}-WA*", editor.PatternsText);
+        Assert.Contains("? for exactly one character", editor.L.RulePatternsHint, StringComparison.Ordinal);
         Assert.Equal(["Year", "Month", "Day", "Hour", "Minute", "Second", "any text *"], editor.Chips.Select(c => c.Label));
         Assert.True(editor.IsValid);
     }

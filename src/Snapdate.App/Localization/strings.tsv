@@ -205,7 +205,7 @@ RuleEditorIntro	Describe how your file names look. Snapdate tries the patterns f
 RuleNameLabel	Name	Name
 RuleDefaultName	My rule	Meine Regel
 RulePatternsLabel	Patterns (one per line, up to {0})	Muster (eins pro Zeile, bis zu {0})
-RulePatternsHint	Click a block to insert it at the cursor. * stands for any text. Everything else must be in the name exactly like this; upper and lower case do not matter.	Klicken Sie auf einen Baustein, um ihn an der Cursorposition einzufügen. * steht für beliebigen Text. Alles andere muss genau so im Namen stehen; Groß- und Kleinschreibung spielen keine Rolle.
+RulePatternsHint	Click a block to insert it at the cursor. * stands for any text, ? for exactly one character. Everything else must be in the name exactly like this; upper and lower case do not matter.	Klicken Sie auf einen Baustein, um ihn an der Cursorposition einzufügen. * steht für beliebigen Text, ? für genau ein Zeichen. Alles andere muss genau so im Namen stehen; Groß- und Kleinschreibung spielen keine Rolle.
 RuleChipsName	Blocks to insert	Bausteine zum Einfügen
 TokAnyText	any text *	beliebiger Text *
 TokAnyTextTip	* = any text, also none	* = beliebiger Text, auch keiner
@@ -216,7 +216,7 @@ RuleKeepEditing	Keep editing	Weiter bearbeiten
 RulePatternsOk	All patterns can be used.	Alle Muster können verwendet werden.
 RuleProblemLine	Line {0}: {1}	Zeile {0}: {1}
 RuleNoPatterns	Type at least one pattern, for example IMG-{{YYYY}}{{MM}}{{DD}}-WA*	Geben Sie mindestens ein Muster ein, zum Beispiel IMG-{{YYYY}}{{MM}}{{DD}}-WA*
-RuleTooManyPatterns	A rule can have at most {0} patterns. Please remove {1}.	Eine Regel kann höchstens {0} Muster haben. Bitte entfernen Sie {1}.
+RuleTooManyPatterns	A rule can have at most {0} patterns. Please remove {1} line(s).	Eine Regel kann höchstens {0} Muster haben. Bitte entfernen Sie {1} Zeile(n).
 RuleNameTooLong	The name can be at most {0} characters long.	Der Name darf höchstens {0} Zeichen lang sein.
 PatErrEmpty	This line is empty.	Diese Zeile ist leer.
 PatErrTooLong	This pattern is too long (at most {0} characters).	Dieses Muster ist zu lang (höchstens {0} Zeichen).
@@ -231,7 +231,7 @@ PatErrMissingDay	The pattern needs a day: {{DD}} or {{D}}.	Das Muster braucht ei
 PatErrHourWithoutMinute	An hour also needs minutes: add {{mm}}.	Zur Stunde gehören auch Minuten: Fügen Sie {{mm}} hinzu.
 PatErrMinuteWithoutHour	Minutes also need an hour: add {{HH}}.	Zu Minuten gehört auch eine Stunde: Fügen Sie {{HH}} hinzu.
 PatErrSecondWithoutMinute	Seconds also need minutes: add {{mm}}.	Zu Sekunden gehören auch Minuten: Fügen Sie {{mm}} hinzu.
-PatErrAmbiguous	The digits around “{{{0}}}” could be read in more than one way. Put a separator such as - or _ between the parts, or use two-digit blocks like {{MM}} and {{DD}}, and do not put * or ? right next to them.	Die Ziffern um „{{{0}}}“ lassen sich auf mehr als eine Weise lesen. Setzen Sie ein Trennzeichen wie - oder _ zwischen die Teile oder verwenden Sie zweistellige Bausteine wie {{MM}} und {{DD}}, und setzen Sie * oder ? nicht direkt daneben.
+PatErrAmbiguous	The digits around “{{{0}}}” could be read in more than one way. Put a separator such as - or _ between the parts, or use two-digit blocks like {{MM}} and {{DD}}. Also, * must not touch these digits, and ? must not be used anywhere among them.	Die Ziffern um „{{{0}}}“ lassen sich auf mehr als eine Weise lesen. Setzen Sie ein Trennzeichen wie - oder _ zwischen die Teile oder verwenden Sie zweistellige Bausteine wie {{MM}} und {{DD}}. Außerdem darf * nicht direkt an diese Ziffern grenzen, und ? darf nirgends zwischen ihnen stehen.
 PatErrInvalid	This pattern cannot be used. Please check it.	Dieses Muster kann nicht verwendet werden. Bitte prüfen Sie es.
 RuleSampleEmpty	Type a file name to try your patterns.	Geben Sie einen Dateinamen ein, um Ihre Muster auszuprobieren.
 RuleSampleNoPatterns	Type a valid pattern first, then try a file name.	Geben Sie zuerst ein gültiges Muster ein und probieren Sie dann einen Dateinamen aus.
