@@ -22,15 +22,25 @@ internal static class DateCapture
 
     public static bool TryRead(Match match, DateTime localNow, out FileNameDate date)
     {
-        var check = Check(match, localNow);
-        date = check.Kind == PatternCheckKind.Date ? check.Date!.Value : default;
-        return check.Kind == PatternCheckKind.Date;
+        var kind = Read(match, localNow, out var candidate);
+        date = kind == PatternCheckKind.Date ? candidate!.Value : default;
+        return kind == PatternCheckKind.Date;
     }
 
-    /// <summary>Reads the date of a successful match and says whether it is a valid, plausible date.</summary>
+    /// <summary>
+    /// Reads the date of a successful match and says whether it is a valid, plausible date, with the numbers found
+    /// (for the rule editor; scanning uses <see cref="TryRead(Match, DateTime, out FileNameDate)"/>).
+    /// </summary>
     public static PatternCheck Check(Match match, DateTime localNow)
     {
-        var found = Describe(match, localNow);
+        var kind = Read(match, localNow, out var candidate);
+        return new PatternCheck(kind, candidate, Describe(match, localNow));
+    }
+
+    /// <summary>The date of a match; <paramref name="candidate"/> is set for valid dates, plausible or not.</summary>
+    private static PatternCheckKind Read(Match match, DateTime localNow, out FileNameDate? candidate)
+    {
+        candidate = null;
         if (!TryReadYear(match, localNow, out var year)
             || !TryRead(match, Month, out var month)
             || !TryRead(match, Day, out var day)
@@ -39,7 +49,7 @@ internal static class DateCapture
             || day < 1
             || day > DateTime.DaysInMonth(year, month))
         {
-            return new PatternCheck(PatternCheckKind.InvalidDate, null, found);
+            return PatternCheckKind.InvalidDate;
         }
 
         TimeOnly? time = null;
@@ -52,16 +62,16 @@ internal static class DateCapture
                 || minute > 59
                 || second > 59)
             {
-                return new PatternCheck(PatternCheckKind.InvalidDate, null, found);
+                return PatternCheckKind.InvalidDate;
             }
 
             time = new TimeOnly(hour, minute, second);
         }
 
-        var candidate = new FileNameDate(new DateOnly(year, month, day), time);
-        return DatePlausibility.IsPlausible(candidate.ToDateTime(), localNow)
-            ? new PatternCheck(PatternCheckKind.Date, candidate, found)
-            : new PatternCheck(PatternCheckKind.ImplausibleDate, candidate, found);
+        candidate = new FileNameDate(new DateOnly(year, month, day), time);
+        return DatePlausibility.IsPlausible(candidate.Value.ToDateTime(), localNow)
+            ? PatternCheckKind.Date
+            : PatternCheckKind.ImplausibleDate;
     }
 
     /// <summary>The captured numbers as <c>YYYY-MM-DD[ HH:mm[:ss]]</c>; a two-digit year is shown as the year it stands for.</summary>
