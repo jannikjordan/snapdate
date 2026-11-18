@@ -222,7 +222,7 @@ flowchart TD
     A -- no --> N{"Date in the<br/>file name?<br/>(a rule fits)"}
     N -- yes --> C{"An app wrote a date<br/>into the file<br/>on the same day?"}
     C -- yes --> OK
-    C -- no --> NM["🟣 Date from name"]
+    C -- "no (another day: ⚠ Dates differ)" --> NM["🟣 Date from name"]
     N -- no --> B{"Other date inside<br/>the file?<br/>(written by an app,<br/>XMP, video, PNG)"}
     B -- yes --> OK
     B -- no --> F["🟠 File date<br/>(the oldest date Windows<br/>knows for the file)"]
@@ -531,7 +531,8 @@ was ignored. See [Where does the date come from?](#-8-where-does-the-date-come-f
 **Where are my own date rules stored?**
 In `%APPDATA%\Snapdate\date-rules.json`, next to the settings. Updates never
 change this file. If it ever can't be read, the built-in rules still work and
-Snapdate keeps a copy of the old file before it saves a new one.
+before Snapdate saves a new one, it moves the old file aside as
+`date-rules.unreadable-….json` (it is never deleted).
 
 **What is the log file for?**
 It lists what was copied or moved, from where to where. You can delete it at

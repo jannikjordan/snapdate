@@ -234,7 +234,7 @@ flowchart TD
     A -- nein --> N{"Datum im<br/>Dateinamen?<br/>(eine Regel passt)"}
     N -- ja --> C{"Hat eine App ein Datum<br/>vom selben Tag in die<br/>Datei geschrieben?"}
     C -- ja --> OK
-    C -- nein --> NM["🟣 Datum aus Name"]
+    C -- "nein (anderer Tag: ⚠ Daten weichen ab)" --> NM["🟣 Datum aus Name"]
     N -- nein --> B{"Anderes Datum<br/>in der Datei?<br/>(von einer App,<br/>XMP, Video, PNG)"}
     B -- ja --> OK
     B -- nein --> F["🟠 Dateidatum<br/>(das älteste Datum, das<br/>Windows zur Datei kennt)"]
@@ -520,10 +520,11 @@ offline?“*.
    Schritten.
 
 Haben Sie **nur für sich** installiert, fragt Snapdate, ob **auch Ihre
-Einstellungen gelöscht** werden sollen (gemerkte Ordner, Dateinamen-Muster,
-Sprache) **und Ihre eigenen Datumsregeln**. Wählen Sie **Nein**, um sie zu behalten — praktisch, wenn Sie
-Snapdate später erneut installieren möchten. Bei einer Installation für **alle
-Benutzer** bleiben die Einstellungen immer erhalten.
+Einstellungen** (gemerkte Ordner, Dateinamen-Muster, Sprache) **und Ihre
+eigenen Datumsregeln gelöscht** werden sollen. Wählen Sie **Nein**, um sie zu
+behalten — praktisch, wenn Sie Snapdate später erneut installieren möchten.
+Bei einer Installation für **alle Benutzer** bleiben die Einstellungen immer
+erhalten.
 
 Ihre Fotos und umbenannten Dateien werden nie angefasst. Die portable Version
 hat kein Deinstallationsprogramm: Löschen Sie einfach die Datei.
@@ -570,8 +571,9 @@ um zu sehen, welches Datum verwendet und welches ignoriert wurde. Siehe
 **Wo werden meine eigenen Datumsregeln gespeichert?**
 In `%APPDATA%\Snapdate\date-rules.json`, neben den Einstellungen. Updates
 ändern diese Datei nie. Kann sie einmal nicht gelesen werden, funktionieren die
-mitgelieferten Regeln weiter, und Snapdate behält eine Kopie der alten Datei,
-bevor es eine neue speichert.
+mitgelieferten Regeln weiter, und bevor Snapdate eine neue speichert, legt es
+die alte Datei als `date-rules.unreadable-….json` beiseite (sie wird nie
+gelöscht).
 
 **Wozu ist die Protokolldatei?**
 Sie listet auf, was von wo nach wo kopiert oder verschoben wurde. Sie können

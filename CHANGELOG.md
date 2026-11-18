@@ -22,7 +22,7 @@ This release reads dates from file names: WhatsApp pictures carry no date inside
 - 🗑️ When uninstalling, the question whether to delete your settings now says that it also deletes your own date rules (`%APPDATA%\Snapdate\date-rules.json`).
 
 ### Security
-- File names and your own rules file are treated as untrusted input: rules run with a safe, linear-time regular-expression engine and strict limits on their shape, every date must be a real calendar date that is not before 1900 and not in the future, and a damaged rules file is set aside, never overwritten.
+- File names and your own rules file are treated as untrusted input: rules run with a safe, linear-time regular-expression engine and strict limits on their shape, every date must be a real calendar date that is not before 1900 and not far in the future, and a damaged rules file is set aside, never overwritten.
 
 ## [0.2.1] - 2026-11-17
 
