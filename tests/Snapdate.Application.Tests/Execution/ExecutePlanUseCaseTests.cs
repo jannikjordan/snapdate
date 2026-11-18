@@ -96,7 +96,12 @@ public sealed class ExecutePlanUseCaseTests
     [Fact]
     public async Task A_log_file_is_written_into_the_target_folder()
     {
-        var (fs, plan) = Setup(TransferMode.Copy, ("a.jpg", "x.jpg"));
+        var (fs, plan) = Setup(TransferMode.Copy, ("a.jpg", "x.jpg"), ("IMG-20160706-WA0002.jpg", "y.jpg"));
+        var fromName = plan.Items[1] with
+        {
+            Photo = plan.Items[1].Photo with { Date = new CaptureDate(new DateTime(2016, 7, 6), DateSource.FileName) },
+        };
+        plan = plan with { Items = [plan.Items[0], fromName] };
 
         var result = await Run(fs, plan);
 
@@ -104,6 +109,8 @@ public sealed class ExecutePlanUseCaseTests
         var csv = fs.TextFiles[result.LogFilePath!];
         Assert.StartsWith("status,mode,source,target,date_taken,date_source,error", csv, StringComparison.Ordinal);
         Assert.Contains("Done,Copy,", csv, StringComparison.Ordinal);
+        Assert.Contains(",2024-01-01 00:00:00,ExifOriginal,", csv, StringComparison.Ordinal);
+        Assert.Contains(",2016-07-06 00:00:00,FileName,", csv, StringComparison.Ordinal);
     }
 
     [Fact]
