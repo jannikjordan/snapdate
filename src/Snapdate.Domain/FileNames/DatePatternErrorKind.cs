@@ -45,7 +45,7 @@ public enum DatePatternErrorKind
     /// <summary>
     /// The digits could be split in more than one way: two placeholders without leading zero in one run of
     /// adjacent placeholders (e.g. <c>{M}{YYYY}{D}</c>), <c>*</c> next to a run that contains one
-    /// (e.g. <c>{YYYY}{M}{DD}*</c>), or <c>?</c> directly next to one (e.g. <c>{M}?</c>).
+    /// (e.g. <c>{YYYY}{M}{DD}*</c>), or <c>?</c> inside such a run (e.g. <c>{YYYY}{M}{DD}?-*</c>).
     /// </summary>
     AmbiguousNeighbours,
 

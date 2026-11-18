@@ -88,6 +88,13 @@ public sealed class DatePatternParseTests
     [InlineData("{YYYY}-{M}1{D}", DatePatternErrorKind.AmbiguousNeighbours, 11, "D")]
     [InlineData("{M}1{D}-{YYYY}", DatePatternErrorKind.AmbiguousNeighbours, 4, "D")]
     [InlineData("{YYYY}{MM}{DD} {H}12?3*", DatePatternErrorKind.AmbiguousNeighbours, 22, "H")]
+    [InlineData("{YYYY}{MM}{DD} {H}12?3*", DatePatternErrorKind.AmbiguousNeighbours, 20, "H")]
+    [InlineData("{YYYY}{M}{DD}?-*", DatePatternErrorKind.AmbiguousNeighbours, 13, "M")]
+    [InlineData("*-?{DD}{M}{YYYY}", DatePatternErrorKind.AmbiguousNeighbours, 2, "M")]
+    [InlineData("{YYYY}{MM}{DD}?{HH}{m}-x", DatePatternErrorKind.AmbiguousNeighbours, 14, "m")]
+    [InlineData("?{YYYY}{M}{DD}", DatePatternErrorKind.AmbiguousNeighbours, 0, "M")]
+    [InlineData("{YYYY}{M}{DD}?x*", DatePatternErrorKind.AmbiguousNeighbours, 13, "M")]
+    [InlineData("{YYYY}{M}{DD}1?2-x", DatePatternErrorKind.AmbiguousNeighbours, 14, "M")]
     public void Invalid_patterns_report_kind_and_position(string text, DatePatternErrorKind kind, int position, string? detail)
     {
         var result = DatePattern.Parse(text);
@@ -147,11 +154,12 @@ public sealed class DatePatternParseTests
     [InlineData("{YYYY}-{M}-{D} *")]
     [InlineData("{YYYY}{M}{DD}")]
     [InlineData("{YYYY}{M}{DD}-*")]
-    [InlineData("?{YYYY}{M}{DD}")]
-    [InlineData("{YYYY}{M}{DD}?x*")]
     [InlineData("IMG-{YYYY}{M}{DD}-1*")]
     [InlineData("{YYYY}{MM}{DD}1?*")]
-    [InlineData("{YYYY}{MM}{DD}?{HH}{m}-x")]
+    [InlineData("?{YYYY}{MM}{DD}")]
+    [InlineData("{YYYY}{MM}{DD}?{HH}{mm}")]
+    [InlineData("?-{YYYY}{M}{DD}-?")]
+    [InlineData("IMG-{YYYY}{MM}{DD}-WA*")]
     public void Wildcards_next_to_fixed_width_tokens_are_allowed(string text)
     {
         Assert.True(DatePattern.Parse(text).IsValid);

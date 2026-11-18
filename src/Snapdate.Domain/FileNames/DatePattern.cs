@@ -242,8 +242,9 @@ public sealed class DatePattern : IFileNameDateMatcher
     /// Makes sure the digits of a name can only be split one way. A run is everything between two
     /// boundaries (a literal non-digit, <c>*</c>, or the start/end of the pattern): placeholders, <c>?</c> and
     /// literal digits, which all may consume digits. A run may hold at most one variable-width placeholder
-    /// (<c>{M}{D}{H}{m}{s}</c>), a run with one must not touch <c>*</c>, and <c>?</c> must not sit directly
-    /// next to a variable-width placeholder.
+    /// (<c>{M}{D}{H}{m}{s}</c>), and a run with one must contain no <c>?</c> and must not touch <c>*</c>.
+    /// Such a run then consumes only digits between two non-digits (or the name's edges), so it can be
+    /// split only one way.
     /// </summary>
     private static void CheckNeighbours(List<Element> elements, List<DatePatternError> errors)
     {
@@ -276,6 +277,12 @@ public sealed class DatePattern : IFileNameDateMatcher
 
             if (variable.Count > 0)
             {
+                // '?' can also match a separator, which would let the run shift by one character.
+                foreach (var question in units[start..end].Select(unit => unit.Question).OfType<Element.Wildcard>())
+                {
+                    errors.Add(new DatePatternError(DatePatternErrorKind.AmbiguousNeighbours, question.Position, variable[0].Name));
+                }
+
                 foreach (var star in new[] { start - 1, end }.Where(i => i >= 0 && i < units.Count).Select(i => units[i].Star))
                 {
                     if (star is not null)
@@ -286,17 +293,6 @@ public sealed class DatePattern : IFileNameDateMatcher
             }
 
             start = end;
-        }
-
-        for (var i = 1; i < units.Count; i++)
-        {
-            var (left, right) = (units[i - 1], units[i]);
-            var question = left.Question ?? right.Question;
-            var token = left.Question is not null ? right.Token : left.Token;
-            if (question is not null && token is { IsVariableWidth: true })
-            {
-                errors.Add(new DatePatternError(DatePatternErrorKind.AmbiguousNeighbours, question.Position, token.Name));
-            }
         }
     }
 
