@@ -1,4 +1,5 @@
 using Snapdate.Application.FileNames;
+using Snapdate.Application.Ports;
 using Snapdate.Domain.FileNames;
 
 namespace Snapdate.Application.Tests.FileNames;
@@ -119,7 +120,7 @@ public sealed class DateRuleCatalogTests
         var catalog = Catalog();
 
         Assert.False(catalog.SetEnabled("nope", false));
-        Assert.Null(catalog.Duplicate("nope"));
+        Assert.Null(catalog.Duplicate("nope", "Copy"));
         Assert.False(catalog.Delete("nope"));
         Assert.Null(catalog.Find("nope"));
     }
@@ -129,7 +130,7 @@ public sealed class DateRuleCatalogTests
     {
         var catalog = Catalog(User(disabled: ["whatsapp-android"]));
 
-        var copy = catalog.Duplicate("whatsapp-android");
+        var copy = catalog.Duplicate("whatsapp-android", "WhatsApp (Android) (copy)");
 
         Assert.NotNull(copy);
         Assert.Matches("^custom-[0-9a-f]{8}$", copy.Id);
@@ -151,25 +152,31 @@ public sealed class DateRuleCatalogTests
         Assert.Equal("WhatsApp Desktop / Web (Kopie)", copy?.Name);
     }
 
-    [Fact]
-    public void Duplicate_keeps_the_copy_name_within_the_limit()
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void Duplicate_rejects_an_empty_name(string name)
     {
-        var longName = new string('a', UserDateRules.MaxNameLength);
-        var catalog = Catalog(User(custom: [Scanner with { Name = longName }]));
+        var catalog = Catalog();
 
-        var copy = catalog.Duplicate(Scanner.Id);
-
-        Assert.NotNull(copy);
-        Assert.Equal(UserDateRules.MaxNameLength, copy.Name.Length);
-        Assert.EndsWith(" (copy)", copy.Name, StringComparison.Ordinal);
+        Assert.Null(catalog.Duplicate("whatsapp-android", name));
+        Assert.Empty(catalog.CustomRules);
     }
 
+    [Fact]
+    public void Duplicate_rejects_a_name_over_the_limit()
+    {
+        var catalog = Catalog();
+
+        Assert.Null(catalog.Duplicate("whatsapp-android", new string('a', UserDateRules.MaxNameLength + 1)));
+        Assert.Empty(catalog.CustomRules);
+    }
     [Fact]
     public void Duplicates_get_distinct_ids()
     {
         var catalog = Catalog();
 
-        var ids = Enumerable.Range(0, 20).Select(_ => catalog.Duplicate("whatsapp-android")!.Id).ToList();
+        var ids = Enumerable.Range(0, 20).Select(_ => catalog.Duplicate("whatsapp-android", "Copy")!.Id).ToList();
 
         Assert.Equal(ids.Count, ids.Distinct(StringComparer.Ordinal).Count());
     }
@@ -225,7 +232,7 @@ public sealed class DateRuleCatalogTests
         }
 
         Assert.Null(catalog.Add("One too many", ["{YYYY}{MM}{DD}"]));
-        Assert.Null(catalog.Duplicate("whatsapp-android"));
+        Assert.Null(catalog.Duplicate("whatsapp-android", "Copy"));
         Assert.Equal(UserDateRules.MaxCustomRules, catalog.CustomRules.Count);
     }
 
@@ -276,13 +283,63 @@ public sealed class DateRuleCatalogTests
         Assert.False(catalog.Find("whatsapp-android")!.Enabled);
 
         Assert.False(catalog.SetEnabled("whatsapp-android", true));
-        Assert.Null(catalog.Duplicate("whatsapp-desktop"));
+        Assert.Null(catalog.Duplicate("whatsapp-desktop", "Copy"));
         Assert.Null(catalog.Add("New", ["{YYYY}{MM}{DD}"]));
         Assert.False(catalog.Update(Scanner with { Name = "Changed" }));
         Assert.False(catalog.Delete(Scanner.Id));
         Assert.Equal([Scanner], catalog.CustomRules);
     }
 
+    [Fact]
+    public void Inaccessible_user_file_makes_the_catalog_read_only()
+    {
+        var catalog = Catalog(status: UserRulesStatus.Inaccessible);
+
+        Assert.True(catalog.IsReadOnly);
+        Assert.Equal(["whatsapp-android", "whatsapp-desktop"], catalog.Rules.Select(r => r.Id));
+        Assert.False(catalog.SetEnabled("whatsapp-android", false));
+        Assert.Null(catalog.Add("New", ["{YYYY}{MM}{DD}"]));
+        Assert.Null(catalog.Duplicate("whatsapp-android", "Copy"));
+    }
+
+    [Theory]
+    [InlineData(UserRulesStatus.NewerVersion)]
+    [InlineData(UserRulesStatus.Inaccessible)]
+    public void Read_only_catalogs_never_reach_the_store(UserRulesStatus status)
+    {
+        var store = new RecordingStore(DateRuleSaveResult.Saved);
+
+        Assert.Equal(DateRuleSaveResult.ReadOnly, Catalog(status: status).Save(store));
+        Assert.Null(store.Saved);
+    }
+
+    [Theory]
+    [InlineData(DateRuleSaveResult.Saved)]
+    [InlineData(DateRuleSaveResult.ReadOnly)]
+    [InlineData(DateRuleSaveResult.TooLarge)]
+    [InlineData(DateRuleSaveResult.Failed)]
+    public void Save_passes_the_user_rules_and_the_store_result_through(DateRuleSaveResult result)
+    {
+        var store = new RecordingStore(result);
+        var catalog = Catalog(User(disabled: ["whatsapp-desktop"], custom: [Scanner]));
+
+        Assert.Equal(result, catalog.Save(store));
+        Assert.Equal(catalog.ToUserRules(), store.Saved);
+    }
+
+    [Fact]
+    public void Load_combines_the_store_rules()
+    {
+        var store = new RecordingStore(DateRuleSaveResult.Saved)
+        {
+            User = new UserDateRulesLoad(User(disabled: ["whatsapp-android"], custom: [Scanner]), UserRulesStatus.Ok),
+        };
+
+        var catalog = DateRuleCatalog.Load(store);
+
+        Assert.Equal([Scanner.Id, "whatsapp-android", "whatsapp-desktop"], catalog.Rules.Select(r => r.Id));
+        Assert.False(catalog.Find("whatsapp-android")!.Enabled);
+    }
     [Fact]
     public void Unsupported_syntax_rules_are_kept_but_inactive()
     {
@@ -342,5 +399,22 @@ public sealed class DateRuleCatalogTests
     {
         Assert.True(UserDateRules.IsValidId(new string('a', 64)));
         Assert.False(UserDateRules.IsValidId(new string('a', 65)));
+    }
+
+    private sealed class RecordingStore(DateRuleSaveResult result) : IDateRuleStore
+    {
+        public UserDateRulesLoad User { get; init; } = UserDateRulesLoad.Missing;
+
+        public UserDateRules? Saved { get; private set; }
+
+        public IReadOnlyList<DateRule> LoadSystemRules() => [Android, Desktop];
+
+        public UserDateRulesLoad LoadUserRules() => User;
+
+        public DateRuleSaveResult SaveUserRules(UserDateRules rules)
+        {
+            Saved = rules;
+            return result;
+        }
     }
 }

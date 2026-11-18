@@ -56,6 +56,14 @@ public sealed class SystemDateRulesTests
 
         Assert.All(ids, id => Assert.True(UserDateRules.IsValidId(id), $"Id '{id}' is invalid."));
         Assert.Equal(ids.Count, ids.Distinct(StringComparer.Ordinal).Count());
+    }
+
+    [Fact]
+    public void No_embedded_id_uses_the_custom_rule_prefix()
+    {
+        var ids = RawRules().EnumerateArray().Select(rule => rule.GetProperty("id").GetString()).ToList();
+
+        Assert.NotEmpty(ids);
         Assert.DoesNotContain(ids, id => id!.StartsWith("custom-", StringComparison.Ordinal));
     }
 

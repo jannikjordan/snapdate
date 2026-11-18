@@ -34,6 +34,8 @@ public sealed class JsonDateRuleStore(string filePath, IClock? clock = null) : I
         AllowTrailingCommas = true,
     };
 
+    private static readonly byte[] Utf8Bom = [0xEF, 0xBB, 0xBF];
+
     private static readonly Lazy<IReadOnlyList<DateRule>> SystemRules = new(ReadSystemRules);
 
     // One lock for all instances: the rules dialog and a scan may load while another save runs.
@@ -57,35 +59,39 @@ public sealed class JsonDateRuleStore(string filePath, IClock? clock = null) : I
     }
 
     /// <inheritdoc />
-    public bool SaveUserRules(UserDateRules rules)
+    public DateRuleSaveResult SaveUserRules(UserDateRules rules)
     {
         if (rules is null)
         {
-            return false;
+            return DateRuleSaveResult.Failed;
         }
 
         lock (Gate)
         {
             var current = Read().Status;
-            if (current == UserRulesStatus.NewerVersion)
+            switch (current)
             {
-                // A newer version's data is never lost.
-                return false;
+                case UserRulesStatus.NewerVersion:
+                    // A newer version's data is never lost.
+                    return DateRuleSaveResult.ReadOnly;
+                case UserRulesStatus.Inaccessible:
+                    // The rules on disk are unknown; writing now could replace rules the user still has.
+                    return DateRuleSaveResult.Failed;
             }
 
             var bytes = JsonSerializer.SerializeToUtf8Bytes(ToFile(rules), DateRulesJsonContext.Default.UserDateRulesFile);
             if (bytes.Length > MaxFileSize)
             {
                 // It would be unreadable on the next start.
-                return false;
+                return DateRuleSaveResult.TooLarge;
             }
 
             if (current == UserRulesStatus.Unreadable && !TryMoveAside())
             {
-                return false;
+                return DateRuleSaveResult.Failed;
             }
 
-            return AtomicFile.TryWrite(filePath, bytes);
+            return AtomicFile.TryWrite(filePath, bytes) ? DateRuleSaveResult.Saved : DateRuleSaveResult.Failed;
         }
     }
 
@@ -109,15 +115,18 @@ public sealed class JsonDateRuleStore(string filePath, IClock? clock = null) : I
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or System.Security.SecurityException)
         {
-            return Unreadable();
+            // Not "unreadable": the content may be fine (e.g. locked for a moment) and must not be replaced.
+            return new UserDateRulesLoad(UserDateRules.Empty, UserRulesStatus.Inaccessible);
         }
 
-        if (bytes.Length > MaxFileSize || ReadSchemaVersion(bytes) is not { } version || version < 1)
+        // Editors such as Notepad may save UTF-8 with a byte order mark, which the JSON reader does not skip.
+        var json = bytes.AsMemory(bytes.AsSpan().StartsWith(Utf8Bom) ? Utf8Bom.Length : 0);
+        if (json.Length > MaxFileSize || ReadSchemaVersion(json) is not { } version || version < 1)
         {
             return Unreadable();
         }
 
-        var file = Deserialize(bytes);
+        var file = Deserialize(json.Span);
         if (version > SchemaVersion)
         {
             // Best effort: a newer file may have a shape this version cannot read; it is used if possible and never saved.
@@ -130,11 +139,11 @@ public sealed class JsonDateRuleStore(string filePath, IClock? clock = null) : I
     }
 
     /// <summary>The schema version; 1 when absent; null when the root is not an object or the version is not an integer.</summary>
-    private static int? ReadSchemaVersion(byte[] bytes)
+    private static int? ReadSchemaVersion(ReadOnlyMemory<byte> json)
     {
         try
         {
-            using var document = JsonDocument.Parse(bytes, DocumentOptions);
+            using var document = JsonDocument.Parse(json, DocumentOptions);
             var root = document.RootElement;
             if (root.ValueKind != JsonValueKind.Object)
             {
@@ -153,12 +162,11 @@ public sealed class JsonDateRuleStore(string filePath, IClock? clock = null) : I
             return null;
         }
     }
-
-    private static UserDateRulesFile? Deserialize(byte[] bytes)
+    private static UserDateRulesFile? Deserialize(ReadOnlySpan<byte> json)
     {
         try
         {
-            return JsonSerializer.Deserialize(bytes, DateRulesJsonContext.Default.UserDateRulesFile);
+            return JsonSerializer.Deserialize(json, DateRulesJsonContext.Default.UserDateRulesFile);
         }
         catch (Exception ex) when (ex is JsonException or NotSupportedException or InvalidOperationException)
         {

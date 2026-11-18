@@ -44,6 +44,7 @@ public sealed record UserDateRules(IReadOnlyList<string> DisabledSystemRuleIds, 
         && IsValidName(rule.Name)
         && rule.Patterns is { Count: > 0 and <= DateRule.MaxPatterns } patterns
         && patterns.All(p => p is not null)
+        // Unknown syntax names are kept for newer versions, but a blank or over-long one is no syntax name at all.
         && !string.IsNullOrWhiteSpace(rule.Syntax)
         && rule.Syntax.Length <= MaxSyntaxLength;
 

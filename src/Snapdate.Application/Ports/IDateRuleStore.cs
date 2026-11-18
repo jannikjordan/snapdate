@@ -16,8 +16,8 @@ public interface IDateRuleStore
     UserDateRulesLoad LoadUserRules();
 
     /// <summary>
-    /// Saves the user's rules. Returns false when nothing was written: the file on disk was written by a newer
-    /// version, or it could not be written. An unreadable file is moved aside first, never overwritten.
+    /// Saves the user's rules. An unreadable file is moved aside first, never overwritten; a file written by a newer
+    /// version or one that cannot be opened is never overwritten.
     /// </summary>
-    bool SaveUserRules(UserDateRules rules);
+    DateRuleSaveResult SaveUserRules(UserDateRules rules);
 }

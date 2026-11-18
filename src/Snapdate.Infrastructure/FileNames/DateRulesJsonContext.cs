@@ -7,7 +7,6 @@ namespace Snapdate.Infrastructure.FileNames;
 [JsonSourceGenerationOptions(
     PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,
     UseStringEnumConverter = true,
-    WriteIndented = true,
     ReadCommentHandling = JsonCommentHandling.Skip,
     AllowTrailingCommas = true)]
 [JsonSerializable(typeof(SystemDateRulesFile))]

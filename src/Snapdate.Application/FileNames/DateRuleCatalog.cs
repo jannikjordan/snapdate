@@ -14,7 +14,6 @@ namespace Snapdate.Application.FileNames;
 public sealed class DateRuleCatalog
 {
     private const string CustomIdPrefix = "custom-";
-    private const string CopySuffix = " (copy)";
 
     private readonly List<DateRule> _system;
     private readonly List<DateRule> _custom;
@@ -48,8 +47,11 @@ public sealed class DateRuleCatalog
     /// <summary>What was found when the user's rules were loaded.</summary>
     public UserRulesStatus Status { get; }
 
-    /// <summary>True when a newer version wrote the user's file; nothing may be changed or saved.</summary>
-    public bool IsReadOnly => Status == UserRulesStatus.NewerVersion;
+    /// <summary>
+    /// True when the user's file was written by a newer version or could not be opened; nothing may be changed or
+    /// saved, so rules that were not loaded are never overwritten.
+    /// </summary>
+    public bool IsReadOnly => Status is UserRulesStatus.NewerVersion or UserRulesStatus.Inaccessible;
 
     /// <summary>The user's rules in precedence order.</summary>
     public IReadOnlyList<DateRule> CustomRules => _custom.AsReadOnly();
@@ -68,11 +70,11 @@ public sealed class DateRuleCatalog
         return new DateRuleCatalog(store.LoadSystemRules(), store.LoadUserRules());
     }
 
-    /// <summary>Saves the user's part to <paramref name="store"/>; false when read-only or not written.</summary>
-    public bool Save(IDateRuleStore store)
+    /// <summary>Saves the user's part to <paramref name="store"/>; <see cref="DateRuleSaveResult.ReadOnly"/> when read-only.</summary>
+    public DateRuleSaveResult Save(IDateRuleStore store)
     {
         ArgumentNullException.ThrowIfNull(store);
-        return !IsReadOnly && store.SaveUserRules(ToUserRules());
+        return IsReadOnly ? DateRuleSaveResult.ReadOnly : store.SaveUserRules(ToUserRules());
     }
 
     /// <summary>The compiled rule set for scanning.</summary>
@@ -117,16 +119,16 @@ public sealed class DateRuleCatalog
     /// Appends an enabled custom copy of the rule with <paramref name="id"/>; the original stays as it is.
     /// </summary>
     /// <param name="id">A system or custom rule.</param>
-    /// <param name="name">Name of the copy; default "&lt;name&gt; (copy)". The UI passes a localised name.</param>
+    /// <param name="name">Name of the copy; the UI passes a localised name such as "&lt;name&gt; (copy)".</param>
     /// <returns>The copy, or null for an unknown id, a full list, an invalid name or when read-only.</returns>
-    public DateRule? Duplicate(string? id, string? name = null)
+    public DateRule? Duplicate(string? id, string name)
     {
         if (Find(id) is not { } original)
         {
             return null;
         }
 
-        return Append(name ?? CopyName(original.Name), original.Patterns, original.Syntax, enabled: true);
+        return Append(name, original.Patterns, original.Syntax, enabled: true);
     }
 
     /// <summary>Appends a new enabled custom rule with a fresh id.</summary>
@@ -192,11 +194,5 @@ public sealed class DateRuleCatalog
             }
         }
     }
-
-    private static string CopyName(string name)
-    {
-        var baseName = name ?? string.Empty;
-        var room = UserDateRules.MaxNameLength - CopySuffix.Length;
-        return (baseName.Length > room ? baseName[..room] : baseName) + CopySuffix;
-    }
 }
+

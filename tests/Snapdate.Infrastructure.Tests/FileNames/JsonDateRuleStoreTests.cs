@@ -44,7 +44,7 @@ public sealed class JsonDateRuleStoreTests : IDisposable
         var rules = new UserDateRules(["whatsapp-desktop", "gone-rule"], [Scanner, regex]);
         var store = Store();
 
-        Assert.True(store.SaveUserRules(rules));
+        Assert.Equal(DateRuleSaveResult.Saved, store.SaveUserRules(rules));
         var load = store.LoadUserRules();
 
         Assert.Equal(UserRulesStatus.Ok, load.Status);
@@ -52,16 +52,17 @@ public sealed class JsonDateRuleStoreTests : IDisposable
     }
 
     [Fact]
-    public void Saved_file_uses_schema_v1_with_camel_case_names()
+    public void Saved_file_is_compact_schema_v1_with_camel_case_names()
     {
-        Assert.True(Store().SaveUserRules(new UserDateRules(["whatsapp-desktop"], [Scanner])));
+        Assert.Equal(DateRuleSaveResult.Saved, Store().SaveUserRules(new UserDateRules(["whatsapp-desktop"], [Scanner])));
 
         var json = File.ReadAllText(RulesPath);
-        Assert.Contains("\"schemaVersion\": 1", json, StringComparison.Ordinal);
+        Assert.Contains("\"schemaVersion\":1", json, StringComparison.Ordinal);
         Assert.Contains("\"disabledSystemRules\"", json, StringComparison.Ordinal);
         Assert.Contains("\"customRules\"", json, StringComparison.Ordinal);
-        Assert.Contains("\"syntax\": \"pattern\"", json, StringComparison.Ordinal);
-        Assert.Contains("\"enabled\": true", json, StringComparison.Ordinal);
+        Assert.Contains("\"syntax\":\"pattern\"", json, StringComparison.Ordinal);
+        Assert.Contains("\"enabled\":true", json, StringComparison.Ordinal);
+        Assert.DoesNotContain("\n", json, StringComparison.Ordinal);
         Assert.Empty(Directory.GetFiles(Path.GetDirectoryName(RulesPath)!, "*.tmp"));
     }
 
@@ -135,7 +136,7 @@ public sealed class JsonDateRuleStoreTests : IDisposable
         WriteRules("{ broken");
         var store = Store();
 
-        Assert.True(store.SaveUserRules(new UserDateRules([], [Scanner])));
+        Assert.Equal(DateRuleSaveResult.Saved, store.SaveUserRules(new UserDateRules([], [Scanner])));
 
         var aside = Path.Combine(Path.GetDirectoryName(RulesPath)!, UnreadableName());
         Assert.Equal("{ broken", File.ReadAllText(aside));
@@ -148,9 +149,9 @@ public sealed class JsonDateRuleStoreTests : IDisposable
         var folder = Path.GetDirectoryName(RulesPath)!;
         var store = Store();
         WriteRules("{ first");
-        Assert.True(store.SaveUserRules(UserDateRules.Empty));
+        Assert.Equal(DateRuleSaveResult.Saved, store.SaveUserRules(UserDateRules.Empty));
         WriteRules("{ second");
-        Assert.True(store.SaveUserRules(UserDateRules.Empty));
+        Assert.Equal(DateRuleSaveResult.Saved, store.SaveUserRules(UserDateRules.Empty));
 
         var aside = Directory.GetFiles(folder, "date-rules.unreadable-*.json").Select(File.ReadAllText).Order(StringComparer.Ordinal);
         Assert.Equal(["{ first", "{ second"], aside);
@@ -177,7 +178,7 @@ public sealed class JsonDateRuleStoreTests : IDisposable
 
         Assert.Equal(UserRulesStatus.NewerVersion, load.Status);
         Assert.Equal(new UserDateRules(["whatsapp-android"], [Scanner]), load.Rules);
-        Assert.False(store.SaveUserRules(UserDateRules.Empty));
+        Assert.Equal(DateRuleSaveResult.ReadOnly, store.SaveUserRules(UserDateRules.Empty));
         Assert.Equal(newer, File.ReadAllText(RulesPath));
     }
 
@@ -192,7 +193,7 @@ public sealed class JsonDateRuleStoreTests : IDisposable
 
         Assert.Equal(UserRulesStatus.NewerVersion, load.Status);
         Assert.Equal(UserDateRules.Empty, load.Rules);
-        Assert.False(store.SaveUserRules(UserDateRules.Empty));
+        Assert.Equal(DateRuleSaveResult.ReadOnly, store.SaveUserRules(UserDateRules.Empty));
         Assert.Equal(newer, File.ReadAllText(RulesPath));
     }
 
@@ -250,7 +251,7 @@ public sealed class JsonDateRuleStoreTests : IDisposable
         Assert.Equal("glob2", rule.Syntax);
         Assert.False(rule.IsSyntaxSupported);
 
-        Assert.True(store.SaveUserRules(store.LoadUserRules().Rules));
+        Assert.Equal(DateRuleSaveResult.Saved, store.SaveUserRules(store.LoadUserRules().Rules));
         Assert.Equal("glob2", Assert.Single(store.LoadUserRules().Rules.CustomRules).Syntax);
     }
 
@@ -281,10 +282,60 @@ public sealed class JsonDateRuleStoreTests : IDisposable
         WriteRules("""{ "schemaVersion": 1 }""");
         var store = Store();
 
-        Assert.False(store.SaveUserRules(new UserDateRules([], rules)));
+        Assert.Equal(DateRuleSaveResult.TooLarge, store.SaveUserRules(new UserDateRules([], rules)));
         Assert.Equal("""{ "schemaVersion": 1 }""", File.ReadAllText(RulesPath));
     }
 
+    [Fact]
+    public void A_file_with_a_utf8_byte_order_mark_loads()
+    {
+        var json = """{ "schemaVersion": 1, "disabledSystemRules": [ "whatsapp-desktop" ] }""";
+        _temp.Write(Path.Combine("Snapdate", "date-rules.json"), [0xEF, 0xBB, 0xBF, .. Encoding.UTF8.GetBytes(json)]);
+
+        var load = Store().LoadUserRules();
+
+        Assert.Equal(UserRulesStatus.Ok, load.Status);
+        Assert.Equal(["whatsapp-desktop"], load.Rules.DisabledSystemRuleIds);
+    }
+
+    [Fact]
+    public void A_locked_file_is_inaccessible_and_never_overwritten()
+    {
+        var original = """{ "schemaVersion": 1, "customRules": [ { "id": "custom-3f9a1c2e", "name": "Scanner", "patterns": [ "Scan_{YYYY}-{MM}-{DD}*" ] } ] }""";
+        WriteRules(original);
+        var store = Store();
+
+        UserDateRulesLoad load;
+        using (new FileStream(RulesPath, FileMode.Open, FileAccess.ReadWrite, FileShare.None))
+        {
+            load = store.LoadUserRules();
+            Assert.Equal(DateRuleSaveResult.Failed, store.SaveUserRules(UserDateRules.Empty));
+        }
+
+        Assert.Equal(UserRulesStatus.Inaccessible, load.Status);
+        Assert.Equal(UserDateRules.Empty, load.Rules);
+        Assert.Equal(original, File.ReadAllText(RulesPath));
+        Assert.Empty(Directory.GetFiles(Path.GetDirectoryName(RulesPath)!, "date-rules.unreadable-*"));
+
+        // Once the lock is gone the earlier rules come back unchanged.
+        Assert.Equal([Scanner], store.LoadUserRules().Rules.CustomRules);
+    }
+
+    [Fact]
+    public void Save_is_aborted_when_the_unreadable_file_cannot_be_moved_aside()
+    {
+        WriteRules("{ broken");
+        var store = Store();
+
+        using (new FileStream(RulesPath, FileMode.Open, FileAccess.Read, FileShare.Read))
+        {
+            Assert.Equal(UserRulesStatus.Unreadable, store.LoadUserRules().Status);
+            Assert.Equal(DateRuleSaveResult.Failed, store.SaveUserRules(new UserDateRules([], [Scanner])));
+        }
+
+        Assert.Equal("{ broken", File.ReadAllText(RulesPath));
+        Assert.Equal([RulesPath], Directory.GetFiles(Path.GetDirectoryName(RulesPath)!));
+    }
     [Fact]
     public void Default_path_is_next_to_the_settings()
     {
