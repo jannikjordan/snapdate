@@ -195,9 +195,9 @@ is never taller than the window; only the rule list scrolls). From top to bottom
 - `Border.notice` (`warning-soft` background, warning icon + text, never colour alone) for the state of the user's rule
   file: unreadable ("Built-in rules still work. Saving will keep a copy of the old file."), written by a newer version or
   not accessible (both read-only: switches disabled, no Duplicate/Delete). A second notice (Polite live region) explains a
-  change that could not be saved (changed elsewhere → list reloaded; failed/too large → undone).
+  change that could not be saved (changed elsewhere → list reloaded and the folder rescanned on close; failed/too large → undone, no rescan); keyboard focus stays on that rule. While read-only, each row's automation name also says "on"/"off".
 - Rule rows (`Border.ruleRow`: `surface`, 1 px `border`, radius 10) in precedence order, own rules first: `ToggleSwitch.rule`
-  (no On/Off text, primary fill; automation name "<rule> on/off"), name (600, trimmed at 300 px, tooltip), source badge
+  (no On/Off text, primary fill; automation name "<rule> on/off"), name (600, tooltip) followed by the source badge in a left-aligned DockPanel, so a long name is trimmed and never runs under the row actions; source badge
   ("Yours"/"Eigene" = `badge.info`, "Built-in"/"Mitgeliefert" = `badge.neutral`: `surface-2`, 1 px `border`, `text`),
   a `badge.warn` with the syntax name for rules this version cannot use, and the patterns (mono, muted, one line, tooltip
   one per line). Actions at the right as link buttons: built-in rows "Duplicate" (copy named "<name> (copy)"/"(Kopie)",
@@ -205,7 +205,7 @@ is never taller than the window; only the rule list scrolls). From top to bottom
   "Delete this rule?" + Delete + Cancel. "Edit" (own rows) and "Add rule" (footer, left) exist but stay hidden until the
   rule editor (#20).
 - Tester (`Border.tester`: `surface-2`, radius 10): label, mono text box "Try a file name" and, when a folder was scanned, a
-  picker with up to 50 of its names (those with a file date first). The result line is a Polite live region: check icon +
+  picker with up to 50 of its names (those with a file date first; editing the text clears the pick, so the same name can be picked again). The result line is a Polite live region: check icon +
   `success` text "Rule "<name>": <long date>[, <time>]" in the UI culture; warning icon + `warning` text "… (rule is
   switched off)"; red ✕ icon + muted "No rule matches". Only photo/video extensions are removed before matching.
 - Footer: primary "Close". Esc cancels an open delete confirmation, otherwise closes. Tab cycles inside the dialog
