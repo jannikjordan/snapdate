@@ -58,16 +58,22 @@ placeholders the user already knows from the file-name builder, for example
   must appear together (neither `{HH}` without `{mm}` nor `{mm}` without
   `{HH}`; error kinds `HourWithoutMinute`, `MinuteWithoutHour`); seconds
   require minutes (`SecondWithoutMinute`); ambiguous neighbours
-  (`AmbiguousNeighbours`, see below). A rule with one invalid pattern still
-  uses its valid ones.
-- **Ambiguity rule (runs).** A *run* is a group of consecutive tokens with no
-  literal text between them. Each run may contain **at most one
+  (`AmbiguousNeighbours`, see below); an expression that fails to build
+  (`InvalidExpression`, used by regex mode, see below). A rule with one
+  invalid pattern still uses its valid ones.
+- **Ambiguity rule (runs).** A *run* is a sequence of tokens that may also
+  include `?` and literal digit characters (`0`–`9`), because both behave like
+  fixed-width digits. A run ends only at a literal non-digit, at `*`, or at the
+  start or end of the pattern. Each run may contain **at most one
   variable-width token** (`{M}`, `{D}`, `{H}`, `{m}`, `{s}`), and a run that
-  contains one must not touch `*`. A `?` must not sit directly next to a
-  variable-width token. Fixed-width tokens may touch `*`, so
-  `WhatsApp * {YYYY}-{MM}-{DD} * {HH}.{mm}.{ss}*` is valid, while
-  `{YYYY}{M}{D}` or `*{D}.{MM}.{YYYY}` is not. Violations are reported as
-  `AmbiguousNeighbours`.
+  contains one must not touch `*`. Fixed-width tokens may touch `*`.
+  Violations are reported as `AmbiguousNeighbours`.
+  - Valid: `WhatsApp * {YYYY}-{MM}-{DD} * {HH}.{mm}.{ss}*`,
+    `{YYYY}{M}{DD}-*`.
+  - Invalid: `{YYYY}{M}{D}` (two variable-width tokens in one run),
+    `{YYYY}-{M}1{D}` (the digit `1` joins `{M}` and `{D}` into one run),
+    `*{D}.{MM}.{YYYY}` and `{YYYY}{M}{DD}?*` (a run with a variable-width
+    token touches `*`).
 - Each pattern is compiled once to a `Regex` with
   `NonBacktracking | IgnoreCase | CultureInvariant | ExplicitCapture`, a
   **50 ms match timeout** (a timeout counts as no match) and no
@@ -91,7 +97,7 @@ capped (`{n}` / `{n,m}` with n, m ≤ 100). **Any failure while building the
 regex** — constructs that `NonBacktracking` does not support
 (backreferences, lookarounds, atomic groups; `NotSupportedException`), syntax
 errors (`ArgumentException`), a too-large repetition or anything else — becomes
-a plain-language validation error, never a crash. The 50 ms timeout applies to
+a plain-language validation error (`InvalidExpression`), never a crash. The 50 ms timeout applies to
 matching, as for patterns. Group values go through the
 same ASCII-digit, calendar and plausibility checks. Implemented in #21 in the
 same release (v0.3.0); until then such rules are kept but inactive.
