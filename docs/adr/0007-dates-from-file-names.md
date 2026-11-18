@@ -170,7 +170,7 @@ Checks, in order:
 *Measured* (tests in `MatchTimeTests`, `DateRuleSetTests`; hostile names of 260
 characters such as runs of one letter with one odd letter, repeating pairs,
 digits only, random text): every expression from both review rounds is now
-rejected or takes under 20 ms; the slowest accepted expressions found by
+rejected or takes under 30 ms; the slowest accepted expressions found by
 fuzzing (thousands of combinations including empty and different-length
 alternatives, classes with escapes and `[`, fixed-count groups) and at the
 budget's edges take up to about 40 ms per match on a developer machine. The
