@@ -77,7 +77,10 @@ placeholders the user already knows from the file-name builder, for example
     `{YYYY}{M}{DD}?-*` and `{YYYY}-{M}?-{DD}` (the run with `{M}` contains
     `?`).
 - When a name contains several places where a pattern with `*` on both sides
-  could match, the first date from the left is used.
+  could match, the first date from the left is used. The leftmost block that
+  fits the pattern's shape is chosen before the date is validated; if that
+  block is not a valid date, the pattern does not match and the next pattern
+  or rule is tried (later blocks in the same name are not).
 - Each pattern is compiled once to a `Regex` with
   `NonBacktracking | IgnoreCase | CultureInvariant | ExplicitCapture`, a
   **50 ms match timeout** (a timeout counts as no match) and no
