@@ -39,10 +39,12 @@ Used only for: logo, primary button, progress bar, selected token chip glow.
 | `border` | `#E4E1F0` | `#302E48` | 1 px separators |
 | `text` | `#1B1A2E` | `#F2F1FA` | Primary text |
 | `text-muted` | `#6B6880` | `#A3A0B8` | Secondary text, labels |
-| `primary` | `#5B4BF5` | `#8B7DFF` | Links, focus ring, active states |
-| `primary-soft` | `#ECE9FF` | `#2E2A5C` | Selected chip, info badge |
+| `primary` | `#5B4BF5` | `#8B7DFF` | Links, focus ring, active states, "Date from name" filter dot |
+| `primary-soft` | `#ECE9FF` | `#2E2A5C` | Selected chip, "Date from name" (info) badge background |
+| `info` | `#5B4BF5` | `#A99EFF` | "Date from name" badge text (4.69:1 light, 5.63:1 dark on `primary-soft`, which is also the selected-row background) |
+| `info-border` | `#7B6EF6` | `#7A6EE6` | 1 px border of the "Date from name" badge, so the pill stays visible on a selected row (3.27:1 light, 3.25:1 dark on `primary-soft`) |
 | `success` | `#1FA971` | `#3CCB8F` | "Camera date" badge, done state |
-| `warning` | `#D98A0B` | `#F2B13C` | "File date" fallback badge, duplicates |
+| `warning` | `#D98A0B` | `#F2B13C` | "File date" fallback badge, duplicates, "Dates differ" hint |
 | `danger` | `#E5484D` | `#FF6B70` | Errors |
 
 All text/background pairs meet **WCAG AA** (≥ 4.5:1 body, ≥ 3:1 large/UI).
@@ -96,7 +98,7 @@ tooltips or flyouts.
 │ [logo] Snapdate v0.1.0                 EN | DE   ☾   ?   ⓘ   ─  □  ✕     │ 48 px title bar
 ├────────────────────────────────┬─────────────────────────────────────────┤
 │ ① Choose folders               │ Preview                      12 photos  │
-│  [📁 Photos from   D:\…   ▸]   │ All 12 · ● Camera 9 · ● File 3 · ● 1     │
+│  [📁 Photos from   D:\…   ▸]   │ All 12 · ● Camera 8 · ● Name 2 · ● File 2 │
 │  [📁 Save to       E:\…   ▸]   │ ┌─────────────────────────────────────┐ │
 │  ☑ Include sub-folders         │ │ [thumb] IMG_4711.JPG                │ │
 │                                │ │         → 2024-07-14_09-12-33.jpg ● │ │
@@ -152,9 +154,15 @@ Validation inline below the row (e.g. "Target is inside the source folder").
 ### 5.4 Preview list
 Virtualised list. Row: 40 px thumbnail (rounded 8), original name (muted),
 arrow, new name (mono, bold), date-source badge:
-- green **Camera** (metadata), amber **File date** (fallback), amber
-  **Renamed (2)** (collision), red **Skipped** (error, tooltip with reason).
-Filter tabs above the list: All · Camera date · File date · Problems.
+- green **Camera date** (metadata), primary/info **Date from name** (read from the file name by a date rule;
+  `Border.badge.info`, `primary-soft` background, `info` text, 1 px `info-border`; tooltip names the rule), amber **File date**
+  (fallback), amber **Numbered** (collision), red **Skipped** (error, tooltip with reason).
+- **Dates differ**: when metadata and file name give different days, a small hint sits under the badge: warning icon +
+  "Dates differ" / "Daten weichen ab" in `warning` (never colour alone). Its tooltip names both dates, which one was
+  used and why ("The name says …, the photo's metadata says … (written by an app, not a camera). The name was used." /
+  "The camera date (…) was used; the name says …"). The row's automation name includes badge and hint.
+Filter tabs above the list (wrap onto a second line when narrow): All · ● Camera date · ● Date from name (primary dot)
+· ● File date · ● Numbered. Every photo is in exactly one of the three date-source tabs, so their counts add up to All.
 Empty state: illustration + "Choose a source folder to see your photos here".
 
 ### 5.5 Action bar
@@ -176,6 +184,61 @@ shows a refresh icon, "Snapdate X is available" with "You are using version Y." 
 same strip with an info icon, one line of text and a "Got it" link button. Both are live regions with
 automation names. About gets a divider, the "Check for updates automatically" checkbox and a
 "Check now" secondary button with a short inline result next to it.
+
+### 5.8 Dates from file names dialog
+Opened from the link button "Dates from file names" / "Datum aus Dateinamen" (`Button.link`, `DateRulesLink`) at the right
+of the preview header; it is always there (disabled while copying). The "Date from name" and "File date" badge tooltips
+point to it. Overlay like About: `Border.scrim` + `Border.dialog.wide` (720 px wide, padding 24, 24 px top/bottom margin, so it
+is never taller than the window; only the rule list scrolls). From top to bottom:
+- Title (18/700) and a two-sentence explanation (muted): the first fitting rule is used, own rules first; a date in a name
+  is often the day the picture was received.
+- `Border.notice` (`warning-soft` background, warning icon + text, never colour alone) for the state of the user's rule
+  file: unreadable ("Built-in rules still work. Saving will keep a copy of the old file."), written by a newer version or
+  not accessible (both read-only: switches disabled, no Duplicate/Delete). A second notice (Polite live region) explains a
+  change that could not be saved (changed elsewhere → list reloaded and the folder rescanned on close; failed/too large → undone, no rescan); keyboard focus stays on that rule. While read-only, each row's automation name also says "on"/"off".
+- Rule rows (`Border.ruleRow`: `surface`, 1 px `border`, radius 10) in precedence order, own rules first: `ToggleSwitch.rule`
+  (no On/Off text, primary fill; automation name "<rule> on/off"), name (600, tooltip) followed by the source badge in a left-aligned DockPanel, so a long name is trimmed and never runs under the row actions; source badge
+  ("Yours"/"Eigene" = `badge.info`, "Built-in"/"Mitgeliefert" = `badge.neutral`: `surface-2`, 1 px `border`, `text`),
+  a `badge.warn` with the syntax name for rules this version cannot use, and the patterns (mono, muted, one line, tooltip
+  one per line). Actions at the right as link buttons: built-in rows "Duplicate" (copy named "<name> (copy)"/"(Kopie)",
+  placed with the own rules, focus moves to it); own rows "Delete" (`Button.link.danger`) with an inline confirmation
+  "Delete this rule?" + Delete + Cancel; own rows also "Edit" (not for rules in a syntax this version cannot use).
+- Tester (`Border.tester`: `surface-2`, radius 10): label, mono text box "Try a file name" and, when a folder was scanned, a
+  picker with up to 50 of its names (those with a file date first; editing the text clears the pick, so the same name can be picked again). The result line is a Polite live region: check icon +
+  `success` text "Rule "<name>": <long date>[, <time>]" in the UI culture; warning icon + `warning` text "… (rule is
+  switched off)"; red ✕ icon + muted "No rule matches". Only photo/video extensions are removed before matching. When no
+  rule reads the name but it contains an 8-digit `YYYYMMDD` run, a link button "Create a rule from this name" opens the
+  editor with the text before the run kept, the run as `{YYYY}{MM}{DD}` and the rest as `*`.
+- Footer: secondary "Add rule" (left, hidden while read-only) and primary "Close". Esc cancels an open delete
+  confirmation, otherwise closes. Tab cycles inside the dialog (top to bottom); on open the first switch gets focus, on
+  close focus returns to where it was.
+- Rule editor ("Add rule", "Edit", "Create a rule from this name"): replaces the list, the dialog tester, the intro and
+  the footer while open (the title and notices stay). Never reachable while read-only. In a scroll viewer, top to bottom:
+  title "New rule"/"Edit rule" (15/600) and a muted one-sentence intro; "Name" label + `TextBox.ruleName` (max 80, placeholder
+  "My rule"/"Meine Regel"; saved trimmed, empty → that default; duplicate names are allowed); the label "Patterns (one
+  per line, up to 10)" and `TextBox.rulePatterns` (mono 13, 104 px high, multi-line, Enter = new line, Tab leaves;
+  `danger` border while something is wrong) with a muted hint; `Button.chip` blocks Year, Month, Day, Hour, Minute,
+  Second ({YYYY} {MM} {DD} {HH} {mm} {ss}) and "any text *" that insert at the caret; a `CheckBox` "Advanced: regular
+  expressions"/"Erweitert: reguläre Ausdrücke" (off by default; tooltip and help text: the text is kept when switching).
+  When ticked, the intro says "expressions", the label reads "Regular expressions (one per line, up to 10)", lines are
+  kept as typed (not trimmed), the tester tries the name 150 ms after the last change off the UI thread (latest wins), the blocks are hidden and the hint explains
+  the named groups (year or yy, month, day; hour, minute, second optional), followed by the example
+  `^IMG-(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})-WA\d+$` (mono, muted 12; automation name "Example: …"). Switching keeps
+  the text and validates it again in the other syntax; a switch counts as a change (Save, Discard question). Messages in
+  regex mode name groups (`(?<month>…)`) instead of blocks and explain syntax errors with a character position,
+  anything outside the allowed subset (naming the construct and its position), repetitions above 20,
+  repeated parts whose length varies and expressions over the complexity budget; then the validation (Polite live
+  region): one `Grid.ruleProblem` per problem (`danger` warning icon + 12 px text "Line 2: …", one plain-language message
+  per error kind, including how to fix ambiguous digits), or the check icon + `success` "All patterns can be used.";
+  then its own tester (`Border.tester`, prefilled from the dialog tester, same picker), trying only this rule: ✓
+  "Matches line 2 → <date>", warning icon "Line 2 matches, but 2024-13-45 is not a valid date." / "… is before 1900 or
+  in the future.", ✕ "No pattern matches this name."; Polite live region. Footer: secondary "Cancel" + primary "Save
+  rule" (disabled while anything is wrong). Leaving with changes asks inline "Discard your changes?" + "Discard"
+  (`Button.secondary.danger`) + "Keep editing" (gets focus, the safe answer); Esc in the editor = Cancel, Esc on the question = keep
+  editing. On open the name box gets focus; after Save or Cancel the edited/saved rule's switch (or "Add rule"). A
+  refused save keeps the editor open with the reason in the notice above; Save can be pressed again.
+
+Every change is saved at once. Closing after a change scans the folder again (once) with the new rules.
 
 ## 6. Localisation
 

@@ -84,5 +84,22 @@ public sealed class BuildPlanUseCaseTests
 
         Assert.Equal(1, plan.FromMetadataCount);
         Assert.Equal(1, plan.FromFileDateCount);
+        Assert.Equal(0, plan.FromFileNameCount);
+    }
+
+    [Fact]
+    public void Dates_from_file_names_are_counted_separately()
+    {
+        var plan = Build(
+            new FakeFileSystem(),
+            "{name}",
+            Photo("a.jpg", new DateTime(2024, 1, 1)),
+            Photo("b.jpg", new DateTime(2024, 1, 2), DateSource.FileTimestamp),
+            Photo("IMG-20240103-WA0001.jpg", new DateTime(2024, 1, 3), DateSource.FileName),
+            Photo("IMG-20240104-WA0002.jpg", new DateTime(2024, 1, 4), DateSource.FileName));
+
+        Assert.Equal(1, plan.FromMetadataCount);
+        Assert.Equal(1, plan.FromFileDateCount);
+        Assert.Equal(2, plan.FromFileNameCount);
     }
 }

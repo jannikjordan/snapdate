@@ -21,6 +21,9 @@ public enum DateSource
     /// <summary>PNG tEXt/iTXt "Creation Time" chunk.</summary>
     PngText,
 
+    /// <summary>A date read from the file name by a date rule (e.g. WhatsApp's <c>IMG-YYYYMMDD-WA…</c>).</summary>
+    FileName,
+
     /// <summary>No metadata: the earliest of the file's created/modified timestamps.</summary>
     FileTimestamp,
 }

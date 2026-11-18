@@ -34,7 +34,7 @@ clean, sortable name based on **when the photo was taken**, for example
 ### ✨ Features
 
 - 📁 **Two folders, that's it** — where your photos are, and where the renamed ones go. Drag & drop works too.
-- 🕒 **The real capture date** — read from inside the photo (EXIF, XMP, video and PNG data). No date inside? The file date is used and clearly marked.
+- 🕒 **The real capture date** — read from inside the photo (EXIF, XMP, video and PNG data). No date inside? Snapdate reads it from the file name (WhatsApp built in, your own rules too), otherwise uses the file date — always clearly marked.
 - 🧩 **Build your own name with blocks** — Year, Month, Day, Hour, Original name, Camera, Counter … with or without leading zeros (`07` or `7`), plus any text you like: `Holiday {D}.{M}.{YYYY} {HH}{mm}`.
 - 🗂️ **Folders by year and month** — `2024\07\2024-07-14 IMG_4711.jpg` with one click.
 - 👀 **Preview first** — every old → new name with thumbnail before anything happens.
@@ -71,7 +71,7 @@ website visit). You can switch it off in *About*.
 PowerShell. The `.sig` files next to each download are for Snapdate's own
 updater; you don't need them. Once the repository is public, build provenance
 can be checked with `gh attestation verify <file> --repo jannikjordan/snapdate`.
-More details: [Install, updates and uninstall](docs/user-guide.en.md#-10-install).
+More details: [Install, updates and uninstall](docs/user-guide.en.md#-11-install).
 
 ### 🚀 How it works
 
@@ -103,7 +103,7 @@ Beispiel `2024-07-14_09-12-33.jpg`.
 ### ✨ Funktionen
 
 - 📁 **Nur zwei Ordner** — wo Ihre Fotos sind und wohin die umbenannten sollen. Ziehen & Ablegen funktioniert auch.
-- 🕒 **Das echte Aufnahmedatum** — direkt aus dem Foto gelesen (EXIF, XMP, Video- und PNG-Daten). Kein Datum enthalten? Dann wird das Dateidatum verwendet und deutlich markiert.
+- 🕒 **Das echte Aufnahmedatum** — direkt aus dem Foto gelesen (EXIF, XMP, Video- und PNG-Daten). Kein Datum enthalten? Dann liest Snapdate es aus dem Dateinamen (WhatsApp eingebaut, eigene Regeln möglich), sonst gilt das Dateidatum — immer deutlich markiert.
 - 🧩 **Namen aus Bausteinen** — Jahr, Monat, Tag, Stunde, Originalname, Kamera, Zähler … mit oder ohne führende Null (`07` oder `7`) und mit beliebigem eigenem Text: `Urlaub {D}.{M}.{YYYY} {HH}{mm}`.
 - 🗂️ **Ordner nach Jahr und Monat** — `2024\07\2024-07-14 IMG_4711.jpg` mit einem Klick.
 - 👀 **Erst die Vorschau** — jeder alte → neue Name mit Miniaturbild, bevor etwas passiert.
@@ -143,7 +143,7 @@ in PowerShell. Die `.sig`-Dateien neben jedem Download sind für die
 Aktualisierung in Snapdate selbst bestimmt; Sie brauchen sie nicht. Sobald das
 Repository öffentlich ist, lässt sich die Herkunft mit
 `gh attestation verify <Datei> --repo jannikjordan/snapdate` prüfen.
-Mehr dazu: [Installation, Updates und Deinstallation](docs/user-guide.de.md#-10-installation).
+Mehr dazu: [Installation, Updates und Deinstallation](docs/user-guide.de.md#-11-installation).
 
 | | |
 |---|---|

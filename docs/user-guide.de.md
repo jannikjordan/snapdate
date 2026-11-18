@@ -25,12 +25,13 @@ in der richtigen Reihenfolge, in jedem Ordner, auf jedem Computer.
 6. [Vorschau prüfen](#-6-vorschau-prüfen)
 7. [Los!](#-7-los)
 8. [Woher kommt das Datum?](#-8-woher-kommt-das-datum)
-9. [Alle Bausteine (Platzhalter)](#-9-alle-bausteine-platzhalter)
-10. [Installation](#-10-installation)
-11. [Portable Version](#-11-portable-version)
-12. [Updates](#-12-updates)
-13. [Deinstallation](#-13-deinstallation)
-14. [Fragen & Antworten](#-14-fragen--antworten)
+9. [Datum aus Dateinamen](#-9-datum-aus-dateinamen)
+10. [Alle Bausteine (Platzhalter)](#-10-alle-bausteine-platzhalter)
+11. [Installation](#-11-installation)
+12. [Portable Version](#-12-portable-version)
+13. [Updates](#-13-updates)
+14. [Deinstallation](#-14-deinstallation)
+15. [Fragen & Antworten](#-15-fragen--antworten)
 
 ---
 
@@ -40,14 +41,14 @@ in der richtigen Reihenfolge, in jedem Ordner, auf jedem Computer.
    [Download-Seite](https://github.com/jannikjordan/snapdate/releases/latest) herunter.
    (Auf ARM-Geräten wie Surface Pro X oder Copilot+ PCs: `win-arm64`.)
 2. Doppelklick darauf und den Schritten folgen — Einzelheiten unter
-   [Installation](#-10-installation). Starten Sie **Snapdate** danach über das Startmenü.
+   [Installation](#-11-installation). Starten Sie **Snapdate** danach über das Startmenü.
 3. Beim ersten Start zeigt Windows eventuell *„Der Computer wurde durch Windows
    geschützt“*, weil die App neu ist. Klicken Sie auf
    **Weitere Informationen → Trotzdem ausführen**.
 
 > 💡 Sie möchten nichts installieren? Nehmen Sie stattdessen die **portable**
 > Datei (`Snapdate-vX.Y.Z-win-x64-portable.exe`): einfach doppelklicken. Siehe
-> [Portable Version](#-11-portable-version).
+> [Portable Version](#-12-portable-version).
 
 Snapdate spricht **Deutsch und Englisch**. Die Sprache Ihres Windows wird
 automatisch gewählt — umschalten können Sie jederzeit oben rechts mit
@@ -191,11 +192,18 @@ den **neuen Namen** fett. Ein farbiges Etikett zeigt, woher das Datum stammt:
 | Etikett | Bedeutung |
 |---|---|
 | 🟢 **Aufnahmedatum** | Das Datum stammt aus dem Foto selbst — der Moment der Aufnahme. |
-| 🟠 **Dateidatum** | Die Datei enthält kein Datum (typisch für Screenshots und Chat-Bilder), daher wurde das Datum der Datei verwendet. |
+| 🟣 **Datum aus Name** | Das Foto hat kein Aufnahmedatum, aber sein Dateiname enthält eines (z. B. `IMG-20240714-WA0001.jpg` von WhatsApp). Siehe [Datum aus Dateinamen](#-9-datum-aus-dateinamen). |
+| 🟠 **Dateidatum** | Die Datei enthält kein Datum und ihr Name auch nicht (typisch für Screenshots und Chat-Bilder), daher wurde das Datum der Datei verwendet. |
 | 🟠 **Nummeriert** | Zwei Fotos bekämen denselben Namen (z. B. in derselben Sekunde aufgenommen), daher wurde `(2)`, `(3)` … ergänzt. |
 
-Mit den Reitern **Alle · Aufnahmedatum · Dateidatum · Nummeriert** sehen Sie
-nur eine Gruppe.
+Mit den Reitern **Alle · Aufnahmedatum · Datum aus Name · Dateidatum ·
+Nummeriert** sehen Sie nur eine Gruppe.
+
+Ein kleines **⚠ Daten weichen ab** unter dem Etikett bedeutet: Das Foto hatte
+zwei Daten an verschiedenen Tagen — zum Beispiel eines im Namen und ein anderes
+in der Datei. Zeigen Sie mit der Maus darauf, um zu sehen, welches Datum
+verwendet wurde und welches nicht (mehr unter
+[Woher kommt das Datum?](#-8-woher-kommt-das-datum)).
 
 ---
 
@@ -221,19 +229,148 @@ findet:
 
 ```mermaid
 flowchart TD
-    S([Foto oder Video]) --> A{"Aufnahmedatum<br/>von der Kamera<br/>gespeichert? (EXIF)"}
-    A -- ja --> OK["🟢 Kameradatum"]
-    A -- nein --> B{"Anderes Datum<br/>in der Datei?<br/>(XMP, Video, PNG)"}
+    S([Foto oder Video]) --> A{"Aufnahmedatum<br/>von einer Kamera<br/>gespeichert?<br/>(EXIF mit Kameramodell)"}
+    A -- ja --> OK["🟢 Aufnahmedatum"]
+    A -- nein --> N{"Datum im<br/>Dateinamen?<br/>(eine Regel passt)"}
+    N -- ja --> C{"Hat eine App ein Datum<br/>vom selben Tag in die<br/>Datei geschrieben?"}
+    C -- ja --> OK
+    C -- "nein (anderer Tag: ⚠ Daten weichen ab)" --> NM["🟣 Datum aus Name"]
+    N -- nein --> B{"Anderes Datum<br/>in der Datei?<br/>(von einer App,<br/>XMP, Video, PNG)"}
     B -- ja --> OK
     B -- nein --> F["🟠 Dateidatum<br/>(das älteste Datum, das<br/>Windows zur Datei kennt)"]
 ```
 
+1. **Ein Datum von einer Kamera gewinnt immer.** Nennt der Dateiname einen
+   anderen Tag, wird das Foto mit **⚠ Daten weichen ab** markiert, und der
+   Hinweis zeigt das nicht verwendete Datum aus dem Namen.
+2. **Sonst gewinnt das Datum im Dateinamen** gegen ein Datum, das eine App
+   (Galerie-, Backup- oder Chat-App — keine Kamera) in die Datei geschrieben
+   hat, und gegen das Dateidatum. Liegen beide am **selben Tag**, geht nichts
+   verloren: Snapdate behält das Datum der App, das meist die genauere Uhrzeit
+   hat.
+3. Liegen sie an **verschiedenen Tagen**, gewinnt der Name, und das Foto wird
+   mit **⚠ Daten weichen ab** markiert. Beispiel: `IMG-20160706-WA0002.jpg`
+   kam am 6. Juli 2016 per WhatsApp an, aber Jahre später hat eine App den
+   23. Juni 2026 in die Datei geschrieben. Snapdate verwendet den 6. Juli 2016
+   aus dem Namen; der Hinweis zeigt das ignorierte Datum von 2026, damit Sie
+   es prüfen können.
+4. **Namen mit Datum, aber ohne Uhrzeit** (wie `IMG-20240714-WA0001.jpg`):
+   Liegt das Dateidatum am selben Tag, übernimmt Snapdate dessen Uhrzeit;
+   sonst ist die Uhrzeit 00:00:00.
+5. **Kein Datum im Namen:** wie bisher — ein Datum in der Datei, sonst das
+   Dateidatum.
+
 Daten, die nicht stimmen können — weit in der Zukunft oder vor 1900 — werden
-ignoriert.
+ignoriert, auch wenn sie aus einem Dateinamen stammen.
 
 ---
 
-## 🧩 9. Alle Bausteine (Platzhalter)
+## 📛 9. Datum aus Dateinamen
+
+WhatsApp entfernt das Datum aus Bildern, die es verschickt, schreibt das Datum
+aber in den **Dateinamen**: `IMG-20240714-WA0001.jpg` unter Android oder
+`WhatsApp Image 2024-07-14 at 15.32.08.jpeg` bei WhatsApp Desktop / Web.
+Snapdate liest solche Namen mit **Regeln**. Diese Fotos bekommen das Etikett
+**Datum aus Name**.
+
+> 💡 Das Datum in einem WhatsApp-Namen ist der Tag, an dem das Bild auf dem
+> Handy oder Computer **angekommen** ist — nicht immer der Aufnahmetag.
+
+Klicken Sie über der Vorschauliste auf **Datum aus Dateinamen**, um die Regeln
+zu sehen:
+
+![Die Regeln für das Datum aus Dateinamen](images/de/17-date-rules-light.png)
+
+- **Mitgelieferte Regeln** kommen mit Snapdate: *WhatsApp (Android)* und
+  *WhatsApp Desktop / Web*. Sie können sie nicht ändern, aber mit dem Schalter
+  links **ausschalten** oder mit **Duplizieren** eine eigene Kopie anlegen, die
+  Sie ändern können.
+- **Ihre eigenen Regeln** sind mit *Eigene* markiert. Sie werden immer **vor**
+  den mitgelieferten geprüft, und Updates ändern sie nie. Mit **Bearbeiten**
+  und **Löschen** ändern oder entfernen Sie sie.
+- Die erste Regel, die zu einem Namen passt, wird verwendet. Jede Änderung wird
+  sofort gespeichert; die Vorschau wird aktualisiert, wenn Sie das Fenster
+  schließen.
+- **Dateinamen ausprobieren:** Tippen Sie einen Namen ein oder wählen Sie einen
+  aus Ihrem Fotoordner. Snapdate zeigt, welche Regel welches Datum liest —
+  oder *Keine Regel passt*. Dann legt **Regel aus diesem Namen erstellen** eine
+  neue Regel für solche Namen an.
+
+### ✏️ Eigene Regeln
+
+Klicken Sie auf **Regel hinzufügen** (oder **Bearbeiten**). Geben Sie der Regel
+einen Namen und beschreiben Sie, wie Ihre Dateinamen aussehen — ein Muster pro
+Zeile, bis zu 10. Klicken Sie auf die Bausteine unter dem Feld, um sie an der
+Cursorposition einzufügen:
+
+![Eine Regel bearbeiten](images/de/18-date-rule-editor-light.png)
+
+| Baustein | Code | Passt zu |
+|---|---|---|
+| Jahr | `{YYYY}` · `{YY}` | `2024` · `24` |
+| Monat | `{MM}` · `{M}` | `07` · `7` oder `07` |
+| Tag | `{DD}` · `{D}` | `04` · `4` oder `04` |
+| Stunde | `{HH}` · `{H}` | `09` · `9` oder `09` |
+| Minute | `{mm}` · `{m}` | `05` · `5` oder `05` |
+| Sekunde | `{ss}` · `{s}` | `08` · `8` oder `08` |
+| Beliebiger Text | `*` | alles, auch nichts |
+| Ein Zeichen | `?` | genau ein Zeichen |
+
+- Ein Muster braucht **Jahr, Monat und Tag**. Stunde und Minute gehören
+  zusammen; Sekunden brauchen Minuten. Jeder Teil darf nur einmal vorkommen.
+- Das Muster muss zum **ganzen Namen ohne Dateiendung** passen — so passt
+  `IMG_{YYYY}{MM}{DD}_*` zu `IMG_20240714_153208.jpg`. Groß- und
+  Kleinschreibung spielen keine Rolle. Alles andere muss genau so im Namen
+  stehen.
+- `*` und `?` können in Windows-Dateinamen nicht vorkommen, deshalb werden sie
+  nie mit Ihrem Text verwechselt. Eine geschweifte Klammer selbst schreiben Sie
+  doppelt: `{{` oder `}}`.
+- Die kurzen Bausteine `{M}`, `{D}`, `{H}`, `{m}`, `{s}` brauchen etwas
+  Eindeutiges daneben: Bei `{M}{D}` wäre `1 12` nicht von `11 2` zu
+  unterscheiden. Setzen Sie ein Trennzeichen dazwischen oder verwenden Sie
+  `{MM}{DD}`.
+- Unter dem Feld erklärt Snapdate jede Zeile, die nicht verwendet werden kann,
+  in einfachen Worten. Der Test zeigt, welche Zeile zu einem Namen passt und
+  welches Datum sie liest — oder dass eine Zeile passt, `2024-13-45` aber kein
+  Datum ist.
+
+### 🧪 Erweitert: reguläre Ausdrücke
+
+Wenn Sie **reguläre Ausdrücke** kennen, setzen Sie im Editor das Häkchen bei
+**Erweitert: reguläre Ausdrücke**. Ihr Text bleibt beim Umschalten erhalten.
+Kennzeichnen Sie die Datumsteile mit benannten Gruppen: `year` (oder `yy` für
+zwei Ziffern), `month` und `day`, optional `hour`, `minute` und `second`.
+Zum Beispiel:
+
+```
+^IMG-(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})-WA\d+$
+```
+
+![Eine Regel als regulärer Ausdruck](images/de/19-date-rule-regex-light.png)
+
+Damit der Vergleich schnell und sicher bleibt, akzeptiert Snapdate nur einen
+einfachen Teil der Sprache für reguläre Ausdrücke:
+
+- **Erlaubt:** normale Zeichen, `\d \s \w .`, einfache Klassen wie `[a-z_-]`
+  oder `[^0-9]`, Gruppen `( )`, `(?: )` und die benannten Gruppen oben,
+  Alternativen mit `|`, `^` und `$` sowie Wiederholungen (`* + ? {n} {n,m}`)
+  mit Anzahlen bis 20.
+- Der Ausdruck muss zum **ganzen Namen** ohne Dateiendung passen; Groß- und
+  Kleinschreibung spielen keine Rolle. Höchstens 300 Zeichen pro Zeile.
+- Ein Teil, **dessen Länge sich ändern kann** — etwa `.*`, `x?` oder
+  unterschiedlich lange Alternativen wie `(?:a|bc)` — **kann nicht noch einmal
+  wiederholt** werden. Schreiben Sie die Teile stattdessen nacheinander aus.
+- Pro Ausdruck sind nur wenige offene Wiederholungen (`*`, `+`, `{n,}`)
+  erlaubt; sehr lange oder komplizierte Ausdrücke werden abgelehnt.
+- **Nicht verfügbar:** Lookarounds, Rückverweise, Optionen wie `(?i)`, `\b`,
+  `\p{…}` und andere Buchstaben-Escapes.
+
+Was nicht verwendet werden kann, wird in einfachen Worten erklärt; der Test
+probiert einen Namen kurz nachdem Sie aufgehört haben zu tippen.
+
+---
+
+## 🧩 10. Alle Bausteine (Platzhalter)
 
 Im Feld erscheint jeder Baustein als kurzer Code in geschweiften Klammern. Sie
 können die Codes auch selbst tippen. **Groß- und Kleinschreibung zählt**: `MM`
@@ -262,7 +399,7 @@ MOV, M4V, 3GP).
 
 ---
 
-## 💿 10. Installation
+## 💿 11. Installation
 
 Der Installer ist der empfohlene Weg. Er legt Snapdate wie jedes andere
 Programm im Startmenü an und ermöglicht es, dass Snapdate Sie über neue
@@ -301,7 +438,7 @@ Einstellungen**.
 
 ---
 
-## 🧳 11. Portable Version
+## 🧳 12. Portable Version
 
 Die **portable** Datei braucht keine Installation:
 
@@ -318,11 +455,11 @@ wenn alles verschwinden soll.
 Die portable Version **aktualisiert sich nicht selbst**. Gibt es eine neue
 Version, zeigt sie einen Hinweis mit dem Knopf **Herunterladen**, der die
 Download-Seite öffnet — dort laden Sie die neue Datei erneut herunter (siehe
-[Updates](#-12-updates)).
+[Updates](#-13-updates)).
 
 ---
 
-## 🔔 12. Updates
+## 🔔 13. Updates
 
 Snapdate prüft **höchstens einmal täglich** beim Start, ob es eine neuere
 Version gibt. Dafür fragt es bei GitHub (`api.github.com`) nur nach der neuesten
@@ -375,7 +512,7 @@ offline?“*.
 
 ---
 
-## 🗑️ 13. Deinstallation
+## 🗑️ 14. Deinstallation
 
 1. Öffnen Sie in Windows **Einstellungen → Apps → Installierte Apps** (Windows 10:
    *Apps & Features*).
@@ -383,17 +520,18 @@ offline?“*.
    Schritten.
 
 Haben Sie **nur für sich** installiert, fragt Snapdate, ob **auch Ihre
-Einstellungen gelöscht** werden sollen (gemerkte Ordner, Dateinamen-Muster,
-Sprache). Wählen Sie **Nein**, um sie zu behalten — praktisch, wenn Sie
-Snapdate später erneut installieren möchten. Bei einer Installation für **alle
-Benutzer** bleiben die Einstellungen immer erhalten.
+Einstellungen** (gemerkte Ordner, Dateinamen-Muster, Sprache) **und Ihre
+eigenen Datumsregeln gelöscht** werden sollen. Wählen Sie **Nein**, um sie zu
+behalten — praktisch, wenn Sie Snapdate später erneut installieren möchten.
+Bei einer Installation für **alle Benutzer** bleiben die Einstellungen immer
+erhalten.
 
 Ihre Fotos und umbenannten Dateien werden nie angefasst. Die portable Version
 hat kein Deinstallationsprogramm: Löschen Sie einfach die Datei.
 
 ---
 
-## ❓ 14. Fragen & Antworten
+## ❓ 15. Fragen & Antworten
 
 **Werden meine Fotos verändert?**
 Nein. Mit **Kopieren** werden Originale nie angefasst. Auch die Bilder selbst
@@ -413,7 +551,29 @@ wenn Sie darauf klicken.
 
 **Warum steht bei manchen Fotos „Dateidatum“?**
 Screenshots und Bilder aus Chats oder sozialen Netzwerken enthalten oft kein
-Datum. Dann ist das Datum der Datei das Beste, was Snapdate finden kann.
+Datum. Steht auch im Namen keines, ist das Datum der Datei das Beste, was
+Snapdate finden kann. Für Namen mit Datum siehe
+[Datum aus Dateinamen](#-9-datum-aus-dateinamen).
+
+**Meine WhatsApp-Fotos von einem iPhone haben kein Datum.**
+Ein iPhone speichert Bilder aus WhatsApp mit Namen wie `IMG_4200.jpg` — im
+Namen steht kein Datum und in der Datei auch nicht. Bitten Sie die Absenderin
+oder den Absender, die Fotos **„als Dokument“** zu senden (WhatsApp behält dann
+die Originaldatei mit ihrem Datum), oder kopieren Sie die Bilder bald nach dem
+Empfang, damit das Dateidatum nah am richtigen Tag liegt.
+
+**Warum steht bei einem Foto „Daten weichen ab“?**
+Es hatte zwei Daten an verschiedenen Tagen, z. B. eines im Namen und eines, das
+eine App in die Datei geschrieben hat. Zeigen Sie mit der Maus auf den Hinweis,
+um zu sehen, welches Datum verwendet und welches ignoriert wurde. Siehe
+[Woher kommt das Datum?](#-8-woher-kommt-das-datum).
+
+**Wo werden meine eigenen Datumsregeln gespeichert?**
+In `%APPDATA%\Snapdate\date-rules.json`, neben den Einstellungen. Updates
+ändern diese Datei nie. Kann sie einmal nicht gelesen werden, funktionieren die
+mitgelieferten Regeln weiter, und bevor Snapdate eine neue speichert, legt es
+die alte Datei als `date-rules.unreadable-….json` beiseite (sie wird nie
+gelöscht).
 
 **Wozu ist die Protokolldatei?**
 Sie listet auf, was von wo nach wo kopiert oder verschoben wurde. Sie können

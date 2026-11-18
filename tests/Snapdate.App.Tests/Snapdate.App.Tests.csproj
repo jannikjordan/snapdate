@@ -5,6 +5,8 @@
     <PackageReference Include="Avalonia.Skia" />
   </ItemGroup>
   <ItemGroup>
+    <!-- Builds JPEGs with known EXIF in memory; shared with the infrastructure tests. -->
+    <Compile Include="..\Snapdate.Infrastructure.Tests\Support\TestImages.cs" Link="Support\TestImages.cs" />
     <ProjectReference Include="..\..\src\Snapdate.App\Snapdate.App.csproj" />
   </ItemGroup>
 </Project>

@@ -75,13 +75,20 @@
   <data name="NoPhotosBody" xml:space="preserve"><value>This folder contains no supported photos or videos. If they are in sub-folders, tick “Include sub-folders”.</value></data>
   <data name="FilterAll" xml:space="preserve"><value>All</value></data>
   <data name="FilterCamera" xml:space="preserve"><value>Camera date</value></data>
+  <data name="FilterFileName" xml:space="preserve"><value>Date from name</value></data>
   <data name="FilterFile" xml:space="preserve"><value>File date</value></data>
   <data name="FilterRenamed" xml:space="preserve"><value>Numbered</value></data>
   <data name="BadgeCamera" xml:space="preserve"><value>Camera date</value></data>
+  <data name="BadgeFileName" xml:space="preserve"><value>Date from name</value></data>
   <data name="BadgeFile" xml:space="preserve"><value>File date</value></data>
   <data name="BadgeRenamed" xml:space="preserve"><value>Numbered</value></data>
   <data name="TipCamera" xml:space="preserve"><value>The date comes from the photo itself (saved by the camera).</value></data>
-  <data name="TipFile" xml:space="preserve"><value>This file has no date stored inside, so its file date was used.</value></data>
+  <data name="TipFile" xml:space="preserve"><value>This file has no date stored inside, so its file date was used. Snapdate can also read dates from file names, e.g. from WhatsApp pictures.</value></data>
+  <data name="TipFileName" xml:space="preserve"><value>The date was read from the file name.</value></data>
+  <data name="TipFileNameRule" xml:space="preserve"><value>The date was read from the file name using the rule &quot;{0}&quot;.</value></data>
+  <data name="DatesDiffer" xml:space="preserve"><value>Dates differ</value></data>
+  <data name="DatesDifferNameUsed" xml:space="preserve"><value>The name says {0}, the photo&apos;s metadata says {1} (written by an app, not a camera). The name was used.</value></data>
+  <data name="DatesDifferCameraUsed" xml:space="preserve"><value>The camera date ({0}) was used; the name says {1}.</value></data>
   <data name="TipRenamed" xml:space="preserve"><value>Another photo already has this name, so a number was added.</value></data>
   <data name="ProblemSourceMissing" xml:space="preserve"><value>Choose the folder with your photos</value></data>
   <data name="ProblemSourceNotFound" xml:space="preserve"><value>The photo folder cannot be found</value></data>
@@ -156,4 +163,112 @@
   <data name="UpdateFailedMissing" xml:space="preserve"><value>This release has no installer for your PC. Please get the new version from the download page.</value></data>
   <data name="UpdateFailedStart" xml:space="preserve"><value>The installer could not be started. Please get the new version from the download page.</value></data>
   <data name="UpdateFailedInstaller" xml:space="preserve"><value>The installation was cancelled. Nothing was changed.</value></data>
+  <data name="RulesLink" xml:space="preserve"><value>Dates from file names</value></data>
+  <data name="RulesLinkTip" xml:space="preserve"><value>See and switch the rules Snapdate uses to read dates from file names, and try a file name.</value></data>
+  <data name="RulesTitle" xml:space="preserve"><value>Dates from file names</value></data>
+  <data name="RulesIntro" xml:space="preserve"><value>When a photo has no camera date, Snapdate reads the date from the file name with the first rule that fits (your own rules first). Note: the date in a name is often the day the picture was received, not taken.</value></data>
+  <data name="RulesListName" xml:space="preserve"><value>Rules</value></data>
+  <data name="RulesSourceSystem" xml:space="preserve"><value>Built-in</value></data>
+  <data name="RulesSourceCustom" xml:space="preserve"><value>Yours</value></data>
+  <data name="RulesSourceSystemTip" xml:space="preserve"><value>Comes with Snapdate. You can switch it off or duplicate it to make your own version.</value></data>
+  <data name="RulesSourceCustomTip" xml:space="preserve"><value>Your own rule. It is tried before the built-in rules and never changed by updates.</value></data>
+  <data name="RuleToggleName" xml:space="preserve"><value>{0} on/off</value></data>
+  <data name="RuleStateOn" xml:space="preserve"><value>on</value></data>
+  <data name="RuleStateOff" xml:space="preserve"><value>off</value></data>
+  <data name="RuleDuplicate" xml:space="preserve"><value>Duplicate</value></data>
+  <data name="RuleDuplicateName" xml:space="preserve"><value>Duplicate {0}</value></data>
+  <data name="RuleCopyName" xml:space="preserve"><value>{0} (copy)</value></data>
+  <data name="RuleDelete" xml:space="preserve"><value>Delete</value></data>
+  <data name="RuleDeleteName" xml:space="preserve"><value>Delete {0}</value></data>
+  <data name="RuleDeleteQuestion" xml:space="preserve"><value>Delete this rule?</value></data>
+  <data name="RuleEdit" xml:space="preserve"><value>Edit</value></data>
+  <data name="RuleEditName" xml:space="preserve"><value>Edit {0}</value></data>
+  <data name="RulesAdd" xml:space="preserve"><value>Add rule</value></data>
+  <data name="RulePatternsName" xml:space="preserve"><value>Patterns: {0}</value></data>
+  <data name="RuleSyntaxUnsupported" xml:space="preserve"><value>This rule is written as &quot;{0}&quot;, which this version of Snapdate cannot use yet. It is kept but not used.</value></data>
+  <data name="RulesUnreadable" xml:space="preserve"><value>Your own rules could not be read. Built-in rules still work. Saving will keep a copy of the old file.</value></data>
+  <data name="RulesNewerVersion" xml:space="preserve"><value>Your rules were saved by a newer version of Snapdate. You can look at them here but not change them.</value></data>
+  <data name="RulesInaccessible" xml:space="preserve"><value>Your rules file could not be opened, so the rules cannot be changed right now. Please try again later.</value></data>
+  <data name="RulesConflict" xml:space="preserve"><value>Your rules were changed elsewhere (for example in another Snapdate window). The list was reloaded; please make your change again.</value></data>
+  <data name="RulesSaveFailed" xml:space="preserve"><value>Your change could not be saved, so it was undone. Please try again later.</value></data>
+  <data name="RulesTooLarge" xml:space="preserve"><value>Your change could not be saved because the rules would be too large. It was undone.</value></data>
+  <data name="RulesReadOnly" xml:space="preserve"><value>Your rules cannot be changed right now.</value></data>
+  <data name="RulesFull" xml:space="preserve"><value>You already have the maximum of {0} own rules. Delete one first.</value></data>
+  <data name="TesterTitle" xml:space="preserve"><value>Try a file name</value></data>
+  <data name="TesterPlaceholder" xml:space="preserve"><value>e.g. IMG-20240714-WA0001.jpg</value></data>
+  <data name="TesterPick" xml:space="preserve"><value>Pick a file from the folder</value></data>
+  <data name="TesterPickName" xml:space="preserve"><value>File names from the chosen folder</value></data>
+  <data name="TesterEmpty" xml:space="preserve"><value>Type a file name to see which rule reads its date.</value></data>
+  <data name="TesterMatch" xml:space="preserve"><value>Rule &quot;{0}&quot;: {1}</value></data>
+  <data name="TesterMatchOff" xml:space="preserve"><value>Rule &quot;{0}&quot;: {1} (rule is switched off)</value></data>
+  <data name="TesterNoMatch" xml:space="preserve"><value>No rule matches</value></data>
+  <data name="TesterDateTime" xml:space="preserve"><value>{0}, {1}</value></data>
+  <data name="TesterCreateRule" xml:space="preserve"><value>Create a rule from this name</value></data>
+  <data name="TesterCreateRuleTip" xml:space="preserve"><value>Opens a new rule with a pattern for names like this one. You can change it before saving.</value></data>
+  <data name="RuleNewTitle" xml:space="preserve"><value>New rule</value></data>
+  <data name="RuleEditTitle" xml:space="preserve"><value>Edit rule</value></data>
+  <data name="RuleEditorIntro" xml:space="preserve"><value>Describe how your file names look. Snapdate tries the patterns from top to bottom and reads the date with the first one that fits the whole name (without the extension).</value></data>
+  <data name="RuleNameLabel" xml:space="preserve"><value>Name</value></data>
+  <data name="RuleDefaultName" xml:space="preserve"><value>My rule</value></data>
+  <data name="RulePatternsLabel" xml:space="preserve"><value>Patterns (one per line, up to {0})</value></data>
+  <data name="RulePatternsHint" xml:space="preserve"><value>Click a block to insert it at the cursor. * stands for any text, ? for exactly one character. Everything else must be in the name exactly like this; upper and lower case do not matter.</value></data>
+  <data name="RuleChipsName" xml:space="preserve"><value>Blocks to insert</value></data>
+  <data name="TokAnyText" xml:space="preserve"><value>any text *</value></data>
+  <data name="TokAnyTextTip" xml:space="preserve"><value>* = any text, also none</value></data>
+  <data name="RuleSave" xml:space="preserve"><value>Save rule</value></data>
+  <data name="RuleDiscardQuestion" xml:space="preserve"><value>Discard your changes?</value></data>
+  <data name="RuleDiscard" xml:space="preserve"><value>Discard</value></data>
+  <data name="RuleKeepEditing" xml:space="preserve"><value>Keep editing</value></data>
+  <data name="RulePatternsOk" xml:space="preserve"><value>All patterns can be used.</value></data>
+  <data name="RuleProblemLine" xml:space="preserve"><value>Line {0}: {1}</value></data>
+  <data name="RuleNoPatterns" xml:space="preserve"><value>Type at least one pattern, for example IMG-{{YYYY}}{{MM}}{{DD}}-WA*</value></data>
+  <data name="RuleTooManyPatterns" xml:space="preserve"><value>A rule can have at most {0} patterns. Please remove {1} line(s).</value></data>
+  <data name="RuleNameTooLong" xml:space="preserve"><value>The name can be at most {0} characters long.</value></data>
+  <data name="PatErrEmpty" xml:space="preserve"><value>This line is empty.</value></data>
+  <data name="PatErrTooLong" xml:space="preserve"><value>This pattern is too long (at most {0} characters).</value></data>
+  <data name="PatErrUnclosedBrace" xml:space="preserve"><value>There is a “{{” without a closing “}}”.</value></data>
+  <data name="PatErrClosingBrace" xml:space="preserve"><value>There is a “}}” without an opening “{{”. To use a brace as text, type it twice: }}}}</value></data>
+  <data name="PatErrUnknownToken" xml:space="preserve"><value>“{{{0}}}” is not a block Snapdate knows. Use the blocks below, such as {{YYYY}}.</value></data>
+  <data name="PatErrUnsupportedToken" xml:space="preserve"><value>“{{{0}}}” cannot be read from a file name. Use number blocks such as {{MM}} for the month.</value></data>
+  <data name="PatErrDuplicateToken" xml:space="preserve"><value>“{{{0}}}” repeats a part of the date that is already in the pattern. Each part may appear only once.</value></data>
+  <data name="PatErrMissingYear" xml:space="preserve"><value>The pattern needs a year: {{YYYY}} or {{YY}}.</value></data>
+  <data name="PatErrMissingMonth" xml:space="preserve"><value>The pattern needs a month: {{MM}} or {{M}}.</value></data>
+  <data name="PatErrMissingDay" xml:space="preserve"><value>The pattern needs a day: {{DD}} or {{D}}.</value></data>
+  <data name="PatErrHourWithoutMinute" xml:space="preserve"><value>An hour also needs minutes: add {{mm}}.</value></data>
+  <data name="PatErrMinuteWithoutHour" xml:space="preserve"><value>Minutes also need an hour: add {{HH}}.</value></data>
+  <data name="PatErrSecondWithoutMinute" xml:space="preserve"><value>Seconds also need minutes: add {{mm}}.</value></data>
+  <data name="PatErrAmbiguous" xml:space="preserve"><value>The digits around “{{{0}}}” could be read in more than one way. Put a separator such as - or _ between the parts, or use two-digit blocks like {{MM}} and {{DD}}. Also, * must not touch these digits, and ? must not be used anywhere among them.</value></data>
+  <data name="PatErrInvalid" xml:space="preserve"><value>This pattern cannot be used. Please check it.</value></data>
+  <data name="RuleSampleEmpty" xml:space="preserve"><value>Type a file name to try your patterns.</value></data>
+  <data name="RuleSampleNoPatterns" xml:space="preserve"><value>Type a valid pattern first, then try a file name.</value></data>
+  <data name="RuleSampleMatch" xml:space="preserve"><value>Matches line {0} → {1}</value></data>
+  <data name="RuleSampleInvalid" xml:space="preserve"><value>Line {0} matches, but {1} is not a valid date.</value></data>
+  <data name="RuleSampleImplausible" xml:space="preserve"><value>Line {0} matches, but {1} is before 1900 or in the future.</value></data>
+  <data name="RuleSampleNoMatch" xml:space="preserve"><value>No pattern matches this name.</value></data>
+  <data name="RuleRegexToggle" xml:space="preserve"><value>Advanced: regular expressions</value></data>
+  <data name="RuleRegexToggleTip" xml:space="preserve"><value>For users who know regular expressions. Your text is kept when you switch.</value></data>
+  <data name="RuleRegexLabel" xml:space="preserve"><value>Regular expressions (one per line, up to {0})</value></data>
+  <data name="RuleRegexHint" xml:space="preserve"><value>Mark the date parts with named groups: year (or yy for two digits), month and day; hour, minute and second are optional. The expression must fit the whole name (without the extension); upper and lower case do not matter. Example:</value></data>
+  <data name="RuleRegexExample" xml:space="preserve"><value>^IMG-(?&lt;year&gt;\d{{4}})(?&lt;month&gt;\d{{2}})(?&lt;day&gt;\d{{2}})-WA\d+$</value></data>
+  <data name="RuleRegexExampleName" xml:space="preserve"><value>Example: {0}</value></data>
+  <data name="RuleRegexNoPatterns" xml:space="preserve"><value>Type at least one regular expression, for example {0}</value></data>
+  <data name="RuleRegexOk" xml:space="preserve"><value>All regular expressions can be used.</value></data>
+  <data name="RuleRegexSampleNoPatterns" xml:space="preserve"><value>Type a valid regular expression first, then try a file name.</value></data>
+  <data name="RuleRegexSampleNoMatch" xml:space="preserve"><value>No regular expression matches this name.</value></data>
+  <data name="RxErrTooLong" xml:space="preserve"><value>This expression is too long (at most {0} characters).</value></data>
+  <data name="RxErrInvalid" xml:space="preserve"><value>This expression cannot be used. Please check it.</value></data>
+  <data name="RxErrSyntax" xml:space="preserve"><value>This is not a valid regular expression. Check the brackets and special characters around character {0}.</value></data>
+  <data name="RxErrUnsupported" xml:space="preserve"><value>“{0}” (at character {1}) cannot be used. Snapdate allows plain characters, escaped characters such as \. or \(, \d, \s, \w, ., simple classes such as [a-z_-], groups (…), (?:…) and (?&lt;name&gt;…), | between alternatives, ^ and $, and the repetitions * + ? {{n}} {{n,}} {{n,m}}. Write \{{, \}} and \] for the characters themselves.</value></data>
+  <data name="RxErrRepetition" xml:space="preserve"><value>The repetition {0} is too large. At most {1} repetitions are possible.</value></data>
+  <data name="RxErrUnknownGroup" xml:space="preserve"><value>The group “{0}” is not a date part. Use year, yy, month, day, hour, minute or second, in lower case.</value></data>
+  <data name="RxErrMissingYear" xml:space="preserve"><value>The expression needs a group for the year: (?&lt;year&gt;…) or (?&lt;yy&gt;…).</value></data>
+  <data name="RxErrMissingMonth" xml:space="preserve"><value>The expression needs a group for the month: (?&lt;month&gt;…).</value></data>
+  <data name="RxErrMissingDay" xml:space="preserve"><value>The expression needs a group for the day: (?&lt;day&gt;…).</value></data>
+  <data name="RxErrHourWithoutMinute" xml:space="preserve"><value>An hour group also needs a minute group: add (?&lt;minute&gt;…).</value></data>
+  <data name="RxErrMinuteWithoutHour" xml:space="preserve"><value>A minute group also needs an hour group: add (?&lt;hour&gt;…).</value></data>
+  <data name="RxErrSecondWithoutMinute" xml:space="preserve"><value>A second group also needs a minute group: add (?&lt;minute&gt;…).</value></data>
+  <data name="RuleRegexEditorIntro" xml:space="preserve"><value>Describe how your file names look. Snapdate tries the expressions from top to bottom and reads the date with the first one that fits the whole name (without the extension).</value></data>
+  <data name="RxErrNested" xml:space="preserve"><value>The repetition {0} repeats something whose length can vary, such as *, +, ? or alternatives of different length like (?:a|bc). Snapdate does not allow this because it can make matching very slow. Write the parts out one after another instead.</value></data>
+  <data name="RxErrTooComplex" xml:space="preserve"><value>This expression is too complex to run quickly. Use fewer * and +, fewer repetitions overall and smaller counts in {{…}}, or shorten it.</value></data>
+  <data name="TipRulesHint" xml:space="preserve"><value>The rules are under &quot;Dates from file names&quot; above the list.</value></data>
 </root>

@@ -156,11 +156,15 @@ public sealed class LocalizedStrings(CultureInfo culture)
 
     public string FilterCamera => Get(nameof(FilterCamera));
 
+    public string FilterFileName => Get(nameof(FilterFileName));
+
     public string FilterFile => Get(nameof(FilterFile));
 
     public string FilterRenamed => Get(nameof(FilterRenamed));
 
     public string BadgeCamera => Get(nameof(BadgeCamera));
+
+    public string BadgeFileName => Get(nameof(BadgeFileName));
 
     public string BadgeFile => Get(nameof(BadgeFile));
 
@@ -169,6 +173,16 @@ public sealed class LocalizedStrings(CultureInfo culture)
     public string TipCamera => Get(nameof(TipCamera));
 
     public string TipFile => Get(nameof(TipFile));
+
+    public string TipFileName => Get(nameof(TipFileName));
+
+    public string TipFileNameRule => Get(nameof(TipFileNameRule));
+
+    public string DatesDiffer => Get(nameof(DatesDiffer));
+
+    public string DatesDifferNameUsed => Get(nameof(DatesDifferNameUsed));
+
+    public string DatesDifferCameraUsed => Get(nameof(DatesDifferCameraUsed));
 
     public string TipRenamed => Get(nameof(TipRenamed));
 
@@ -317,6 +331,222 @@ public sealed class LocalizedStrings(CultureInfo culture)
     public string UpdateFailedStart => Get(nameof(UpdateFailedStart));
 
     public string UpdateFailedInstaller => Get(nameof(UpdateFailedInstaller));
+
+    public string RulesLink => Get(nameof(RulesLink));
+
+    public string RulesLinkTip => Get(nameof(RulesLinkTip));
+
+    public string RulesTitle => Get(nameof(RulesTitle));
+
+    public string RulesIntro => Get(nameof(RulesIntro));
+
+    public string RulesListName => Get(nameof(RulesListName));
+
+    public string RulesSourceSystem => Get(nameof(RulesSourceSystem));
+
+    public string RulesSourceCustom => Get(nameof(RulesSourceCustom));
+
+    public string RulesSourceSystemTip => Get(nameof(RulesSourceSystemTip));
+
+    public string RulesSourceCustomTip => Get(nameof(RulesSourceCustomTip));
+
+    public string RuleToggleName => Get(nameof(RuleToggleName));
+
+    public string RuleStateOn => Get(nameof(RuleStateOn));
+
+    public string RuleStateOff => Get(nameof(RuleStateOff));
+
+    public string RuleDuplicate => Get(nameof(RuleDuplicate));
+
+    public string RuleDuplicateName => Get(nameof(RuleDuplicateName));
+
+    public string RuleCopyName => Get(nameof(RuleCopyName));
+
+    public string RuleDelete => Get(nameof(RuleDelete));
+
+    public string RuleDeleteName => Get(nameof(RuleDeleteName));
+
+    public string RuleDeleteQuestion => Get(nameof(RuleDeleteQuestion));
+
+    public string RuleEdit => Get(nameof(RuleEdit));
+
+    public string RuleEditName => Get(nameof(RuleEditName));
+
+    public string RulesAdd => Get(nameof(RulesAdd));
+
+    public string RulePatternsName => Get(nameof(RulePatternsName));
+
+    public string RuleSyntaxUnsupported => Get(nameof(RuleSyntaxUnsupported));
+
+    public string RulesUnreadable => Get(nameof(RulesUnreadable));
+
+    public string RulesNewerVersion => Get(nameof(RulesNewerVersion));
+
+    public string RulesInaccessible => Get(nameof(RulesInaccessible));
+
+    public string RulesConflict => Get(nameof(RulesConflict));
+
+    public string RulesSaveFailed => Get(nameof(RulesSaveFailed));
+
+    public string RulesTooLarge => Get(nameof(RulesTooLarge));
+
+    public string RulesReadOnly => Get(nameof(RulesReadOnly));
+
+    public string RulesFull => Get(nameof(RulesFull));
+
+    public string TesterTitle => Get(nameof(TesterTitle));
+
+    public string TesterPlaceholder => Get(nameof(TesterPlaceholder));
+
+    public string TesterPick => Get(nameof(TesterPick));
+
+    public string TesterPickName => Get(nameof(TesterPickName));
+
+    public string TesterEmpty => Get(nameof(TesterEmpty));
+
+    public string TesterMatch => Get(nameof(TesterMatch));
+
+    public string TesterMatchOff => Get(nameof(TesterMatchOff));
+
+    public string TesterNoMatch => Get(nameof(TesterNoMatch));
+
+    public string TesterDateTime => Get(nameof(TesterDateTime));
+
+    public string TesterCreateRule => Get(nameof(TesterCreateRule));
+
+    public string TesterCreateRuleTip => Get(nameof(TesterCreateRuleTip));
+
+    public string RuleNewTitle => Get(nameof(RuleNewTitle));
+
+    public string RuleEditTitle => Get(nameof(RuleEditTitle));
+
+    public string RuleEditorIntro => Get(nameof(RuleEditorIntro));
+
+    public string RuleNameLabel => Get(nameof(RuleNameLabel));
+
+    public string RuleDefaultName => Get(nameof(RuleDefaultName));
+
+    public string RulePatternsLabel => Get(nameof(RulePatternsLabel));
+
+    public string RulePatternsHint => Get(nameof(RulePatternsHint));
+
+    public string RuleChipsName => Get(nameof(RuleChipsName));
+
+    public string TokAnyText => Get(nameof(TokAnyText));
+
+    public string TokAnyTextTip => Get(nameof(TokAnyTextTip));
+
+    public string RuleSave => Get(nameof(RuleSave));
+
+    public string RuleDiscardQuestion => Get(nameof(RuleDiscardQuestion));
+
+    public string RuleDiscard => Get(nameof(RuleDiscard));
+
+    public string RuleKeepEditing => Get(nameof(RuleKeepEditing));
+
+    public string RulePatternsOk => Get(nameof(RulePatternsOk));
+
+    public string RuleProblemLine => Get(nameof(RuleProblemLine));
+
+    public string RuleNoPatterns => Get(nameof(RuleNoPatterns));
+
+    public string RuleTooManyPatterns => Get(nameof(RuleTooManyPatterns));
+
+    public string RuleNameTooLong => Get(nameof(RuleNameTooLong));
+
+    public string PatErrEmpty => Get(nameof(PatErrEmpty));
+
+    public string PatErrTooLong => Get(nameof(PatErrTooLong));
+
+    public string PatErrUnclosedBrace => Get(nameof(PatErrUnclosedBrace));
+
+    public string PatErrClosingBrace => Get(nameof(PatErrClosingBrace));
+
+    public string PatErrUnknownToken => Get(nameof(PatErrUnknownToken));
+
+    public string PatErrUnsupportedToken => Get(nameof(PatErrUnsupportedToken));
+
+    public string PatErrDuplicateToken => Get(nameof(PatErrDuplicateToken));
+
+    public string PatErrMissingYear => Get(nameof(PatErrMissingYear));
+
+    public string PatErrMissingMonth => Get(nameof(PatErrMissingMonth));
+
+    public string PatErrMissingDay => Get(nameof(PatErrMissingDay));
+
+    public string PatErrHourWithoutMinute => Get(nameof(PatErrHourWithoutMinute));
+
+    public string PatErrMinuteWithoutHour => Get(nameof(PatErrMinuteWithoutHour));
+
+    public string PatErrSecondWithoutMinute => Get(nameof(PatErrSecondWithoutMinute));
+
+    public string PatErrAmbiguous => Get(nameof(PatErrAmbiguous));
+
+    public string PatErrInvalid => Get(nameof(PatErrInvalid));
+
+    public string RuleSampleEmpty => Get(nameof(RuleSampleEmpty));
+
+    public string RuleSampleNoPatterns => Get(nameof(RuleSampleNoPatterns));
+
+    public string RuleSampleMatch => Get(nameof(RuleSampleMatch));
+
+    public string RuleSampleInvalid => Get(nameof(RuleSampleInvalid));
+
+    public string RuleSampleImplausible => Get(nameof(RuleSampleImplausible));
+
+    public string RuleSampleNoMatch => Get(nameof(RuleSampleNoMatch));
+
+    public string RuleRegexToggle => Get(nameof(RuleRegexToggle));
+
+    public string RuleRegexToggleTip => Get(nameof(RuleRegexToggleTip));
+
+    public string RuleRegexLabel => Get(nameof(RuleRegexLabel));
+
+    public string RuleRegexHint => Get(nameof(RuleRegexHint));
+
+    public string RuleRegexExample => Get(nameof(RuleRegexExample));
+
+    public string RuleRegexExampleName => Get(nameof(RuleRegexExampleName));
+
+    public string RuleRegexNoPatterns => Get(nameof(RuleRegexNoPatterns));
+
+    public string RuleRegexOk => Get(nameof(RuleRegexOk));
+
+    public string RuleRegexSampleNoPatterns => Get(nameof(RuleRegexSampleNoPatterns));
+
+    public string RuleRegexSampleNoMatch => Get(nameof(RuleRegexSampleNoMatch));
+
+    public string RxErrTooLong => Get(nameof(RxErrTooLong));
+
+    public string RxErrInvalid => Get(nameof(RxErrInvalid));
+
+    public string RxErrSyntax => Get(nameof(RxErrSyntax));
+
+    public string RxErrUnsupported => Get(nameof(RxErrUnsupported));
+
+    public string RxErrRepetition => Get(nameof(RxErrRepetition));
+
+    public string RxErrUnknownGroup => Get(nameof(RxErrUnknownGroup));
+
+    public string RxErrMissingYear => Get(nameof(RxErrMissingYear));
+
+    public string RxErrMissingMonth => Get(nameof(RxErrMissingMonth));
+
+    public string RxErrMissingDay => Get(nameof(RxErrMissingDay));
+
+    public string RxErrHourWithoutMinute => Get(nameof(RxErrHourWithoutMinute));
+
+    public string RxErrMinuteWithoutHour => Get(nameof(RxErrMinuteWithoutHour));
+
+    public string RxErrSecondWithoutMinute => Get(nameof(RxErrSecondWithoutMinute));
+
+    public string RuleRegexEditorIntro => Get(nameof(RuleRegexEditorIntro));
+
+    public string RxErrNested => Get(nameof(RxErrNested));
+
+    public string RxErrTooComplex => Get(nameof(RxErrTooComplex));
+
+    public string TipRulesHint => Get(nameof(TipRulesHint));
 
     /// <summary>Looks up a key; falls back to the key itself so missing strings are visible, not fatal.</summary>
     public string Get(string key) => Resources.GetString(key, Culture) ?? key;

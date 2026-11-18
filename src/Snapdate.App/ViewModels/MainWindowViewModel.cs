@@ -4,10 +4,13 @@ using CommunityToolkit.Mvvm.Input;
 using Snapdate.App.Localization;
 using Snapdate.App.Services;
 using Snapdate.Application.Execution;
+using Snapdate.Application.FileNames;
 using Snapdate.Application.Localization;
 using Snapdate.Application.Planning;
 using Snapdate.Application.Scanning;
+using Snapdate.Domain.FileNames;
 using Snapdate.Domain.Naming;
+using Snapdate.Domain.Photos;
 using Snapdate.Domain.Planning;
 
 namespace Snapdate.App.ViewModels;
@@ -26,6 +29,7 @@ public enum PreviewFilter
 {
     All,
     Camera,
+    FileName,
     FileDate,
     Renamed,
 }
@@ -42,10 +46,10 @@ public enum StatusKind
 public sealed partial class MainWindowViewModel : ObservableObject
 {
     private readonly AppServices _services;
-    private readonly ScanSourceUseCase _scan;
     private readonly BuildPlanUseCase _planner;
     private readonly ExecutePlanUseCase _executor;
 
+    private DateRuleSet _dateRuleSet;
     private List<ScannedPhoto> _photos = [];
     private RenamePlan? _plan;
     private List<PreviewItemViewModel> _allItems = [];
@@ -59,7 +63,6 @@ public sealed partial class MainWindowViewModel : ObservableObject
     public MainWindowViewModel(AppServices services, CultureInfo systemUiCulture)
     {
         _services = services;
-        _scan = new ScanSourceUseCase(services.FileSystem, services.MetadataReader);
         _planner = new BuildPlanUseCase(services.FileSystem);
         _executor = new ExecutePlanUseCase(services.FileSystem, services.Clock);
 
@@ -78,6 +81,16 @@ public sealed partial class MainWindowViewModel : ObservableObject
 
         Update = new UpdateViewModel(services, L);
 
+        // Every scan uses this rule set; the dialog replaces it after a change. Without a store no dates are read
+        // from file names and there is no dialog.
+        if (services.DateRules is not null)
+        {
+            RulesDialog = new DateRulesViewModel(services.DateRules, L, services.Clock);
+            RulesDialog.Closed += (_, changed) => OnRulesDialogClosed(changed);
+        }
+
+        _dateRuleSet = RulesDialog?.RuleSet ?? DateRuleSet.Empty;
+
         _initializing = false;
         if (SourceFolder is not null)
         {
@@ -88,6 +101,15 @@ public sealed partial class MainWindowViewModel : ObservableObject
             Replan();
         }
     }
+
+    /// <summary>The user's and the built-in file-name date rules; null when no rule store is wired.</summary>
+    public DateRuleCatalog? DateRules => RulesDialog?.Catalog;
+
+    /// <summary>The "Dates from file names" dialog; null when no rule store is wired.</summary>
+    public DateRulesViewModel? RulesDialog { get; }
+
+    /// <summary>The link to the rules dialog is shown when there is a rule store.</summary>
+    public bool HasRulesDialog => RulesDialog is not null;
 
     /// <summary>Completes when the most recent folder scan has finished (used by tests and tools).</summary>
     public Task ScanCompletion { get; private set; } = Task.CompletedTask;
@@ -218,7 +240,7 @@ public sealed partial class MainWindowViewModel : ObservableObject
     public partial IReadOnlyList<PreviewItemViewModel> VisibleItems { get; private set; } = [];
 
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(IsFilterAll), nameof(IsFilterCamera), nameof(IsFilterFile), nameof(IsFilterRenamed))]
+    [NotifyPropertyChangedFor(nameof(IsFilterAll), nameof(IsFilterCamera), nameof(IsFilterFileName), nameof(IsFilterFile), nameof(IsFilterRenamed))]
     public partial PreviewFilter Filter { get; set; } = PreviewFilter.All;
 
     public bool IsFilterAll
@@ -231,6 +253,12 @@ public sealed partial class MainWindowViewModel : ObservableObject
     {
         get => Filter == PreviewFilter.Camera;
         set { if (value) { Filter = PreviewFilter.Camera; } }
+    }
+
+    public bool IsFilterFileName
+    {
+        get => Filter == PreviewFilter.FileName;
+        set { if (value) { Filter = PreviewFilter.FileName; } }
     }
 
     public bool IsFilterFile
@@ -250,6 +278,9 @@ public sealed partial class MainWindowViewModel : ObservableObject
 
     [ObservableProperty]
     public partial int CountCamera { get; private set; }
+
+    [ObservableProperty]
+    public partial int CountFileName { get; private set; }
 
     [ObservableProperty]
     public partial int CountFile { get; private set; }
@@ -429,6 +460,46 @@ public sealed partial class MainWindowViewModel : ObservableObject
     [RelayCommand]
     private void ToggleAbout() => IsAboutOpen = !IsAboutOpen;
 
+    /// <summary>Opens "Dates from file names"; the tester offers names from the folder, those with a file date first.</summary>
+    [RelayCommand]
+    private void OpenDateRules()
+    {
+        if (RulesDialog is null || !CanEdit)
+        {
+            return;
+        }
+
+        var names = _photos
+            .OrderBy(photo => IsFromFileTimestamp(photo.Date) ? 0 : 1)
+            .Select(photo => photo.OriginalName + photo.Extension)
+            .Take(DateRulesViewModel.MaxSampleNames * 2);
+        RulesDialog.Open(names);
+    }
+
+    /// <summary>After a change the folder is scanned again with the new rules (once, when the dialog closes).</summary>
+    private void OnRulesDialogClosed(bool changed)
+    {
+        if (!changed || RulesDialog is null)
+        {
+            return;
+        }
+
+        _dateRuleSet = RulesDialog.RuleSet;
+        if (SourceFolder is null || Phase == Phase.Running)
+        {
+            return;
+        }
+
+        if (Phase == Phase.Done)
+        {
+            _result = null;
+            OnPropertyChanged(nameof(HasLog));
+            Phase = Phase.Setup;
+        }
+
+        StartScan();
+    }
+
     /// <summary>Called when the window closes: cancels a running update check.</summary>
     public void Shutdown()
     {
@@ -464,6 +535,7 @@ public sealed partial class MainWindowViewModel : ObservableObject
 
         Pattern.UpdateStrings(L);
         Update.UpdateStrings(L);
+        RulesDialog?.UpdateStrings(L);
         OnPropertyChanged(nameof(SourceDisplay));
         OnPropertyChanged(nameof(TargetDisplay));
         OnPropertyChanged(nameof(ScanCountText));
@@ -548,6 +620,7 @@ public sealed partial class MainWindowViewModel : ObservableObject
 
         var source = SourceFolder;
         var recursive = IncludeSubfolders;
+        var scan = new ScanSourceUseCase(_services.FileSystem, _services.MetadataReader, _dateRuleSet, _services.Clock);
         IProgress<int> progress = new Progress<int>(count =>
         {
             if (!cts.IsCancellationRequested)
@@ -562,7 +635,7 @@ public sealed partial class MainWindowViewModel : ObservableObject
                 async () =>
                 {
                     var list = new List<ScannedPhoto>();
-                    await foreach (var photo in _scan.ScanAsync(source, recursive, cts.Token).ConfigureAwait(false))
+                    await foreach (var photo in scan.ScanAsync(source, recursive, cts.Token).ConfigureAwait(false))
                     {
                         list.Add(photo);
                         if (list.Count % 25 == 0)
@@ -646,11 +719,12 @@ public sealed partial class MainWindowViewModel : ObservableObject
 
         CountAll = _allItems.Count;
         CountCamera = _allItems.Count(i => i.Item.Photo.Date.IsFromMetadata);
-        CountFile = CountAll - CountCamera;
+        CountFileName = _allItems.Count(i => i.Item.Photo.Date.IsFromFileName);
+        CountFile = _allItems.Count(i => IsFromFileTimestamp(i.Item.Photo.Date));
         CountRenamed = _allItems.Count(i => i.Item.WasRenamed);
 
         // "Numbered" depends on the pattern (duplicates get (2), (3) ...), so it makes no claim while the
-        // pattern is invalid; camera/file date counts do not depend on it and stay.
+        // pattern is invalid; the date source counts do not depend on it and stay.
         if (Pattern.HasError && Filter == PreviewFilter.Renamed)
         {
             Filter = PreviewFilter.All;
@@ -665,10 +739,13 @@ public sealed partial class MainWindowViewModel : ObservableObject
         VisibleItems = Filter switch
         {
             PreviewFilter.Camera => _allItems.Where(i => i.Item.Photo.Date.IsFromMetadata).ToList(),
-            PreviewFilter.FileDate => _allItems.Where(i => !i.Item.Photo.Date.IsFromMetadata).ToList(),
+            PreviewFilter.FileName => _allItems.Where(i => i.Item.Photo.Date.IsFromFileName).ToList(),
+            PreviewFilter.FileDate => _allItems.Where(i => IsFromFileTimestamp(i.Item.Photo.Date)).ToList(),
             PreviewFilter.Renamed => _allItems.Where(i => i.Item.WasRenamed).ToList(),
             _ => _allItems,
         };
+
+    private static bool IsFromFileTimestamp(CaptureDate date) => date.Source == DateSource.FileTimestamp;
 
     private void RefreshPreviewState()
     {

@@ -69,13 +69,20 @@ NoPhotosTitle	No photos found	Keine Fotos gefunden
 NoPhotosBody	This folder contains no supported photos or videos. If they are in sub-folders, tick “Include sub-folders”.	Dieser Ordner enthält keine unterstützten Fotos oder Videos. Liegen sie in Unterordnern, setzen Sie das Häkchen bei „Unterordner einbeziehen“.
 FilterAll	All	Alle
 FilterCamera	Camera date	Aufnahmedatum
+FilterFileName	Date from name	Datum aus Name
 FilterFile	File date	Dateidatum
 FilterRenamed	Numbered	Nummeriert
 BadgeCamera	Camera date	Aufnahmedatum
+BadgeFileName	Date from name	Datum aus Name
 BadgeFile	File date	Dateidatum
 BadgeRenamed	Numbered	Nummeriert
 TipCamera	The date comes from the photo itself (saved by the camera).	Das Datum stammt aus dem Foto selbst (von der Kamera gespeichert).
-TipFile	This file has no date stored inside, so its file date was used.	In dieser Datei ist kein Aufnahmedatum gespeichert, daher wurde ihr Dateidatum verwendet.
+TipFile	This file has no date stored inside, so its file date was used. Snapdate can also read dates from file names, e.g. from WhatsApp pictures.	In dieser Datei ist kein Aufnahmedatum gespeichert, daher wurde ihr Dateidatum verwendet. Snapdate kann das Datum auch aus Dateinamen lesen, z. B. bei WhatsApp-Bildern.
+TipFileName	The date was read from the file name.	Das Datum wurde aus dem Dateinamen gelesen.
+TipFileNameRule	The date was read from the file name using the rule "{0}".	Das Datum wurde nach der Regel „{0}“ aus dem Dateinamen gelesen.
+DatesDiffer	Dates differ	Daten weichen ab
+DatesDifferNameUsed	The name says {0}, the photo's metadata says {1} (written by an app, not a camera). The name was used.	Der Name sagt {0}, die Metadaten des Fotos sagen {1} (von einer App geschrieben, nicht von einer Kamera). Der Name wurde verwendet.
+DatesDifferCameraUsed	The camera date ({0}) was used; the name says {1}.	Das Aufnahmedatum ({0}) wurde verwendet; der Name sagt {1}.
 TipRenamed	Another photo already has this name, so a number was added.	Ein anderes Foto hat bereits diesen Namen, daher wurde eine Nummer ergänzt.
 ProblemSourceMissing	Choose the folder with your photos	Wählen Sie den Ordner mit Ihren Fotos
 ProblemSourceNotFound	The photo folder cannot be found	Der Fotoordner wurde nicht gefunden
@@ -150,3 +157,111 @@ UpdateFailedVerify	The download could not be verified, so it was not installed. 
 UpdateFailedMissing	This release has no installer for your PC. Please get the new version from the download page.	Diese Version hat kein Installationsprogramm für Ihren PC. Bitte laden Sie sie von der Download-Seite.
 UpdateFailedStart	The installer could not be started. Please get the new version from the download page.	Das Installationsprogramm konnte nicht gestartet werden. Bitte laden Sie die neue Version von der Download-Seite.
 UpdateFailedInstaller	The installation was cancelled. Nothing was changed.	Die Installation wurde abgebrochen. Es wurde nichts verändert.
+RulesLink	Dates from file names	Datum aus Dateinamen
+RulesLinkTip	See and switch the rules Snapdate uses to read dates from file names, and try a file name.	Regeln ansehen, ein- und ausschalten, mit denen Snapdate das Datum aus Dateinamen liest, und einen Dateinamen ausprobieren.
+RulesTitle	Dates from file names	Datum aus Dateinamen
+RulesIntro	When a photo has no camera date, Snapdate reads the date from the file name with the first rule that fits (your own rules first). Note: the date in a name is often the day the picture was received, not taken.	Hat ein Foto kein Aufnahmedatum, liest Snapdate das Datum mit der ersten passenden Regel aus dem Dateinamen (Ihre eigenen Regeln zuerst). Hinweis: Das Datum im Namen ist oft der Tag, an dem das Bild empfangen wurde, nicht der Aufnahmetag.
+RulesListName	Rules	Regeln
+RulesSourceSystem	Built-in	Mitgeliefert
+RulesSourceCustom	Yours	Eigene
+RulesSourceSystemTip	Comes with Snapdate. You can switch it off or duplicate it to make your own version.	Wird mit Snapdate mitgeliefert. Sie können sie ausschalten oder duplizieren, um eine eigene Version zu erstellen.
+RulesSourceCustomTip	Your own rule. It is tried before the built-in rules and never changed by updates.	Ihre eigene Regel. Sie wird vor den mitgelieferten Regeln geprüft und von Updates nie verändert.
+RuleToggleName	{0} on/off	{0} ein/aus
+RuleStateOn	on	eingeschaltet
+RuleStateOff	off	ausgeschaltet
+RuleDuplicate	Duplicate	Duplizieren
+RuleDuplicateName	Duplicate {0}	{0} duplizieren
+RuleCopyName	{0} (copy)	{0} (Kopie)
+RuleDelete	Delete	Löschen
+RuleDeleteName	Delete {0}	{0} löschen
+RuleDeleteQuestion	Delete this rule?	Diese Regel löschen?
+RuleEdit	Edit	Bearbeiten
+RuleEditName	Edit {0}	{0} bearbeiten
+RulesAdd	Add rule	Regel hinzufügen
+RulePatternsName	Patterns: {0}	Muster: {0}
+RuleSyntaxUnsupported	This rule is written as "{0}", which this version of Snapdate cannot use yet. It is kept but not used.	Diese Regel ist als „{0}“ geschrieben, was diese Snapdate-Version noch nicht verwenden kann. Sie bleibt erhalten, wird aber nicht verwendet.
+RulesUnreadable	Your own rules could not be read. Built-in rules still work. Saving will keep a copy of the old file.	Ihre eigenen Regeln konnten nicht gelesen werden. Die mitgelieferten Regeln funktionieren weiter. Beim Speichern wird eine Kopie der alten Datei behalten.
+RulesNewerVersion	Your rules were saved by a newer version of Snapdate. You can look at them here but not change them.	Ihre Regeln wurden von einer neueren Snapdate-Version gespeichert. Sie können sie hier ansehen, aber nicht ändern.
+RulesInaccessible	Your rules file could not be opened, so the rules cannot be changed right now. Please try again later.	Die Datei mit Ihren Regeln konnte nicht geöffnet werden, daher lassen sich die Regeln gerade nicht ändern. Bitte versuchen Sie es später erneut.
+RulesConflict	Your rules were changed elsewhere (for example in another Snapdate window). The list was reloaded; please make your change again.	Ihre Regeln wurden an anderer Stelle geändert (zum Beispiel in einem anderen Snapdate-Fenster). Die Liste wurde neu geladen; bitte nehmen Sie Ihre Änderung erneut vor.
+RulesSaveFailed	Your change could not be saved, so it was undone. Please try again later.	Ihre Änderung konnte nicht gespeichert werden und wurde daher zurückgenommen. Bitte versuchen Sie es später erneut.
+RulesTooLarge	Your change could not be saved because the rules would be too large. It was undone.	Ihre Änderung konnte nicht gespeichert werden, weil die Regeln zu groß würden. Sie wurde zurückgenommen.
+RulesReadOnly	Your rules cannot be changed right now.	Ihre Regeln können gerade nicht geändert werden.
+RulesFull	You already have the maximum of {0} own rules. Delete one first.	Sie haben bereits die höchstmögliche Zahl von {0} eigenen Regeln. Löschen Sie zuerst eine.
+TesterTitle	Try a file name	Dateinamen ausprobieren
+TesterPlaceholder	e.g. IMG-20240714-WA0001.jpg	z. B. IMG-20240714-WA0001.jpg
+TesterPick	Pick a file from the folder	Datei aus dem Ordner wählen
+TesterPickName	File names from the chosen folder	Dateinamen aus dem gewählten Ordner
+TesterEmpty	Type a file name to see which rule reads its date.	Geben Sie einen Dateinamen ein, um zu sehen, welche Regel das Datum liest.
+TesterMatch	Rule "{0}": {1}	Regel „{0}“: {1}
+TesterMatchOff	Rule "{0}": {1} (rule is switched off)	Regel „{0}“: {1} (Regel ist ausgeschaltet)
+TesterNoMatch	No rule matches	Keine Regel passt
+TesterDateTime	{0}, {1}	{0}, {1} Uhr
+TesterCreateRule	Create a rule from this name	Regel aus diesem Namen erstellen
+TesterCreateRuleTip	Opens a new rule with a pattern for names like this one. You can change it before saving.	Öffnet eine neue Regel mit einem Muster für Namen wie diesen. Sie können es vor dem Speichern ändern.
+RuleNewTitle	New rule	Neue Regel
+RuleEditTitle	Edit rule	Regel bearbeiten
+RuleEditorIntro	Describe how your file names look. Snapdate tries the patterns from top to bottom and reads the date with the first one that fits the whole name (without the extension).	Beschreiben Sie, wie Ihre Dateinamen aussehen. Snapdate probiert die Muster von oben nach unten aus und liest das Datum mit dem ersten, das zum ganzen Namen passt (ohne Dateiendung).
+RuleNameLabel	Name	Name
+RuleDefaultName	My rule	Meine Regel
+RulePatternsLabel	Patterns (one per line, up to {0})	Muster (eins pro Zeile, bis zu {0})
+RulePatternsHint	Click a block to insert it at the cursor. * stands for any text, ? for exactly one character. Everything else must be in the name exactly like this; upper and lower case do not matter.	Klicken Sie auf einen Baustein, um ihn an der Cursorposition einzufügen. * steht für beliebigen Text, ? für genau ein Zeichen. Alles andere muss genau so im Namen stehen; Groß- und Kleinschreibung spielen keine Rolle.
+RuleChipsName	Blocks to insert	Bausteine zum Einfügen
+TokAnyText	any text *	beliebiger Text *
+TokAnyTextTip	* = any text, also none	* = beliebiger Text, auch keiner
+RuleSave	Save rule	Regel speichern
+RuleDiscardQuestion	Discard your changes?	Änderungen verwerfen?
+RuleDiscard	Discard	Verwerfen
+RuleKeepEditing	Keep editing	Weiter bearbeiten
+RulePatternsOk	All patterns can be used.	Alle Muster können verwendet werden.
+RuleProblemLine	Line {0}: {1}	Zeile {0}: {1}
+RuleNoPatterns	Type at least one pattern, for example IMG-{{YYYY}}{{MM}}{{DD}}-WA*	Geben Sie mindestens ein Muster ein, zum Beispiel IMG-{{YYYY}}{{MM}}{{DD}}-WA*
+RuleTooManyPatterns	A rule can have at most {0} patterns. Please remove {1} line(s).	Eine Regel kann höchstens {0} Muster haben. Bitte entfernen Sie {1} Zeile(n).
+RuleNameTooLong	The name can be at most {0} characters long.	Der Name darf höchstens {0} Zeichen lang sein.
+PatErrEmpty	This line is empty.	Diese Zeile ist leer.
+PatErrTooLong	This pattern is too long (at most {0} characters).	Dieses Muster ist zu lang (höchstens {0} Zeichen).
+PatErrUnclosedBrace	There is a “{{” without a closing “}}”.	Zu einer „{{“ fehlt die schließende „}}“.
+PatErrClosingBrace	There is a “}}” without an opening “{{”. To use a brace as text, type it twice: }}}}	Es gibt eine „}}“ ohne öffnende „{{“. Um eine Klammer als Text zu verwenden, tippen Sie sie zweimal: }}}}
+PatErrUnknownToken	“{{{0}}}” is not a block Snapdate knows. Use the blocks below, such as {{YYYY}}.	„{{{0}}}“ ist kein Baustein, den Snapdate kennt. Verwenden Sie die Bausteine unten, zum Beispiel {{YYYY}}.
+PatErrUnsupportedToken	“{{{0}}}” cannot be read from a file name. Use number blocks such as {{MM}} for the month.	„{{{0}}}“ lässt sich nicht aus einem Dateinamen lesen. Verwenden Sie Zahlen-Bausteine wie {{MM}} für den Monat.
+PatErrDuplicateToken	“{{{0}}}” repeats a part of the date that is already in the pattern. Each part may appear only once.	„{{{0}}}“ wiederholt einen Teil des Datums, der schon im Muster steht. Jeder Teil darf nur einmal vorkommen.
+PatErrMissingYear	The pattern needs a year: {{YYYY}} or {{YY}}.	Das Muster braucht ein Jahr: {{YYYY}} oder {{YY}}.
+PatErrMissingMonth	The pattern needs a month: {{MM}} or {{M}}.	Das Muster braucht einen Monat: {{MM}} oder {{M}}.
+PatErrMissingDay	The pattern needs a day: {{DD}} or {{D}}.	Das Muster braucht einen Tag: {{DD}} oder {{D}}.
+PatErrHourWithoutMinute	An hour also needs minutes: add {{mm}}.	Zur Stunde gehören auch Minuten: Fügen Sie {{mm}} hinzu.
+PatErrMinuteWithoutHour	Minutes also need an hour: add {{HH}}.	Zu Minuten gehört auch eine Stunde: Fügen Sie {{HH}} hinzu.
+PatErrSecondWithoutMinute	Seconds also need minutes: add {{mm}}.	Zu Sekunden gehören auch Minuten: Fügen Sie {{mm}} hinzu.
+PatErrAmbiguous	The digits around “{{{0}}}” could be read in more than one way. Put a separator such as - or _ between the parts, or use two-digit blocks like {{MM}} and {{DD}}. Also, * must not touch these digits, and ? must not be used anywhere among them.	Die Ziffern um „{{{0}}}“ lassen sich auf mehr als eine Weise lesen. Setzen Sie ein Trennzeichen wie - oder _ zwischen die Teile oder verwenden Sie zweistellige Bausteine wie {{MM}} und {{DD}}. Außerdem darf * nicht direkt an diese Ziffern grenzen, und ? darf nirgends zwischen ihnen stehen.
+PatErrInvalid	This pattern cannot be used. Please check it.	Dieses Muster kann nicht verwendet werden. Bitte prüfen Sie es.
+RuleSampleEmpty	Type a file name to try your patterns.	Geben Sie einen Dateinamen ein, um Ihre Muster auszuprobieren.
+RuleSampleNoPatterns	Type a valid pattern first, then try a file name.	Geben Sie zuerst ein gültiges Muster ein und probieren Sie dann einen Dateinamen aus.
+RuleSampleMatch	Matches line {0} → {1}	Passt zu Zeile {0} → {1}
+RuleSampleInvalid	Line {0} matches, but {1} is not a valid date.	Zeile {0} passt, aber {1} ist kein gültiges Datum.
+RuleSampleImplausible	Line {0} matches, but {1} is before 1900 or in the future.	Zeile {0} passt, aber {1} liegt vor 1900 oder in der Zukunft.
+RuleSampleNoMatch	No pattern matches this name.	Kein Muster passt zu diesem Namen.
+RuleRegexToggle	Advanced: regular expressions	Erweitert: reguläre Ausdrücke
+RuleRegexToggleTip	For users who know regular expressions. Your text is kept when you switch.	Für Nutzer, die reguläre Ausdrücke kennen. Ihr Text bleibt beim Umschalten erhalten.
+RuleRegexLabel	Regular expressions (one per line, up to {0})	Reguläre Ausdrücke (einer pro Zeile, bis zu {0})
+RuleRegexHint	Mark the date parts with named groups: year (or yy for two digits), month and day; hour, minute and second are optional. The expression must fit the whole name (without the extension); upper and lower case do not matter. Example:	Kennzeichnen Sie die Datumsteile mit benannten Gruppen: year (oder yy für zwei Ziffern), month und day; hour, minute und second sind optional. Der Ausdruck muss zum ganzen Namen passen (ohne Dateiendung); Groß- und Kleinschreibung spielen keine Rolle. Beispiel:
+RuleRegexExample	^IMG-(?<year>\d{{4}})(?<month>\d{{2}})(?<day>\d{{2}})-WA\d+$	^IMG-(?<year>\d{{4}})(?<month>\d{{2}})(?<day>\d{{2}})-WA\d+$
+RuleRegexExampleName	Example: {0}	Beispiel: {0}
+RuleRegexNoPatterns	Type at least one regular expression, for example {0}	Geben Sie mindestens einen regulären Ausdruck ein, zum Beispiel {0}
+RuleRegexOk	All regular expressions can be used.	Alle regulären Ausdrücke können verwendet werden.
+RuleRegexSampleNoPatterns	Type a valid regular expression first, then try a file name.	Geben Sie zuerst einen gültigen regulären Ausdruck ein und probieren Sie dann einen Dateinamen aus.
+RuleRegexSampleNoMatch	No regular expression matches this name.	Kein regulärer Ausdruck passt zu diesem Namen.
+RxErrTooLong	This expression is too long (at most {0} characters).	Dieser Ausdruck ist zu lang (höchstens {0} Zeichen).
+RxErrInvalid	This expression cannot be used. Please check it.	Dieser Ausdruck kann nicht verwendet werden. Bitte prüfen Sie ihn.
+RxErrSyntax	This is not a valid regular expression. Check the brackets and special characters around character {0}.	Das ist kein gültiger regulärer Ausdruck. Prüfen Sie die Klammern und Sonderzeichen um Zeichen {0}.
+RxErrUnsupported	“{0}” (at character {1}) cannot be used. Snapdate allows plain characters, escaped characters such as \. or \(, \d, \s, \w, ., simple classes such as [a-z_-], groups (…), (?:…) and (?<name>…), | between alternatives, ^ and $, and the repetitions * + ? {{n}} {{n,}} {{n,m}}. Write \{{, \}} and \] for the characters themselves.	„{0}“ (bei Zeichen {1}) kann nicht verwendet werden. Snapdate erlaubt normale Zeichen, maskierte Zeichen wie \. oder \(, \d, \s, \w, ., einfache Klassen wie [a-z_-], Gruppen (…), (?:…) und (?<name>…), | zwischen Alternativen, ^ und $ sowie die Wiederholungen * + ? {{n}} {{n,}} {{n,m}}. Schreiben Sie \{{, \}} und \] für die Zeichen selbst.
+RxErrRepetition	The repetition {0} is too large. At most {1} repetitions are possible.	Die Wiederholung {0} ist zu groß. Höchstens {1} Wiederholungen sind möglich.
+RxErrUnknownGroup	The group “{0}” is not a date part. Use year, yy, month, day, hour, minute or second, in lower case.	Die Gruppe „{0}“ ist kein Datumsteil. Verwenden Sie year, yy, month, day, hour, minute oder second, kleingeschrieben.
+RxErrMissingYear	The expression needs a group for the year: (?<year>…) or (?<yy>…).	Der Ausdruck braucht eine Gruppe für das Jahr: (?<year>…) oder (?<yy>…).
+RxErrMissingMonth	The expression needs a group for the month: (?<month>…).	Der Ausdruck braucht eine Gruppe für den Monat: (?<month>…).
+RxErrMissingDay	The expression needs a group for the day: (?<day>…).	Der Ausdruck braucht eine Gruppe für den Tag: (?<day>…).
+RxErrHourWithoutMinute	An hour group also needs a minute group: add (?<minute>…).	Zur Gruppe für die Stunde gehört auch eine für die Minuten: Fügen Sie (?<minute>…) hinzu.
+RxErrMinuteWithoutHour	A minute group also needs an hour group: add (?<hour>…).	Zur Gruppe für die Minuten gehört auch eine für die Stunde: Fügen Sie (?<hour>…) hinzu.
+RxErrSecondWithoutMinute	A second group also needs a minute group: add (?<minute>…).	Zur Gruppe für die Sekunden gehört auch eine für die Minuten: Fügen Sie (?<minute>…) hinzu.
+RuleRegexEditorIntro	Describe how your file names look. Snapdate tries the expressions from top to bottom and reads the date with the first one that fits the whole name (without the extension).	Beschreiben Sie, wie Ihre Dateinamen aussehen. Snapdate probiert die Ausdrücke von oben nach unten aus und liest das Datum mit dem ersten, der zum ganzen Namen passt (ohne Dateiendung).
+RxErrNested	The repetition {0} repeats something whose length can vary, such as *, +, ? or alternatives of different length like (?:a|bc). Snapdate does not allow this because it can make matching very slow. Write the parts out one after another instead.	Die Wiederholung {0} wiederholt etwas, dessen Länge sich ändern kann, etwa *, +, ? oder unterschiedlich lange Alternativen wie (?:a|bc). Snapdate erlaubt das nicht, weil es den Vergleich sehr langsam machen kann. Schreiben Sie die Teile stattdessen nacheinander aus.
+RxErrTooComplex	This expression is too complex to run quickly. Use fewer * and +, fewer repetitions overall and smaller counts in {{…}}, or shorten it.	Dieser Ausdruck ist zu komplex, um schnell ausgeführt zu werden. Verwenden Sie weniger * und +, insgesamt weniger Wiederholungen und kleinere Zahlen in {{…}}, oder kürzen Sie ihn.
+TipRulesHint	The rules are under "Dates from file names" above the list.	Die Regeln finden Sie unter „Datum aus Dateinamen“ über der Liste.

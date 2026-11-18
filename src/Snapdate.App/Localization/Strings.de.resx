@@ -75,13 +75,20 @@
   <data name="NoPhotosBody" xml:space="preserve"><value>Dieser Ordner enthält keine unterstützten Fotos oder Videos. Liegen sie in Unterordnern, setzen Sie das Häkchen bei „Unterordner einbeziehen“.</value></data>
   <data name="FilterAll" xml:space="preserve"><value>Alle</value></data>
   <data name="FilterCamera" xml:space="preserve"><value>Aufnahmedatum</value></data>
+  <data name="FilterFileName" xml:space="preserve"><value>Datum aus Name</value></data>
   <data name="FilterFile" xml:space="preserve"><value>Dateidatum</value></data>
   <data name="FilterRenamed" xml:space="preserve"><value>Nummeriert</value></data>
   <data name="BadgeCamera" xml:space="preserve"><value>Aufnahmedatum</value></data>
+  <data name="BadgeFileName" xml:space="preserve"><value>Datum aus Name</value></data>
   <data name="BadgeFile" xml:space="preserve"><value>Dateidatum</value></data>
   <data name="BadgeRenamed" xml:space="preserve"><value>Nummeriert</value></data>
   <data name="TipCamera" xml:space="preserve"><value>Das Datum stammt aus dem Foto selbst (von der Kamera gespeichert).</value></data>
-  <data name="TipFile" xml:space="preserve"><value>In dieser Datei ist kein Aufnahmedatum gespeichert, daher wurde ihr Dateidatum verwendet.</value></data>
+  <data name="TipFile" xml:space="preserve"><value>In dieser Datei ist kein Aufnahmedatum gespeichert, daher wurde ihr Dateidatum verwendet. Snapdate kann das Datum auch aus Dateinamen lesen, z. B. bei WhatsApp-Bildern.</value></data>
+  <data name="TipFileName" xml:space="preserve"><value>Das Datum wurde aus dem Dateinamen gelesen.</value></data>
+  <data name="TipFileNameRule" xml:space="preserve"><value>Das Datum wurde nach der Regel „{0}“ aus dem Dateinamen gelesen.</value></data>
+  <data name="DatesDiffer" xml:space="preserve"><value>Daten weichen ab</value></data>
+  <data name="DatesDifferNameUsed" xml:space="preserve"><value>Der Name sagt {0}, die Metadaten des Fotos sagen {1} (von einer App geschrieben, nicht von einer Kamera). Der Name wurde verwendet.</value></data>
+  <data name="DatesDifferCameraUsed" xml:space="preserve"><value>Das Aufnahmedatum ({0}) wurde verwendet; der Name sagt {1}.</value></data>
   <data name="TipRenamed" xml:space="preserve"><value>Ein anderes Foto hat bereits diesen Namen, daher wurde eine Nummer ergänzt.</value></data>
   <data name="ProblemSourceMissing" xml:space="preserve"><value>Wählen Sie den Ordner mit Ihren Fotos</value></data>
   <data name="ProblemSourceNotFound" xml:space="preserve"><value>Der Fotoordner wurde nicht gefunden</value></data>
@@ -156,4 +163,112 @@
   <data name="UpdateFailedMissing" xml:space="preserve"><value>Diese Version hat kein Installationsprogramm für Ihren PC. Bitte laden Sie sie von der Download-Seite.</value></data>
   <data name="UpdateFailedStart" xml:space="preserve"><value>Das Installationsprogramm konnte nicht gestartet werden. Bitte laden Sie die neue Version von der Download-Seite.</value></data>
   <data name="UpdateFailedInstaller" xml:space="preserve"><value>Die Installation wurde abgebrochen. Es wurde nichts verändert.</value></data>
+  <data name="RulesLink" xml:space="preserve"><value>Datum aus Dateinamen</value></data>
+  <data name="RulesLinkTip" xml:space="preserve"><value>Regeln ansehen, ein- und ausschalten, mit denen Snapdate das Datum aus Dateinamen liest, und einen Dateinamen ausprobieren.</value></data>
+  <data name="RulesTitle" xml:space="preserve"><value>Datum aus Dateinamen</value></data>
+  <data name="RulesIntro" xml:space="preserve"><value>Hat ein Foto kein Aufnahmedatum, liest Snapdate das Datum mit der ersten passenden Regel aus dem Dateinamen (Ihre eigenen Regeln zuerst). Hinweis: Das Datum im Namen ist oft der Tag, an dem das Bild empfangen wurde, nicht der Aufnahmetag.</value></data>
+  <data name="RulesListName" xml:space="preserve"><value>Regeln</value></data>
+  <data name="RulesSourceSystem" xml:space="preserve"><value>Mitgeliefert</value></data>
+  <data name="RulesSourceCustom" xml:space="preserve"><value>Eigene</value></data>
+  <data name="RulesSourceSystemTip" xml:space="preserve"><value>Wird mit Snapdate mitgeliefert. Sie können sie ausschalten oder duplizieren, um eine eigene Version zu erstellen.</value></data>
+  <data name="RulesSourceCustomTip" xml:space="preserve"><value>Ihre eigene Regel. Sie wird vor den mitgelieferten Regeln geprüft und von Updates nie verändert.</value></data>
+  <data name="RuleToggleName" xml:space="preserve"><value>{0} ein/aus</value></data>
+  <data name="RuleStateOn" xml:space="preserve"><value>eingeschaltet</value></data>
+  <data name="RuleStateOff" xml:space="preserve"><value>ausgeschaltet</value></data>
+  <data name="RuleDuplicate" xml:space="preserve"><value>Duplizieren</value></data>
+  <data name="RuleDuplicateName" xml:space="preserve"><value>{0} duplizieren</value></data>
+  <data name="RuleCopyName" xml:space="preserve"><value>{0} (Kopie)</value></data>
+  <data name="RuleDelete" xml:space="preserve"><value>Löschen</value></data>
+  <data name="RuleDeleteName" xml:space="preserve"><value>{0} löschen</value></data>
+  <data name="RuleDeleteQuestion" xml:space="preserve"><value>Diese Regel löschen?</value></data>
+  <data name="RuleEdit" xml:space="preserve"><value>Bearbeiten</value></data>
+  <data name="RuleEditName" xml:space="preserve"><value>{0} bearbeiten</value></data>
+  <data name="RulesAdd" xml:space="preserve"><value>Regel hinzufügen</value></data>
+  <data name="RulePatternsName" xml:space="preserve"><value>Muster: {0}</value></data>
+  <data name="RuleSyntaxUnsupported" xml:space="preserve"><value>Diese Regel ist als „{0}“ geschrieben, was diese Snapdate-Version noch nicht verwenden kann. Sie bleibt erhalten, wird aber nicht verwendet.</value></data>
+  <data name="RulesUnreadable" xml:space="preserve"><value>Ihre eigenen Regeln konnten nicht gelesen werden. Die mitgelieferten Regeln funktionieren weiter. Beim Speichern wird eine Kopie der alten Datei behalten.</value></data>
+  <data name="RulesNewerVersion" xml:space="preserve"><value>Ihre Regeln wurden von einer neueren Snapdate-Version gespeichert. Sie können sie hier ansehen, aber nicht ändern.</value></data>
+  <data name="RulesInaccessible" xml:space="preserve"><value>Die Datei mit Ihren Regeln konnte nicht geöffnet werden, daher lassen sich die Regeln gerade nicht ändern. Bitte versuchen Sie es später erneut.</value></data>
+  <data name="RulesConflict" xml:space="preserve"><value>Ihre Regeln wurden an anderer Stelle geändert (zum Beispiel in einem anderen Snapdate-Fenster). Die Liste wurde neu geladen; bitte nehmen Sie Ihre Änderung erneut vor.</value></data>
+  <data name="RulesSaveFailed" xml:space="preserve"><value>Ihre Änderung konnte nicht gespeichert werden und wurde daher zurückgenommen. Bitte versuchen Sie es später erneut.</value></data>
+  <data name="RulesTooLarge" xml:space="preserve"><value>Ihre Änderung konnte nicht gespeichert werden, weil die Regeln zu groß würden. Sie wurde zurückgenommen.</value></data>
+  <data name="RulesReadOnly" xml:space="preserve"><value>Ihre Regeln können gerade nicht geändert werden.</value></data>
+  <data name="RulesFull" xml:space="preserve"><value>Sie haben bereits die höchstmögliche Zahl von {0} eigenen Regeln. Löschen Sie zuerst eine.</value></data>
+  <data name="TesterTitle" xml:space="preserve"><value>Dateinamen ausprobieren</value></data>
+  <data name="TesterPlaceholder" xml:space="preserve"><value>z. B. IMG-20240714-WA0001.jpg</value></data>
+  <data name="TesterPick" xml:space="preserve"><value>Datei aus dem Ordner wählen</value></data>
+  <data name="TesterPickName" xml:space="preserve"><value>Dateinamen aus dem gewählten Ordner</value></data>
+  <data name="TesterEmpty" xml:space="preserve"><value>Geben Sie einen Dateinamen ein, um zu sehen, welche Regel das Datum liest.</value></data>
+  <data name="TesterMatch" xml:space="preserve"><value>Regel „{0}“: {1}</value></data>
+  <data name="TesterMatchOff" xml:space="preserve"><value>Regel „{0}“: {1} (Regel ist ausgeschaltet)</value></data>
+  <data name="TesterNoMatch" xml:space="preserve"><value>Keine Regel passt</value></data>
+  <data name="TesterDateTime" xml:space="preserve"><value>{0}, {1} Uhr</value></data>
+  <data name="TesterCreateRule" xml:space="preserve"><value>Regel aus diesem Namen erstellen</value></data>
+  <data name="TesterCreateRuleTip" xml:space="preserve"><value>Öffnet eine neue Regel mit einem Muster für Namen wie diesen. Sie können es vor dem Speichern ändern.</value></data>
+  <data name="RuleNewTitle" xml:space="preserve"><value>Neue Regel</value></data>
+  <data name="RuleEditTitle" xml:space="preserve"><value>Regel bearbeiten</value></data>
+  <data name="RuleEditorIntro" xml:space="preserve"><value>Beschreiben Sie, wie Ihre Dateinamen aussehen. Snapdate probiert die Muster von oben nach unten aus und liest das Datum mit dem ersten, das zum ganzen Namen passt (ohne Dateiendung).</value></data>
+  <data name="RuleNameLabel" xml:space="preserve"><value>Name</value></data>
+  <data name="RuleDefaultName" xml:space="preserve"><value>Meine Regel</value></data>
+  <data name="RulePatternsLabel" xml:space="preserve"><value>Muster (eins pro Zeile, bis zu {0})</value></data>
+  <data name="RulePatternsHint" xml:space="preserve"><value>Klicken Sie auf einen Baustein, um ihn an der Cursorposition einzufügen. * steht für beliebigen Text, ? für genau ein Zeichen. Alles andere muss genau so im Namen stehen; Groß- und Kleinschreibung spielen keine Rolle.</value></data>
+  <data name="RuleChipsName" xml:space="preserve"><value>Bausteine zum Einfügen</value></data>
+  <data name="TokAnyText" xml:space="preserve"><value>beliebiger Text *</value></data>
+  <data name="TokAnyTextTip" xml:space="preserve"><value>* = beliebiger Text, auch keiner</value></data>
+  <data name="RuleSave" xml:space="preserve"><value>Regel speichern</value></data>
+  <data name="RuleDiscardQuestion" xml:space="preserve"><value>Änderungen verwerfen?</value></data>
+  <data name="RuleDiscard" xml:space="preserve"><value>Verwerfen</value></data>
+  <data name="RuleKeepEditing" xml:space="preserve"><value>Weiter bearbeiten</value></data>
+  <data name="RulePatternsOk" xml:space="preserve"><value>Alle Muster können verwendet werden.</value></data>
+  <data name="RuleProblemLine" xml:space="preserve"><value>Zeile {0}: {1}</value></data>
+  <data name="RuleNoPatterns" xml:space="preserve"><value>Geben Sie mindestens ein Muster ein, zum Beispiel IMG-{{YYYY}}{{MM}}{{DD}}-WA*</value></data>
+  <data name="RuleTooManyPatterns" xml:space="preserve"><value>Eine Regel kann höchstens {0} Muster haben. Bitte entfernen Sie {1} Zeile(n).</value></data>
+  <data name="RuleNameTooLong" xml:space="preserve"><value>Der Name darf höchstens {0} Zeichen lang sein.</value></data>
+  <data name="PatErrEmpty" xml:space="preserve"><value>Diese Zeile ist leer.</value></data>
+  <data name="PatErrTooLong" xml:space="preserve"><value>Dieses Muster ist zu lang (höchstens {0} Zeichen).</value></data>
+  <data name="PatErrUnclosedBrace" xml:space="preserve"><value>Zu einer „{{“ fehlt die schließende „}}“.</value></data>
+  <data name="PatErrClosingBrace" xml:space="preserve"><value>Es gibt eine „}}“ ohne öffnende „{{“. Um eine Klammer als Text zu verwenden, tippen Sie sie zweimal: }}}}</value></data>
+  <data name="PatErrUnknownToken" xml:space="preserve"><value>„{{{0}}}“ ist kein Baustein, den Snapdate kennt. Verwenden Sie die Bausteine unten, zum Beispiel {{YYYY}}.</value></data>
+  <data name="PatErrUnsupportedToken" xml:space="preserve"><value>„{{{0}}}“ lässt sich nicht aus einem Dateinamen lesen. Verwenden Sie Zahlen-Bausteine wie {{MM}} für den Monat.</value></data>
+  <data name="PatErrDuplicateToken" xml:space="preserve"><value>„{{{0}}}“ wiederholt einen Teil des Datums, der schon im Muster steht. Jeder Teil darf nur einmal vorkommen.</value></data>
+  <data name="PatErrMissingYear" xml:space="preserve"><value>Das Muster braucht ein Jahr: {{YYYY}} oder {{YY}}.</value></data>
+  <data name="PatErrMissingMonth" xml:space="preserve"><value>Das Muster braucht einen Monat: {{MM}} oder {{M}}.</value></data>
+  <data name="PatErrMissingDay" xml:space="preserve"><value>Das Muster braucht einen Tag: {{DD}} oder {{D}}.</value></data>
+  <data name="PatErrHourWithoutMinute" xml:space="preserve"><value>Zur Stunde gehören auch Minuten: Fügen Sie {{mm}} hinzu.</value></data>
+  <data name="PatErrMinuteWithoutHour" xml:space="preserve"><value>Zu Minuten gehört auch eine Stunde: Fügen Sie {{HH}} hinzu.</value></data>
+  <data name="PatErrSecondWithoutMinute" xml:space="preserve"><value>Zu Sekunden gehören auch Minuten: Fügen Sie {{mm}} hinzu.</value></data>
+  <data name="PatErrAmbiguous" xml:space="preserve"><value>Die Ziffern um „{{{0}}}“ lassen sich auf mehr als eine Weise lesen. Setzen Sie ein Trennzeichen wie - oder _ zwischen die Teile oder verwenden Sie zweistellige Bausteine wie {{MM}} und {{DD}}. Außerdem darf * nicht direkt an diese Ziffern grenzen, und ? darf nirgends zwischen ihnen stehen.</value></data>
+  <data name="PatErrInvalid" xml:space="preserve"><value>Dieses Muster kann nicht verwendet werden. Bitte prüfen Sie es.</value></data>
+  <data name="RuleSampleEmpty" xml:space="preserve"><value>Geben Sie einen Dateinamen ein, um Ihre Muster auszuprobieren.</value></data>
+  <data name="RuleSampleNoPatterns" xml:space="preserve"><value>Geben Sie zuerst ein gültiges Muster ein und probieren Sie dann einen Dateinamen aus.</value></data>
+  <data name="RuleSampleMatch" xml:space="preserve"><value>Passt zu Zeile {0} → {1}</value></data>
+  <data name="RuleSampleInvalid" xml:space="preserve"><value>Zeile {0} passt, aber {1} ist kein gültiges Datum.</value></data>
+  <data name="RuleSampleImplausible" xml:space="preserve"><value>Zeile {0} passt, aber {1} liegt vor 1900 oder in der Zukunft.</value></data>
+  <data name="RuleSampleNoMatch" xml:space="preserve"><value>Kein Muster passt zu diesem Namen.</value></data>
+  <data name="RuleRegexToggle" xml:space="preserve"><value>Erweitert: reguläre Ausdrücke</value></data>
+  <data name="RuleRegexToggleTip" xml:space="preserve"><value>Für Nutzer, die reguläre Ausdrücke kennen. Ihr Text bleibt beim Umschalten erhalten.</value></data>
+  <data name="RuleRegexLabel" xml:space="preserve"><value>Reguläre Ausdrücke (einer pro Zeile, bis zu {0})</value></data>
+  <data name="RuleRegexHint" xml:space="preserve"><value>Kennzeichnen Sie die Datumsteile mit benannten Gruppen: year (oder yy für zwei Ziffern), month und day; hour, minute und second sind optional. Der Ausdruck muss zum ganzen Namen passen (ohne Dateiendung); Groß- und Kleinschreibung spielen keine Rolle. Beispiel:</value></data>
+  <data name="RuleRegexExample" xml:space="preserve"><value>^IMG-(?&lt;year&gt;\d{{4}})(?&lt;month&gt;\d{{2}})(?&lt;day&gt;\d{{2}})-WA\d+$</value></data>
+  <data name="RuleRegexExampleName" xml:space="preserve"><value>Beispiel: {0}</value></data>
+  <data name="RuleRegexNoPatterns" xml:space="preserve"><value>Geben Sie mindestens einen regulären Ausdruck ein, zum Beispiel {0}</value></data>
+  <data name="RuleRegexOk" xml:space="preserve"><value>Alle regulären Ausdrücke können verwendet werden.</value></data>
+  <data name="RuleRegexSampleNoPatterns" xml:space="preserve"><value>Geben Sie zuerst einen gültigen regulären Ausdruck ein und probieren Sie dann einen Dateinamen aus.</value></data>
+  <data name="RuleRegexSampleNoMatch" xml:space="preserve"><value>Kein regulärer Ausdruck passt zu diesem Namen.</value></data>
+  <data name="RxErrTooLong" xml:space="preserve"><value>Dieser Ausdruck ist zu lang (höchstens {0} Zeichen).</value></data>
+  <data name="RxErrInvalid" xml:space="preserve"><value>Dieser Ausdruck kann nicht verwendet werden. Bitte prüfen Sie ihn.</value></data>
+  <data name="RxErrSyntax" xml:space="preserve"><value>Das ist kein gültiger regulärer Ausdruck. Prüfen Sie die Klammern und Sonderzeichen um Zeichen {0}.</value></data>
+  <data name="RxErrUnsupported" xml:space="preserve"><value>„{0}“ (bei Zeichen {1}) kann nicht verwendet werden. Snapdate erlaubt normale Zeichen, maskierte Zeichen wie \. oder \(, \d, \s, \w, ., einfache Klassen wie [a-z_-], Gruppen (…), (?:…) und (?&lt;name&gt;…), | zwischen Alternativen, ^ und $ sowie die Wiederholungen * + ? {{n}} {{n,}} {{n,m}}. Schreiben Sie \{{, \}} und \] für die Zeichen selbst.</value></data>
+  <data name="RxErrRepetition" xml:space="preserve"><value>Die Wiederholung {0} ist zu groß. Höchstens {1} Wiederholungen sind möglich.</value></data>
+  <data name="RxErrUnknownGroup" xml:space="preserve"><value>Die Gruppe „{0}“ ist kein Datumsteil. Verwenden Sie year, yy, month, day, hour, minute oder second, kleingeschrieben.</value></data>
+  <data name="RxErrMissingYear" xml:space="preserve"><value>Der Ausdruck braucht eine Gruppe für das Jahr: (?&lt;year&gt;…) oder (?&lt;yy&gt;…).</value></data>
+  <data name="RxErrMissingMonth" xml:space="preserve"><value>Der Ausdruck braucht eine Gruppe für den Monat: (?&lt;month&gt;…).</value></data>
+  <data name="RxErrMissingDay" xml:space="preserve"><value>Der Ausdruck braucht eine Gruppe für den Tag: (?&lt;day&gt;…).</value></data>
+  <data name="RxErrHourWithoutMinute" xml:space="preserve"><value>Zur Gruppe für die Stunde gehört auch eine für die Minuten: Fügen Sie (?&lt;minute&gt;…) hinzu.</value></data>
+  <data name="RxErrMinuteWithoutHour" xml:space="preserve"><value>Zur Gruppe für die Minuten gehört auch eine für die Stunde: Fügen Sie (?&lt;hour&gt;…) hinzu.</value></data>
+  <data name="RxErrSecondWithoutMinute" xml:space="preserve"><value>Zur Gruppe für die Sekunden gehört auch eine für die Minuten: Fügen Sie (?&lt;minute&gt;…) hinzu.</value></data>
+  <data name="RuleRegexEditorIntro" xml:space="preserve"><value>Beschreiben Sie, wie Ihre Dateinamen aussehen. Snapdate probiert die Ausdrücke von oben nach unten aus und liest das Datum mit dem ersten, der zum ganzen Namen passt (ohne Dateiendung).</value></data>
+  <data name="RxErrNested" xml:space="preserve"><value>Die Wiederholung {0} wiederholt etwas, dessen Länge sich ändern kann, etwa *, +, ? oder unterschiedlich lange Alternativen wie (?:a|bc). Snapdate erlaubt das nicht, weil es den Vergleich sehr langsam machen kann. Schreiben Sie die Teile stattdessen nacheinander aus.</value></data>
+  <data name="RxErrTooComplex" xml:space="preserve"><value>Dieser Ausdruck ist zu komplex, um schnell ausgeführt zu werden. Verwenden Sie weniger * und +, insgesamt weniger Wiederholungen und kleinere Zahlen in {{…}}, oder kürzen Sie ihn.</value></data>
+  <data name="TipRulesHint" xml:space="preserve"><value>Die Regeln finden Sie unter „Datum aus Dateinamen“ über der Liste.</value></data>
 </root>

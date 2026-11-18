@@ -14,6 +14,8 @@
   <ItemGroup>
     <!-- Public keys that update signatures are checked against; build.ps1 -Target SignRelease verifies with the same files. -->
     <EmbeddedResource Include="Updates\Keys\*.pub.pem" />
+    <!-- Built-in file-name date rules (ADR 0007); the name is a contract with JsonDateRuleStore. -->
+    <EmbeddedResource Include="FileNames\system-date-rules.json" LogicalName="Snapdate.Infrastructure.FileNames.system-date-rules.json" />
   </ItemGroup>
   <ItemGroup>
     <InternalsVisibleTo Include="Snapdate.Infrastructure.Tests" />

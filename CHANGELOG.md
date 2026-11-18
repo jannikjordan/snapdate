@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-11-18
+
+This release reads dates from file names: WhatsApp pictures carry no date inside, but their names do. Snapdate comes with rules for WhatsApp, and you can add your own for other apps.
+
+### Added
+- 📅 Dates from file names: WhatsApp pictures (Android `IMG-20240714-WA0001.jpg`, Desktop/Web `WhatsApp Image 2024-07-14 at 15.32.08.jpeg`) have no date stored inside, but the name has one. Snapdate now reads it and uses it instead of the file date (which is only the download day). Such photos get a **Date from name** label and their own filter. A date from the camera always wins; when a date written by an app and the name disagree, the name is used and the photo is marked **Dates differ** — the tooltip shows both dates.
+- 🗂️ **Dates from file names** dialog (link above the preview list): see every rule with its patterns and whether it is built in or your own, switch rules on and off, duplicate a built-in rule into your own copy and delete your own rules. Type or pick a file name to try it: Snapdate shows which rule reads which date, or that no rule fits. Changes are saved at once and the preview is updated when you close the dialog. Works with the keyboard alone and with screen readers.
+- ✏️ Make your own rules: **Add rule** and **Edit** open a small editor with a name and one pattern per line (up to 10), such as `IMG_{YYYY}{MM}{DD}_*`. Click blocks (Year, Month, Day, Hour, Minute, Second, any text `*`) to insert them at the cursor. Every line that cannot be used is explained in plain words, and a tester shows at once which line fits a file name and which date it reads — or that it fits, but `2024-13-45` is not a date. Your own rules are tried before the built-in ones. When no rule reads a name such as `IMG_20240714_153208.jpg`, **Create a rule from this name** starts a rule for you.
+- 🧪 For advanced users: tick **Advanced: regular expressions** in the rule editor to write a rule as a regular expression with named groups `year` (or `yy`), `month`, `day` and optionally `hour`, `minute`, `second`, e.g. `^IMG-(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})-WA\d+$`. The expression must fit the whole name. To keep matching fast, Snapdate accepts a simple, safe part of the regular-expression language: characters, `\d \s \w .`, simple classes such as `[a-z_-]`, groups, `|` and repetitions up to 20, at most 300 characters and a limited number of repetitions; something whose length can vary cannot be repeated again, and back-references, look-arounds and options such as `(?i)` are not available. Problems are explained in plain words, and the tester tries a name shortly after you stop typing.
+- 📖 User guides (English and German): new section "Dates from file names" with screenshots, the updated "Where does the date come from?" chart, the **Date from name** label and **Dates differ** hint, and answers to "My WhatsApp photos from an iPhone have no date" (ask the sender to send them "as Document") and "Where are my own date rules stored?".
+
+### Changed
+- 🗑️ When uninstalling, the question whether to delete your settings now says that it also deletes your own date rules (`%APPDATA%\Snapdate\date-rules.json`).
+
+### Security
+- File names and your own rules file are treated as untrusted input: rules run with a safe, linear-time regular-expression engine and strict limits on their shape, every date must be a real calendar date that is not before 1900 and not far in the future, and a damaged rules file is set aside, never overwritten.
+
 ## [0.2.1] - 2026-11-17
 
 Bug-fix release.
@@ -42,6 +59,7 @@ Snapdate copies or moves your photos and renames them by capture date. It comes 
 - Pinned, locked and audited dependencies; SBOM and SHA-256 checksums for every release.
 - Release files carry a detached ECDSA P-256 signature (`<file>.sig`) that Snapdate verifies with a public key built into it, so the in-app updater only runs files we signed.
 
-[Unreleased]: https://github.com/jannikjordan/snapdate/compare/v0.2.1...HEAD
+[Unreleased]: https://github.com/jannikjordan/snapdate/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/jannikjordan/snapdate/compare/v0.2.1...v0.3.0
 [0.2.1]: https://github.com/jannikjordan/snapdate/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/jannikjordan/snapdate/releases/tag/v0.2.0

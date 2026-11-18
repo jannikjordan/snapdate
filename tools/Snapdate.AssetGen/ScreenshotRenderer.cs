@@ -8,11 +8,14 @@ using Avalonia.VisualTree;
 using Snapdate.App.Services;
 using Snapdate.App.ViewModels;
 using Snapdate.App.Views;
+using Snapdate.Application.FileNames;
 using Snapdate.Application.Installation;
 using Snapdate.Application.Ports;
 using Snapdate.Application.Settings;
 using Snapdate.Application.Updates;
+using Snapdate.Domain.FileNames;
 using Snapdate.Domain.Versioning;
+using Snapdate.Infrastructure.FileNames;
 using Snapdate.Infrastructure.FileSystem;
 using Snapdate.Infrastructure.Metadata;
 
@@ -75,6 +78,24 @@ internal static class ScreenshotRenderer
     private sealed class FixedInstall(InstallKind kind) : IInstallInfo
     {
         public InstallInfo Current { get; } = new(kind, kind == InstallKind.Installed ? InstallScope.CurrentUser : InstallScope.None);
+    }
+
+    /// <summary>
+    /// The built-in rules embedded in the app and no user rules: screenshots never depend on the developer's own
+    /// <c>%APPDATA%\Snapdate\date-rules.json</c>. Nothing is ever saved.
+    /// </summary>
+    private sealed class BuiltInRulesOnly : IDateRuleStore
+    {
+        // Only the embedded resource is read; the path is never opened.
+        private static readonly IReadOnlyList<DateRule> SystemRules =
+            new JsonDateRuleStore(Path.Combine(DemoRoot, "unused-date-rules.json")).LoadSystemRules();
+
+        public IReadOnlyList<DateRule> LoadSystemRules() => SystemRules;
+
+        public UserDateRulesLoad LoadUserRules() => UserDateRulesLoad.Missing;
+
+        public UserDateRulesSave SaveUserRules(UserDateRules rules, UserRulesFingerprint expected) =>
+            new(DateRuleSaveResult.ReadOnly, expected);
     }
 
     /// <summary>How the update check behaves in a screenshot.</summary>
@@ -178,6 +199,41 @@ internal static class ScreenshotRenderer
                         Wait(vm.Update.UpdateNowCommand.ExecuteAsync(null));
                     }, update: new UpdateShot(NewerVersion: true, Installer: new ScriptedInstaller(UpdateInstallResult.InstallerFailed)));
                     Shoot(dir, $"13-first-start-notice-{suffix}", ci, thumbnails, ArrangePreview, update: new UpdateShot(NoticeShown: false));
+                    Shoot(dir, $"17-date-rules-{suffix}", ci, thumbnails, vm =>
+                    {
+                        // "Dates from file names" with the tester showing a WhatsApp picture from the folder.
+                        ArrangePreview(vm);
+                        vm.OpenDateRulesCommand.Execute(null);
+                        var rules = vm.RulesDialog!;
+                        rules.SelectedSample = rules.SampleNames.First(n => n.StartsWith("WhatsApp", StringComparison.Ordinal));
+                    });
+                    Shoot(dir, $"18-date-rule-editor-{suffix}", ci, thumbnails, vm =>
+                    {
+                        // A new rule for screenshots, tried on the screenshot from the folder (nothing is saved).
+                        ArrangePreview(vm);
+                        vm.OpenDateRulesCommand.Execute(null);
+                        var rules = vm.RulesDialog!;
+                        rules.SelectedSample = rules.SampleNames.First(n => n.StartsWith("Screenshot", StringComparison.Ordinal));
+                        rules.EditorSampleDelay = TimeSpan.Zero; // the tester answers at once for the picture
+                        rules.AddRuleCommand.Execute(null);
+                        var editor = rules.Editor!;
+                        editor.Name = folder == "de" ? "Bildschirmfotos" : "Screenshots";
+                        editor.PatternsText = "Screenshot_{YYYY}{MM}{DD}-{HH}{mm}{ss}*" + Environment.NewLine + "Screenshot {YYYY}-{MM}-{DD}";
+                    });
+                    Shoot(dir, $"19-date-rule-regex-{suffix}", ci, thumbnails, vm =>
+                    {
+                        // The same rule in "Advanced: regular expressions" mode: one expression for both name styles.
+                        ArrangePreview(vm);
+                        vm.OpenDateRulesCommand.Execute(null);
+                        var rules = vm.RulesDialog!;
+                        rules.SelectedSample = rules.SampleNames.First(n => n.StartsWith("Screenshot", StringComparison.Ordinal));
+                        rules.EditorSampleDelay = TimeSpan.Zero; // the tester answers at once for the picture
+                        rules.AddRuleCommand.Execute(null);
+                        var editor = rules.Editor!;
+                        editor.Name = folder == "de" ? "Bildschirmfotos" : "Screenshots";
+                        editor.IsRegex = true;
+                        editor.PatternsText = @"Screenshot[ _](?<year>\d{4})-?(?<month>\d{2})-?(?<day>\d{2}).*";
+                    });
                 }
 
                 Avalonia.Application.Current!.RequestedThemeVariant = ThemeVariant.Light;
@@ -254,7 +310,8 @@ internal static class ScreenshotRenderer
             thumbnails,
             new UpdateCheckService(new FixedFeed(latest), settings, new FixedClock(), running),
             new FixedInstall(update.Kind),
-            update.Installer);
+            update.Installer,
+            DateRules: new BuiltInRulesOnly());
         var vm = new MainWindowViewModel(services, culture);
         Wait(vm.Update.AutomaticCheckCompletion);
         var window = new MainWindow { DataContext = vm, Width = _width, Height = _height };

@@ -24,12 +24,13 @@ in any folder, on any computer.
 6. [Check the preview](#-6-check-the-preview)
 7. [Go!](#-7-go)
 8. [Where does the date come from?](#-8-where-does-the-date-come-from)
-9. [All blocks (placeholders)](#-9-all-blocks-placeholders)
-10. [Install](#-10-install)
-11. [Portable version](#-11-portable-version)
-12. [Updates](#-12-updates)
-13. [Uninstall](#-13-uninstall)
-14. [Questions & answers](#-14-questions--answers)
+9. [Dates from file names](#-9-dates-from-file-names)
+10. [All blocks (placeholders)](#-10-all-blocks-placeholders)
+11. [Install](#-11-install)
+12. [Portable version](#-12-portable-version)
+13. [Updates](#-13-updates)
+14. [Uninstall](#-14-uninstall)
+15. [Questions & answers](#-15-questions--answers)
 
 ---
 
@@ -39,13 +40,13 @@ in any folder, on any computer.
    [Releases page](https://github.com/jannikjordan/snapdate/releases/latest).
    (On ARM devices such as Surface Pro X or Copilot+ PCs, pick `win-arm64`.)
 2. Double-click it and follow the steps — details in
-   [Install](#-10-install). Then start **Snapdate** from the Start menu.
+   [Install](#-11-install). Then start **Snapdate** from the Start menu.
 3. Windows may show *“Windows protected your PC”* the first time, because the
    app is new. Click **More info → Run anyway**.
 
 > 💡 You'd rather not install anything? Use the **portable** file instead
 > (`Snapdate-vX.Y.Z-win-x64-portable.exe`): just double-click it. See
-> [Portable version](#-11-portable-version).
+> [Portable version](#-12-portable-version).
 
 Snapdate speaks **English and German**. It picks the language of your Windows
 automatically — you can switch any time with **EN | DE** at the top right.
@@ -182,11 +183,17 @@ the **new name** in bold. A coloured label tells you where the date came from:
 | Label | Meaning |
 |---|---|
 | 🟢 **Camera date** | The date was read from the photo itself — the moment the picture was taken. |
-| 🟠 **File date** | The file has no date inside (common for screenshots and chat pictures), so the date of the file was used. |
+| 🟣 **Date from name** | The photo has no camera date, but its file name has one (e.g. `IMG-20240714-WA0001.jpg` from WhatsApp). See [Dates from file names](#-9-dates-from-file-names). |
+| 🟠 **File date** | The file has no date inside and none in its name (common for screenshots and chat pictures), so the date of the file was used. |
 | 🟠 **Numbered** | Two photos would get the same name (e.g. taken in the same second), so `(2)`, `(3)` … was added. |
 
-Use the tabs **All · Camera date · File date · Numbered** to look at just one
-group.
+Use the tabs **All · Camera date · Date from name · File date · Numbered** to
+look at just one group.
+
+A small **⚠ Dates differ** under the label means the photo had two dates on
+different days — for example one in its name and another one inside the file.
+Point at it to see which date was used and which one was not (more in
+[Where does the date come from?](#-8-where-does-the-date-come-from)).
 
 ---
 
@@ -210,18 +217,136 @@ Snapdate looks for the date in this order and takes the first one it finds:
 
 ```mermaid
 flowchart TD
-    S([Photo or video]) --> A{"Date taken<br/>stored by the camera?<br/>(EXIF)"}
+    S([Photo or video]) --> A{"Date taken<br/>stored by a camera?<br/>(EXIF with camera model)"}
     A -- yes --> OK["🟢 Camera date"]
-    A -- no --> B{"Other date inside<br/>the file?<br/>(XMP, video, PNG)"}
+    A -- no --> N{"Date in the<br/>file name?<br/>(a rule fits)"}
+    N -- yes --> C{"An app wrote a date<br/>into the file<br/>on the same day?"}
+    C -- yes --> OK
+    C -- "no (another day: ⚠ Dates differ)" --> NM["🟣 Date from name"]
+    N -- no --> B{"Other date inside<br/>the file?<br/>(written by an app,<br/>XMP, video, PNG)"}
     B -- yes --> OK
     B -- no --> F["🟠 File date<br/>(the oldest date Windows<br/>knows for the file)"]
 ```
 
-Dates that cannot be right — far in the future or before 1900 — are ignored.
+1. **A date from a camera always wins.** If the file name says another day,
+   the photo is marked **⚠ Dates differ** and the hint shows the date from the
+   name that was not used.
+2. **Otherwise the date in the file name wins** over a date that an app (a
+   gallery, backup or chat app — not a camera) wrote into the file, and over
+   the file date. If both are on the **same day**, nothing is lost: Snapdate
+   keeps the app's date, which usually has the more exact time.
+3. If they are on **different days**, the name wins and the photo is marked
+   **⚠ Dates differ**. Example: `IMG-20160706-WA0002.jpg` arrived via WhatsApp
+   on 6 July 2016, but years later an app wrote 23 June 2026 into the file.
+   Snapdate uses 6 July 2016 from the name; the hint shows the 2026 date it
+   ignored, so you can check.
+4. **Names with a date but no time** (like `IMG-20240714-WA0001.jpg`): if the
+   file date is on the same day, Snapdate takes its time; otherwise the time
+   is 00:00:00.
+5. **No date in the name:** as before — a date inside the file, else the file date.
+
+Dates that cannot be right — far in the future or before 1900 — are ignored,
+also when they come from a file name.
 
 ---
 
-## 🧩 9. All blocks (placeholders)
+## 📛 9. Dates from file names
+
+WhatsApp removes the date from pictures it sends, but it puts the date into the
+**file name**: `IMG-20240714-WA0001.jpg` on Android, or
+`WhatsApp Image 2024-07-14 at 15.32.08.jpeg` from WhatsApp Desktop / Web.
+Snapdate reads these names with **rules**. Such photos get the
+**Date from name** label.
+
+> 💡 The date in a WhatsApp name is the day the picture **arrived** on the
+> phone or computer — not always the day it was taken.
+
+Click **Dates from file names** above the preview list to see the rules:
+
+![The rules for dates from file names](images/en/17-date-rules-light.png)
+
+- **Built-in rules** come with Snapdate: *WhatsApp (Android)* and
+  *WhatsApp Desktop / Web*. You can't change them, but you can
+  **switch them off** with the switch on the left, or **Duplicate** one to get
+  your own copy that you can change.
+- **Your own rules** are marked *Yours*. They are always tried **before** the
+  built-in ones, and updates never change them. Use **Edit** and **Delete** to
+  change or remove them.
+- The first rule that fits a name is used. Every change is saved at once; the
+  preview is updated when you close the window.
+- **Try a file name:** type a name, or pick one from your photo folder. Snapdate
+  shows which rule reads which date — or *No rule matches*. In that case
+  **Create a rule from this name** starts a new rule for names like it.
+
+### ✏️ Your own rules
+
+Click **Add rule** (or **Edit**). Give the rule a name and describe how your
+file names look — one pattern per line, up to 10. Click the blocks under the
+box to insert them at the cursor:
+
+![Editing a rule](images/en/18-date-rule-editor-light.png)
+
+| Block | Code | Fits |
+|---|---|---|
+| Year | `{YYYY}` · `{YY}` | `2024` · `24` |
+| Month | `{MM}` · `{M}` | `07` · `7` or `07` |
+| Day | `{DD}` · `{D}` | `04` · `4` or `04` |
+| Hour | `{HH}` · `{H}` | `09` · `9` or `09` |
+| Minute | `{mm}` · `{m}` | `05` · `5` or `05` |
+| Second | `{ss}` · `{s}` | `08` · `8` or `08` |
+| Any text | `*` | anything, also nothing |
+| One character | `?` | exactly one character |
+
+- A pattern needs a **year, month and day**. Hour and minute go together;
+  seconds need minutes. Each part may appear only once.
+- The pattern must fit the **whole name without the extension** — so
+  `IMG_{YYYY}{MM}{DD}_*` fits `IMG_20240714_153208.jpg`. Upper and lower case
+  don't matter. Everything else must be in the name exactly as typed.
+- `*` and `?` can't appear in Windows file names, so they never get mixed up
+  with your text. To write a curly brace itself, type it twice: `{{` or `}}`.
+- The short blocks `{M}`, `{D}`, `{H}`, `{m}`, `{s}` need something clear next
+  to them: `{M}{D}` would not tell `1 12` from `11 2`. Put a separator between
+  them or use `{MM}{DD}`.
+- Below the box Snapdate explains each line that can't be used, in plain words.
+  The tester shows which line fits a name and which date it reads — or that a
+  line fits, but `2024-13-45` is not a date.
+
+### 🧪 Advanced: regular expressions
+
+If you know **regular expressions**, tick **Advanced: regular expressions** in
+the editor. Your text is kept when you switch. Mark the date parts with named
+groups: `year` (or `yy` for two digits), `month` and `day`, and optionally
+`hour`, `minute` and `second`. For example:
+
+```
+^IMG-(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})-WA\d+$
+```
+
+![A rule as a regular expression](images/en/19-date-rule-regex-light.png)
+
+To keep matching fast and safe, Snapdate accepts only a simple part of the
+regular-expression language:
+
+- **Allowed:** normal characters, `\d \s \w .`, simple classes such as
+  `[a-z_-]` or `[^0-9]`, groups `( )`, `(?: )` and the named groups above,
+  alternatives with `|`, `^` and `$`, and repetitions (`* + ? {n} {n,m}`) with
+  counts up to 20.
+- The expression must fit the **whole name** without the extension; upper and
+  lower case don't matter. At most 300 characters per line.
+- A part **whose length can vary** — such as `.*`, `x?` or alternatives of
+  different length like `(?:a|bc)` — **can't be repeated** again. Write the
+  parts out one after another instead.
+- Only a few open-ended repetitions (`*`, `+`, `{n,}`) are allowed per
+  expression; very long or complex expressions are refused.
+- **Not available:** look-arounds, back-references, options such as `(?i)`,
+  `\b`, `\p{…}` and other letter escapes.
+
+Anything that can't be used is explained in plain words; the tester tries a
+name shortly after you stop typing.
+
+---
+
+## 🧩 10. All blocks (placeholders)
 
 In the box, each block appears as a short code in curly braces. You can also
 type these codes yourself. **Upper and lower case matter**: `MM` is the month,
@@ -249,7 +374,7 @@ RAW (DNG, CR2, CR3, NEF, ARW, ORF, RW2, RAF, PEF, …) and videos (MP4, MOV, M4V
 
 ---
 
-## 💿 10. Install
+## 💿 11. Install
 
 The installer is the recommended way to get Snapdate. It puts Snapdate in the
 Start menu like any other program and lets it tell you about new versions.
@@ -284,7 +409,7 @@ updates Snapdate in place and **keeps your settings**.
 
 ---
 
-## 🧳 11. Portable version
+## 🧳 12. Portable version
 
 The **portable** file needs no installation at all:
 
@@ -298,11 +423,11 @@ questions at the end); delete that folder too if you want everything gone.
 
 The portable version **does not update itself**. When a new version is out, it
 shows a banner with a **Download** button that opens the download page, so you
-can download the new file again (see [Updates](#-12-updates)).
+can download the new file again (see [Updates](#-13-updates)).
 
 ---
 
-## 🔔 12. Updates
+## 🔔 13. Updates
 
 Snapdate checks **at most once a day**, when it starts, whether a newer version
 exists. For this it only asks GitHub (`api.github.com`) for the newest version
@@ -352,14 +477,15 @@ does it tell you *“Couldn't check right now — are you offline?”*.
 
 ---
 
-## 🗑️ 13. Uninstall
+## 🗑️ 14. Uninstall
 
 1. Open Windows **Settings → Apps → Installed apps** (Windows 10: *Apps & features*).
 2. Find **Snapdate**, choose **Uninstall** and follow the steps.
 
 If you installed **for me only**, Snapdate asks whether to **also delete your
-settings** (remembered folders, file name pattern, language). Choose **No** to
-keep them — handy if you want to install Snapdate again later.
+settings** (remembered folders, file name pattern, language) **and your own
+date rules**. Choose **No** to keep them — handy if you want to install
+Snapdate again later.
 With an **all users** install your settings are always kept.
 
 Your photos and renamed files are never touched. The portable version has no
@@ -367,7 +493,7 @@ uninstaller: delete the file.
 
 ---
 
-## ❓ 14. Questions & answers
+## ❓ 15. Questions & answers
 
 **Will my photos be changed?**
 No. With **Copy**, originals are never touched. Even the photos themselves are
@@ -386,7 +512,27 @@ a web page only when you click them.
 
 **Why do some photos say “File date”?**
 Screenshots, pictures saved from chats or social media often have no
-date inside. Then the date of the file is the best Snapdate can do.
+date inside. If the name has no date either, the date of the file is the best
+Snapdate can do. For names with a date, see
+[Dates from file names](#-9-dates-from-file-names).
+
+**My WhatsApp photos from an iPhone have no date.**
+An iPhone saves pictures from WhatsApp with names like `IMG_4200.jpg` — there
+is no date in the name and none inside the file. Ask the sender to send the
+photos **“as Document”** (WhatsApp then keeps the original file with its date),
+or copy the pictures soon after you receive them, so the file date is close to
+the right day.
+
+**Why does a photo say “Dates differ”?**
+It had two dates on different days, e.g. one in the name and one written into
+the file by an app. Point at the hint to see which date was used and which one
+was ignored. See [Where does the date come from?](#-8-where-does-the-date-come-from).
+
+**Where are my own date rules stored?**
+In `%APPDATA%\Snapdate\date-rules.json`, next to the settings. Updates never
+change this file. If it ever can't be read, the built-in rules still work and
+before Snapdate saves a new one, it moves the old file aside as
+`date-rules.unreadable-….json` (it is never deleted).
 
 **What is the log file for?**
 It lists what was copied or moved, from where to where. You can delete it at
