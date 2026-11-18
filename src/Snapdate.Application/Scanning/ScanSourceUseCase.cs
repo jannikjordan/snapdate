@@ -93,12 +93,9 @@ public sealed class ScanSourceUseCase(
                 path,
                 name,
                 Path.GetExtension(path),
-                resolved.Date,
+                resolved,
                 metadata.CameraModel,
-                fileSystem.GetLength(path),
-                resolved.RuleName,
-                resolved.IgnoredMetadataDate,
-                resolved.IgnoredFileNameDate);
+                fileSystem.GetLength(path));
         }
         catch (IOException)
         {

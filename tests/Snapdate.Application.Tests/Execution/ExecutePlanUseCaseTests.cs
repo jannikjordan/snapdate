@@ -99,7 +99,10 @@ public sealed class ExecutePlanUseCaseTests
         var (fs, plan) = Setup(TransferMode.Copy, ("a.jpg", "x.jpg"), ("IMG-20160706-WA0002.jpg", "y.jpg"));
         var fromName = plan.Items[1] with
         {
-            Photo = plan.Items[1].Photo with { Date = new CaptureDate(new DateTime(2016, 7, 6), DateSource.FileName) },
+            Photo = plan.Items[1].Photo with
+            {
+                ResolvedDate = new ResolvedDate(new CaptureDate(new DateTime(2016, 7, 6), DateSource.FileName), "WhatsApp (Android)"),
+            },
         };
         plan = plan with { Items = [plan.Items[0], fromName] };
 

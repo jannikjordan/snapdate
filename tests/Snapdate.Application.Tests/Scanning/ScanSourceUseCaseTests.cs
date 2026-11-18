@@ -129,9 +129,9 @@ public sealed class ScanSourceUseCaseTests
         var photo = await ScanOne(file, AppExif(value));
 
         Assert.Equal(new CaptureDate(value, DateSource.ExifOriginal), photo.Date);
-        Assert.Equal("WhatsApp (Android)", photo.DateRuleName);
-        Assert.False(photo.DatesDiffer);
-        Assert.Null(photo.IgnoredMetadataDate);
+        Assert.Equal("WhatsApp (Android)", photo.ResolvedDate.RuleName);
+        Assert.False(photo.ResolvedDate.DatesDiffer);
+        Assert.Null(photo.ResolvedDate.IgnoredMetadataDate);
     }
 
     [Fact]
@@ -140,10 +140,10 @@ public sealed class ScanSourceUseCaseTests
         var photo = await ScanOne("IMG-20160706-WA0002.jpg", AppExif(new DateTime(2026, 6, 23, 8, 34, 32)));
 
         Assert.Equal(new CaptureDate(new DateTime(2016, 7, 6), DateSource.FileName), photo.Date);
-        Assert.Equal("WhatsApp (Android)", photo.DateRuleName);
-        Assert.Equal(new DateTime(2026, 6, 23, 8, 34, 32), photo.IgnoredMetadataDate);
-        Assert.Null(photo.IgnoredFileNameDate);
-        Assert.True(photo.DatesDiffer);
+        Assert.Equal("WhatsApp (Android)", photo.ResolvedDate.RuleName);
+        Assert.Equal(new DateTime(2026, 6, 23, 8, 34, 32), photo.ResolvedDate.IgnoredMetadataDate);
+        Assert.Null(photo.ResolvedDate.IgnoredFileNameDate);
+        Assert.True(photo.ResolvedDate.DatesDiffer);
     }
 
     [Theory]
@@ -156,7 +156,7 @@ public sealed class ScanSourceUseCaseTests
 
         Assert.Equal(new CaptureDate(new DateTime(year, month, day), DateSource.FileName), photo.Date);
         Assert.True(photo.Date.IsFromFileName);
-        Assert.False(photo.DatesDiffer);
+        Assert.False(photo.ResolvedDate.DatesDiffer);
     }
 
     [Fact]
@@ -173,8 +173,8 @@ public sealed class ScanSourceUseCaseTests
         var photo = await ScanOne("IMG-20260812-WA0017.jpg", AppExif(new DateTime(2026, 11, 18, 8, 0, 0), DateSource.ExifDateTime));
 
         Assert.Equal(new CaptureDate(new DateTime(2026, 8, 12), DateSource.FileName), photo.Date);
-        Assert.Equal(new DateTime(2026, 11, 18, 8, 0, 0), photo.IgnoredMetadataDate);
-        Assert.True(photo.DatesDiffer);
+        Assert.Equal(new DateTime(2026, 11, 18, 8, 0, 0), photo.ResolvedDate.IgnoredMetadataDate);
+        Assert.True(photo.ResolvedDate.DatesDiffer);
     }
 
     [Fact]
@@ -183,9 +183,9 @@ public sealed class ScanSourceUseCaseTests
         var photo = await ScanOne("IMG-20160706-WA0002.jpg", new PhotoMetadata(new DateTime(2026, 6, 23, 8, 34, 32), DateSource.ExifOriginal, "Pixel 8"));
 
         Assert.Equal(new CaptureDate(new DateTime(2026, 6, 23, 8, 34, 32), DateSource.ExifOriginal), photo.Date);
-        Assert.Equal(new FileNameDate(new DateOnly(2016, 7, 6), null), photo.IgnoredFileNameDate);
-        Assert.Null(photo.IgnoredMetadataDate);
-        Assert.True(photo.DatesDiffer);
+        Assert.Equal(new FileNameDate(new DateOnly(2016, 7, 6), null), photo.ResolvedDate.IgnoredFileNameDate);
+        Assert.Null(photo.ResolvedDate.IgnoredMetadataDate);
+        Assert.True(photo.ResolvedDate.DatesDiffer);
         Assert.Equal("Pixel 8", photo.CameraModel);
     }
 
@@ -195,8 +195,8 @@ public sealed class ScanSourceUseCaseTests
         var photo = await ScanOne("IMG-20160706-WA0002.jpg", rules: DateRuleSet.Empty);
 
         Assert.Equal(new CaptureDate(Downloaded, DateSource.FileTimestamp), photo.Date);
-        Assert.Null(photo.DateRuleName);
-        Assert.False(photo.DatesDiffer);
+        Assert.Null(photo.ResolvedDate.RuleName);
+        Assert.False(photo.ResolvedDate.DatesDiffer);
     }
 
     [Fact]
@@ -207,7 +207,7 @@ public sealed class ScanSourceUseCaseTests
         var photo = await ScanOne("Scan_2024-07-14.jpg", rules: rules);
 
         Assert.Equal(new CaptureDate(new DateTime(2024, 7, 14), DateSource.FileName), photo.Date);
-        Assert.Equal("Scanner", photo.DateRuleName);
+        Assert.Equal("Scanner", photo.ResolvedDate.RuleName);
     }
 
     [Fact]

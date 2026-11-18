@@ -75,8 +75,8 @@ public sealed class EndToEndTests : IDisposable
         var photo = Assert.Single(photos);
         Assert.Equal(new DateTime(2016, 7, 6), photo.Date.Value);
         Assert.Equal(DateSource.FileName, photo.Date.Source);
-        Assert.Equal(new DateTime(2026, 6, 23, 8, 34, 32), photo.IgnoredMetadataDate);
-        Assert.True(photo.DatesDiffer);
+        Assert.Equal(new DateTime(2026, 6, 23, 8, 34, 32), photo.ResolvedDate.IgnoredMetadataDate);
+        Assert.True(photo.ResolvedDate.DatesDiffer);
 
         var plan = new BuildPlanUseCase(fs).Build(
             photos, NamePattern.Parse("{YYYY}-{MM}-{DD}").Pattern!, CultureInfo.GetCultureInfo("en-US"), source, target, TransferMode.Copy);
