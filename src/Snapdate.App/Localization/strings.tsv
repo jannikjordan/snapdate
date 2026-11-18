@@ -239,4 +239,26 @@ RuleSampleMatch	Matches line {0} → {1}	Passt zu Zeile {0} → {1}
 RuleSampleInvalid	Line {0} matches, but {1} is not a valid date.	Zeile {0} passt, aber {1} ist kein gültiges Datum.
 RuleSampleImplausible	Line {0} matches, but {1} is before 1900 or in the future.	Zeile {0} passt, aber {1} liegt vor 1900 oder in der Zukunft.
 RuleSampleNoMatch	No pattern matches this name.	Kein Muster passt zu diesem Namen.
+RuleRegexToggle	Advanced: regular expressions	Erweitert: reguläre Ausdrücke
+RuleRegexToggleTip	For users who know regular expressions. Your text is kept when you switch.	Für Nutzer, die reguläre Ausdrücke kennen. Ihr Text bleibt beim Umschalten erhalten.
+RuleRegexLabel	Regular expressions (one per line, up to {0})	Reguläre Ausdrücke (einer pro Zeile, bis zu {0})
+RuleRegexHint	Mark the date parts with named groups: year (or yy for two digits), month and day; hour, minute and second are optional. The expression must fit the whole name (without the extension); upper and lower case do not matter. Example:	Kennzeichnen Sie die Datumsteile mit benannten Gruppen: year (oder yy für zwei Ziffern), month und day; hour, minute und second sind optional. Der Ausdruck muss zum ganzen Namen passen (ohne Dateiendung); Groß- und Kleinschreibung spielen keine Rolle. Beispiel:
+RuleRegexExample	^IMG-(?<year>\d{{4}})(?<month>\d{{2}})(?<day>\d{{2}})-WA\d+$	^IMG-(?<year>\d{{4}})(?<month>\d{{2}})(?<day>\d{{2}})-WA\d+$
+RuleRegexExampleName	Example: {0}	Beispiel: {0}
+RuleRegexNoPatterns	Type at least one regular expression, for example {0}	Geben Sie mindestens einen regulären Ausdruck ein, zum Beispiel {0}
+RuleRegexOk	All regular expressions can be used.	Alle regulären Ausdrücke können verwendet werden.
+RuleRegexSampleNoPatterns	Type a valid regular expression first, then try a file name.	Geben Sie zuerst einen gültigen regulären Ausdruck ein und probieren Sie dann einen Dateinamen aus.
+RuleRegexSampleNoMatch	No regular expression matches this name.	Kein regulärer Ausdruck passt zu diesem Namen.
+RxErrTooLong	This expression is too long (at most {0} characters).	Dieser Ausdruck ist zu lang (höchstens {0} Zeichen).
+RxErrInvalid	This expression cannot be used. Please check it.	Dieser Ausdruck kann nicht verwendet werden. Bitte prüfen Sie ihn.
+RxErrSyntax	This is not a valid regular expression. Check the brackets and special characters around character {0}.	Das ist kein gültiger regulärer Ausdruck. Prüfen Sie die Klammern und Sonderzeichen um Zeichen {0}.
+RxErrUnsupported	Snapdate cannot run this expression safely. Leave out back-references such as \1, look-arounds such as (?=…) or (?<=…), atomic groups (?>…) and conditions (?(…)…), and keep repetitions small.	Snapdate kann diesen Ausdruck nicht sicher ausführen. Verzichten Sie auf Rückverweise wie \1, Vorausschau oder Rückschau wie (?=…) oder (?<=…), atomare Gruppen (?>…) und Bedingungen (?(…)…), und halten Sie Wiederholungen klein.
+RxErrRepetition	The repetition {0} is too large. At most {1} repetitions are possible.	Die Wiederholung {0} ist zu groß. Höchstens {1} Wiederholungen sind möglich.
+RxErrUnknownGroup	The group “{0}” is not a date part. Use year, yy, month, day, hour, minute or second, in lower case.	Die Gruppe „{0}“ ist kein Datumsteil. Verwenden Sie year, yy, month, day, hour, minute oder second, kleingeschrieben.
+RxErrMissingYear	The expression needs a group for the year: (?<year>…) or (?<yy>…).	Der Ausdruck braucht eine Gruppe für das Jahr: (?<year>…) oder (?<yy>…).
+RxErrMissingMonth	The expression needs a group for the month: (?<month>…).	Der Ausdruck braucht eine Gruppe für den Monat: (?<month>…).
+RxErrMissingDay	The expression needs a group for the day: (?<day>…).	Der Ausdruck braucht eine Gruppe für den Tag: (?<day>…).
+RxErrHourWithoutMinute	An hour group also needs a minute group: add (?<minute>…).	Zur Gruppe für die Stunde gehört auch eine für die Minuten: Fügen Sie (?<minute>…) hinzu.
+RxErrMinuteWithoutHour	A minute group also needs an hour group: add (?<hour>…).	Zur Gruppe für die Minuten gehört auch eine für die Stunde: Fügen Sie (?<hour>…) hinzu.
+RxErrSecondWithoutMinute	A second group also needs a minute group: add (?<minute>…).	Zur Gruppe für die Sekunden gehört auch eine für die Minuten: Fügen Sie (?<minute>…) hinzu.
 TipRulesHint	The rules are under "Dates from file names" above the list.	Die Regeln finden Sie unter „Datum aus Dateinamen“ über der Liste.

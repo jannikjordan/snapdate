@@ -344,6 +344,7 @@ public sealed partial class DateRulesViewModel : ObservableObject
         if (editor.RuleId is { } id && Catalog.CustomRules.FirstOrDefault(r => string.Equals(r.Id, id, StringComparison.Ordinal)) is { } existing)
         {
             if (string.Equals(existing.Name, editor.EffectiveName, StringComparison.Ordinal)
+                && string.Equals(existing.Syntax, editor.Syntax, StringComparison.Ordinal)
                 && (existing.Patterns ?? []).SequenceEqual(editor.Patterns, StringComparer.Ordinal))
             {
                 // Nothing changed: no save, so closing the dialog does not scan again.
@@ -351,7 +352,7 @@ public sealed partial class DateRulesViewModel : ObservableObject
                 return;
             }
 
-            var updated = existing with { Name = editor.EffectiveName, Patterns = editor.Patterns };
+            var updated = existing with { Name = editor.EffectiveName, Patterns = editor.Patterns, Syntax = editor.Syntax };
             saved = Catalog.Update(updated) ? updated : null;
         }
         else if (!Catalog.IsReadOnly && Catalog.CustomRules.Count >= UserDateRules.MaxCustomRules)

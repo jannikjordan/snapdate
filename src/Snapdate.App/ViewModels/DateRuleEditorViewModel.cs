@@ -18,6 +18,7 @@ public sealed partial class DateRuleEditorViewModel : ObservableObject
     private readonly TimeProvider _clock;
     private readonly string _initialName;
     private readonly string _initialPatterns;
+    private readonly bool _initialIsRegex;
     private LocalizedStrings _l;
     private IReadOnlyList<Line> _lines = [];
 
@@ -42,7 +43,8 @@ public sealed partial class DateRuleEditorViewModel : ObservableObject
         L = l;
         _clock = clock;
         RuleId = rule?.Id;
-        Syntax = rule?.Syntax ?? DateRuleSyntax.Pattern;
+        _initialIsRegex = string.Equals(rule?.Syntax, DateRuleSyntax.Regex, StringComparison.Ordinal);
+        IsRegex = _initialIsRegex;
         SampleNames = sampleNames;
         _initialName = rule?.Name ?? string.Empty;
         _initialPatterns = rule is null ? patterns ?? string.Empty : string.Join(Environment.NewLine, rule.Patterns ?? []);
@@ -58,8 +60,32 @@ public sealed partial class DateRuleEditorViewModel : ObservableObject
 
     public bool IsNew => RuleId is null;
 
-    /// <summary>How the patterns are written. The validation and the tester use it, so a second syntax plugs in here.</summary>
-    public string Syntax { get; }
+    /// <summary>How the patterns are written (<see cref="DateRuleSyntax"/>); follows <see cref="IsRegex"/>.</summary>
+    public string Syntax => IsRegex ? DateRuleSyntax.Regex : DateRuleSyntax.Pattern;
+
+    /// <summary>
+    /// "Advanced: regular expressions". Switching keeps the text as it is and checks it again in the other syntax,
+    /// so nothing is lost and switching back restores the previous state.
+    /// </summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(Syntax), nameof(IsPattern))]
+    [NotifyCanExecuteChangedFor(nameof(SaveCommand))]
+    public partial bool IsRegex { get; set; }
+
+    /// <summary>True for token patterns: the blocks and the pattern hint are shown.</summary>
+    public bool IsPattern => !IsRegex;
+
+    /// <summary>Help text under the box: the pattern hint, or how to write a regular expression.</summary>
+    [ObservableProperty]
+    public partial string PatternsHint { get; private set; } = string.Empty;
+
+    /// <summary>The regular-expression example shown under the hint in regex mode.</summary>
+    [ObservableProperty]
+    public partial string RegexExample { get; private set; } = string.Empty;
+
+    /// <summary>Screen-reader name of the example ("Example: …").</summary>
+    [ObservableProperty]
+    public partial string RegexExampleName { get; private set; } = string.Empty;
 
     [ObservableProperty]
     public partial LocalizedStrings L { get; private set; }
@@ -98,6 +124,10 @@ public sealed partial class DateRuleEditorViewModel : ObservableObject
     public bool HasProblems => !IsValid;
 
     public bool ShowPatternsOk => IsValid;
+
+    /// <summary>"All patterns can be used." (or "All regular expressions …"), shown with a check icon.</summary>
+    [ObservableProperty]
+    public partial string PatternsOkText { get; private set; } = string.Empty;
 
     /// <summary>All problems in one text, or "All patterns can be used." (read by screen readers as a polite live region).</summary>
     [ObservableProperty]
@@ -148,9 +178,10 @@ public sealed partial class DateRuleEditorViewModel : ObservableObject
 
     public bool ShowButtons => !IsConfirmingDiscard;
 
-    /// <summary>True when name or patterns differ from what the editor started with.</summary>
+    /// <summary>True when name, patterns or syntax differ from what the editor started with.</summary>
     public bool IsDirty =>
         !string.Equals(Name, _initialName, StringComparison.Ordinal)
+        || IsRegex != _initialIsRegex
         || !string.Equals(Normalise(PatternsText), Normalise(_initialPatterns), StringComparison.Ordinal);
 
     internal void UpdateStrings(LocalizedStrings l)
@@ -158,7 +189,9 @@ public sealed partial class DateRuleEditorViewModel : ObservableObject
         _l = l;
         L = l;
         Title = IsNew ? l.RuleNewTitle : l.RuleEditTitle;
-        PatternsLabel = l.Format(nameof(LocalizedStrings.RulePatternsLabel), DateRule.MaxPatterns);
+        RegexExample = l.Format(nameof(LocalizedStrings.RuleRegexExample));
+        RegexExampleName = l.Format(nameof(LocalizedStrings.RuleRegexExampleName), RegexExample);
+        UpdateSyntaxTexts();
         Chips =
         [
             Chip(l.TokYear, "{YYYY}"),
@@ -233,6 +266,21 @@ public sealed partial class DateRuleEditorViewModel : ObservableObject
 
     partial void OnPatternsTextChanged(string value) => Validate();
 
+    partial void OnIsRegexChanged(bool value)
+    {
+        UpdateSyntaxTexts();
+        Validate();
+    }
+
+    /// <summary>Label and hint for the current syntax.</summary>
+    private void UpdateSyntaxTexts()
+    {
+        PatternsLabel = _l.Format(
+            IsRegex ? nameof(LocalizedStrings.RuleRegexLabel) : nameof(LocalizedStrings.RulePatternsLabel),
+            DateRule.MaxPatterns);
+        PatternsHint = IsRegex ? _l.RuleRegexHint : _l.RulePatternsHint;
+    }
+
     partial void OnSampleChanged(string value)
     {
         // Once the text was edited the picker shows nothing, so picking the same name again fills it in again.
@@ -265,7 +313,9 @@ public sealed partial class DateRuleEditorViewModel : ObservableObject
         var used = _lines.Where(line => line.Text.Length > 0).ToList();
         if (used.Count == 0)
         {
-            Problems.Add(_l.Format(nameof(LocalizedStrings.RuleNoPatterns)));
+            Problems.Add(IsRegex
+                ? _l.Format(nameof(LocalizedStrings.RuleRegexNoPatterns), RegexExample)
+                : _l.Format(nameof(LocalizedStrings.RuleNoPatterns)));
         }
         else if (used.Count > DateRule.MaxPatterns)
         {
@@ -283,7 +333,8 @@ public sealed partial class DateRuleEditorViewModel : ObservableObject
         }
 
         IsValid = Problems.Count == 0;
-        ValidationText = IsValid ? _l.RulePatternsOk : string.Join(Environment.NewLine, Problems);
+        PatternsOkText = IsRegex ? _l.RuleRegexOk : _l.RulePatternsOk;
+        ValidationText = IsValid ? PatternsOkText : string.Join(Environment.NewLine, Problems);
         UpdateSample();
     }
 
@@ -305,13 +356,36 @@ public sealed partial class DateRuleEditorViewModel : ObservableObject
                 return parsed.Pattern is { } pattern
                     ? new Line(number, text, null, pattern.Check)
                     : new Line(number, text, parsed.Errors[0], null);
+            case DateRuleSyntax.Regex:
+                var compiled = DateExpression.Parse(text);
+                return compiled.Expression is { } expression
+                    ? new Line(number, text, null, expression.Check)
+                    : new Line(number, text, compiled.Errors[0], null);
             default:
                 return new Line(number, text, new DatePatternError(DatePatternErrorKind.InvalidExpression, 0), null);
         }
     }
 
-    /// <summary>A plain-language explanation for every <see cref="DatePatternErrorKind"/>.</summary>
-    internal string Describe(DatePatternError error) => error.Kind switch
+    /// <summary>
+    /// A plain-language explanation for every <see cref="DatePatternErrorKind"/>, in the words of the current
+    /// <see cref="Syntax"/> (placeholders such as {MM} for patterns, groups such as (?&lt;month&gt;…) for expressions).
+    /// </summary>
+    internal string Describe(DatePatternError error) => IsRegex ? DescribeRegex(error) : DescribePattern(error);
+
+    private string DescribeRegex(DatePatternError error) => error.Kind switch
+    {
+        DatePatternErrorKind.TooLong => _l.Format(nameof(LocalizedStrings.RxErrTooLong), DateExpression.MaxLength),
+        DatePatternErrorKind.MissingYear => _l.Format(nameof(LocalizedStrings.RxErrMissingYear)),
+        DatePatternErrorKind.MissingMonth => _l.Format(nameof(LocalizedStrings.RxErrMissingMonth)),
+        DatePatternErrorKind.MissingDay => _l.Format(nameof(LocalizedStrings.RxErrMissingDay)),
+        DatePatternErrorKind.HourWithoutMinute => _l.Format(nameof(LocalizedStrings.RxErrHourWithoutMinute)),
+        DatePatternErrorKind.MinuteWithoutHour => _l.Format(nameof(LocalizedStrings.RxErrMinuteWithoutHour)),
+        DatePatternErrorKind.SecondWithoutMinute => _l.Format(nameof(LocalizedStrings.RxErrSecondWithoutMinute)),
+        DatePatternErrorKind.InvalidExpression => _l.RxErrInvalid,
+        _ => DescribePattern(error),
+    };
+
+    private string DescribePattern(DatePatternError error) => error.Kind switch
     {
         DatePatternErrorKind.Empty => _l.PatErrEmpty,
         DatePatternErrorKind.TooLong => _l.Format(nameof(LocalizedStrings.PatErrTooLong), DatePattern.MaxLength),
@@ -327,6 +401,11 @@ public sealed partial class DateRuleEditorViewModel : ObservableObject
         DatePatternErrorKind.MinuteWithoutHour => _l.Format(nameof(LocalizedStrings.PatErrMinuteWithoutHour)),
         DatePatternErrorKind.SecondWithoutMinute => _l.Format(nameof(LocalizedStrings.PatErrSecondWithoutMinute)),
         DatePatternErrorKind.AmbiguousNeighbours => _l.Format(nameof(LocalizedStrings.PatErrAmbiguous), error.Detail),
+        // Only regular expressions produce these; worded for them whatever the current syntax.
+        DatePatternErrorKind.InvalidSyntax => _l.Format(nameof(LocalizedStrings.RxErrSyntax), Math.Max(1, error.Position)),
+        DatePatternErrorKind.UnsupportedConstruct => _l.Format(nameof(LocalizedStrings.RxErrUnsupported)),
+        DatePatternErrorKind.RepetitionTooLarge => _l.Format(nameof(LocalizedStrings.RxErrRepetition), error.Detail, DateExpression.MaxRepetition),
+        DatePatternErrorKind.UnknownGroup => _l.Format(nameof(LocalizedStrings.RxErrUnknownGroup), error.Detail),
         _ => _l.PatErrInvalid,
     };
 
@@ -337,7 +416,9 @@ public sealed partial class DateRuleEditorViewModel : ObservableObject
         if (name.Length == 0 || usable.Count == 0)
         {
             SampleKind = RuleSampleKind.Empty;
-            SampleResult = name.Length == 0 ? _l.RuleSampleEmpty : _l.RuleSampleNoPatterns;
+            SampleResult = name.Length == 0 ? _l.RuleSampleEmpty
+                : IsRegex ? _l.RuleRegexSampleNoPatterns
+                : _l.RuleSampleNoPatterns;
             return;
         }
 
@@ -362,7 +443,7 @@ public sealed partial class DateRuleEditorViewModel : ObservableObject
         else
         {
             SampleKind = RuleSampleKind.NoMatch;
-            SampleResult = _l.RuleSampleNoMatch;
+            SampleResult = IsRegex ? _l.RuleRegexSampleNoMatch : _l.RuleSampleNoMatch;
         }
     }
 

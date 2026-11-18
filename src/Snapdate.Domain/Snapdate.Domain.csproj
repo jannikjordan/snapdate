@@ -3,4 +3,8 @@
   <PropertyGroup>
     <RootNamespace>Snapdate.Domain</RootNamespace>
   </PropertyGroup>
+  <ItemGroup>
+    <!-- Lets tests drive internal seams such as a timed-out match; not a reference. -->
+    <InternalsVisibleTo Include="Snapdate.Domain.Tests" />
+  </ItemGroup>
 </Project>

@@ -51,7 +51,31 @@ public enum DatePatternErrorKind
 
     /// <summary>
     /// The pattern could not be compiled into an expression. Not expected for token patterns; used by
-    /// syntaxes whose expressions the user writes.
+    /// syntaxes whose expressions the user writes when no more specific kind applies.
     /// </summary>
     InvalidExpression,
+
+    /// <summary>
+    /// Regular expressions: not a valid expression (e.g. a missing <c>)</c>); <see cref="DatePatternError.Position"/>
+    /// is where the problem was found.
+    /// </summary>
+    InvalidSyntax,
+
+    /// <summary>
+    /// Regular expressions: a construct the safe (non-backtracking) matcher cannot run — backreferences,
+    /// lookarounds, atomic groups, conditionals, <c>\G</c>, balancing groups — or an expression that is too
+    /// complex overall.
+    /// </summary>
+    UnsupportedConstruct,
+
+    /// <summary>
+    /// Regular expressions: a counted repetition above <see cref="DateExpression.MaxRepetition"/>;
+    /// <see cref="DatePatternError.Detail"/> is the repetition as written, e.g. <c>{500}</c>.
+    /// </summary>
+    RepetitionTooLarge,
+
+    /// <summary>
+    /// Regular expressions: a named group that is not a date part; <see cref="DatePatternError.Detail"/> is its name.
+    /// </summary>
+    UnknownGroup,
 }

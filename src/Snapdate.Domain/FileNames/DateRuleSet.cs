@@ -62,11 +62,11 @@ public sealed class DateRuleSet
         return new CompiledRule(rule, patterns);
     }
 
-    // One case per supported syntax; more syntaxes (regex) return other matcher types.
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1859", Justification = "Extension point for further rule syntaxes.")]
+    // One case per supported syntax.
     private static IFileNameDateMatcher? CompilePattern(string syntax, string? text) => syntax switch
     {
         DateRuleSyntax.Pattern => DatePattern.Parse(text).Pattern,
+        DateRuleSyntax.Regex => DateExpression.Parse(text).Expression,
         _ => null,
     };
 

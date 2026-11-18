@@ -161,7 +161,13 @@ public sealed class DatePattern : IFileNameDateMatcher
         return year >= 1900 && month is >= 1 and <= 12 && day is >= 1 and <= 31;
     }
 
-    private bool TryMatchRaw(string? name, out Match match)
+    private bool TryMatchRaw(string? name, out Match match) => TryMatchName(_regex, name, out match);
+
+    /// <summary>
+    /// Runs <paramref name="regex"/> on a file name. Empty names, names longer than <see cref="MaxNameLength"/>
+    /// and timeouts give false; never throws.
+    /// </summary>
+    internal static bool TryMatchName(Regex regex, string? name, out Match match)
     {
         match = System.Text.RegularExpressions.Match.Empty;
         if (string.IsNullOrEmpty(name) || name.Length > MaxNameLength)
@@ -171,7 +177,7 @@ public sealed class DatePattern : IFileNameDateMatcher
 
         try
         {
-            match = _regex.Match(name);
+            match = regex.Match(name);
         }
         catch (RegexMatchTimeoutException)
         {

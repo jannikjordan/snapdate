@@ -197,10 +197,14 @@ public sealed class DateRuleCatalogTests
     [Fact]
     public void Add_keeps_rules_in_another_syntax()
     {
-        var added = Catalog().Add("Regex", ["(?<year>[0-9]{4})"], "regex");
+        var catalog = Catalog();
+        var regex = catalog.Add("Regex", ["(?<year>[0-9]{4})"], "regex");
+        var future = catalog.Add("Future", ["(?<year>[0-9]{4})"], "regex-v9");
 
-        Assert.Equal("regex", added?.Syntax);
-        Assert.False(added?.IsSyntaxSupported);
+        Assert.Equal("regex", regex?.Syntax);
+        Assert.True(regex?.IsSyntaxSupported);
+        Assert.Equal("regex-v9", future?.Syntax);
+        Assert.False(future?.IsSyntaxSupported);
     }
 
     [Theory]

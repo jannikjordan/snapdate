@@ -245,5 +245,27 @@
   <data name="RuleSampleInvalid" xml:space="preserve"><value>Line {0} matches, but {1} is not a valid date.</value></data>
   <data name="RuleSampleImplausible" xml:space="preserve"><value>Line {0} matches, but {1} is before 1900 or in the future.</value></data>
   <data name="RuleSampleNoMatch" xml:space="preserve"><value>No pattern matches this name.</value></data>
+  <data name="RuleRegexToggle" xml:space="preserve"><value>Advanced: regular expressions</value></data>
+  <data name="RuleRegexToggleTip" xml:space="preserve"><value>For users who know regular expressions. Your text is kept when you switch.</value></data>
+  <data name="RuleRegexLabel" xml:space="preserve"><value>Regular expressions (one per line, up to {0})</value></data>
+  <data name="RuleRegexHint" xml:space="preserve"><value>Mark the date parts with named groups: year (or yy for two digits), month and day; hour, minute and second are optional. The expression must fit the whole name (without the extension); upper and lower case do not matter. Example:</value></data>
+  <data name="RuleRegexExample" xml:space="preserve"><value>^IMG-(?&lt;year&gt;\d{{4}})(?&lt;month&gt;\d{{2}})(?&lt;day&gt;\d{{2}})-WA\d+$</value></data>
+  <data name="RuleRegexExampleName" xml:space="preserve"><value>Example: {0}</value></data>
+  <data name="RuleRegexNoPatterns" xml:space="preserve"><value>Type at least one regular expression, for example {0}</value></data>
+  <data name="RuleRegexOk" xml:space="preserve"><value>All regular expressions can be used.</value></data>
+  <data name="RuleRegexSampleNoPatterns" xml:space="preserve"><value>Type a valid regular expression first, then try a file name.</value></data>
+  <data name="RuleRegexSampleNoMatch" xml:space="preserve"><value>No regular expression matches this name.</value></data>
+  <data name="RxErrTooLong" xml:space="preserve"><value>This expression is too long (at most {0} characters).</value></data>
+  <data name="RxErrInvalid" xml:space="preserve"><value>This expression cannot be used. Please check it.</value></data>
+  <data name="RxErrSyntax" xml:space="preserve"><value>This is not a valid regular expression. Check the brackets and special characters around character {0}.</value></data>
+  <data name="RxErrUnsupported" xml:space="preserve"><value>Snapdate cannot run this expression safely. Leave out back-references such as \1, look-arounds such as (?=…) or (?&lt;=…), atomic groups (?&gt;…) and conditions (?(…)…), and keep repetitions small.</value></data>
+  <data name="RxErrRepetition" xml:space="preserve"><value>The repetition {0} is too large. At most {1} repetitions are possible.</value></data>
+  <data name="RxErrUnknownGroup" xml:space="preserve"><value>The group “{0}” is not a date part. Use year, yy, month, day, hour, minute or second, in lower case.</value></data>
+  <data name="RxErrMissingYear" xml:space="preserve"><value>The expression needs a group for the year: (?&lt;year&gt;…) or (?&lt;yy&gt;…).</value></data>
+  <data name="RxErrMissingMonth" xml:space="preserve"><value>The expression needs a group for the month: (?&lt;month&gt;…).</value></data>
+  <data name="RxErrMissingDay" xml:space="preserve"><value>The expression needs a group for the day: (?&lt;day&gt;…).</value></data>
+  <data name="RxErrHourWithoutMinute" xml:space="preserve"><value>An hour group also needs a minute group: add (?&lt;minute&gt;…).</value></data>
+  <data name="RxErrMinuteWithoutHour" xml:space="preserve"><value>A minute group also needs an hour group: add (?&lt;hour&gt;…).</value></data>
+  <data name="RxErrSecondWithoutMinute" xml:space="preserve"><value>A second group also needs a minute group: add (?&lt;minute&gt;…).</value></data>
   <data name="TipRulesHint" xml:space="preserve"><value>The rules are under &quot;Dates from file names&quot; above the list.</value></data>
 </root>
