@@ -239,29 +239,36 @@ public sealed class DatePattern : IFileNameDateMatcher
     }
 
     /// <summary>
-    /// Checks every run (consecutive tokens with no literal text or wildcard between them) so its digits can
-    /// only be split one way: at most one variable-width token per run, a run with one must not touch
-    /// <c>*</c>, and <c>?</c> must not sit directly next to a variable-width token.
+    /// Makes sure the digits of a name can only be split one way. A run is everything between two
+    /// boundaries (a literal non-digit, <c>*</c>, or the start/end of the pattern): placeholders, <c>?</c> and
+    /// literal digits, which all may consume digits. A run may hold at most one variable-width placeholder
+    /// (<c>{M}{D}{H}{m}{s}</c>), a run with one must not touch <c>*</c>, and <c>?</c> must not sit directly
+    /// next to a variable-width placeholder.
     /// </summary>
     private static void CheckNeighbours(List<Element> elements, List<DatePatternError> errors)
     {
+        var units = ToUnits(elements);
+
         var start = 0;
-        while (start < elements.Count)
+        while (start < units.Count)
         {
-            if (elements[start] is not Element.Token)
+            if (units[start].IsBoundary)
             {
                 start++;
                 continue;
             }
 
             var end = start;
-            while (end < elements.Count && elements[end] is Element.Token)
+            while (end < units.Count && !units[end].IsBoundary)
             {
                 end++;
             }
 
-            var run = elements[start..end].Cast<Element.Token>().ToList();
-            var variable = run.Where(token => token.IsVariableWidth).ToList();
+            var variable = units[start..end]
+                .Select(unit => unit.Token)
+                .OfType<Element.Token>()
+                .Where(token => token.IsVariableWidth)
+                .ToList();
             if (variable.Count > 1)
             {
                 errors.Add(new DatePatternError(DatePatternErrorKind.AmbiguousNeighbours, variable[1].Position, variable[1].Name));
@@ -269,27 +276,54 @@ public sealed class DatePattern : IFileNameDateMatcher
 
             if (variable.Count > 0)
             {
-                var before = start > 0 ? elements[start - 1] as Element.Wildcard : null;
-                var after = end < elements.Count ? elements[end] as Element.Wildcard : null;
-                CheckWildcard(before, run[0], variable[0], errors);
-                CheckWildcard(after, run[^1], variable[0], errors);
+                foreach (var star in new[] { start - 1, end }.Where(i => i >= 0 && i < units.Count).Select(i => units[i].Star))
+                {
+                    if (star is not null)
+                    {
+                        errors.Add(new DatePatternError(DatePatternErrorKind.AmbiguousNeighbours, star.Position, variable[0].Name));
+                    }
+                }
             }
 
             start = end;
         }
+
+        for (var i = 1; i < units.Count; i++)
+        {
+            var (left, right) = (units[i - 1], units[i]);
+            var question = left.Question ?? right.Question;
+            var token = left.Question is not null ? right.Token : left.Token;
+            if (question is not null && token is { IsVariableWidth: true })
+            {
+                errors.Add(new DatePatternError(DatePatternErrorKind.AmbiguousNeighbours, question.Position, token.Name));
+            }
+        }
     }
 
-    private static void CheckWildcard(Element.Wildcard? wildcard, Element.Token neighbour, Element.Token variable, List<DatePatternError> errors)
+    /// <summary>Flattens elements so literal text counts character by character.</summary>
+    private static List<Unit> ToUnits(List<Element> elements)
     {
-        switch (wildcard)
+        var units = new List<Unit>();
+        foreach (var element in elements)
         {
-            case { Character: '*' }:
-                errors.Add(new DatePatternError(DatePatternErrorKind.AmbiguousNeighbours, wildcard.Position, variable.Name));
-                break;
-            case { Character: '?' } when neighbour.IsVariableWidth:
-                errors.Add(new DatePatternError(DatePatternErrorKind.AmbiguousNeighbours, wildcard.Position, neighbour.Name));
-                break;
+            switch (element)
+            {
+                case Element.Literal literal:
+                    units.AddRange(literal.Text.Select(c => new Unit(IsBoundary: !char.IsAsciiDigit(c))));
+                    break;
+                case Element.Wildcard { Character: '*' } star:
+                    units.Add(new Unit(IsBoundary: true, Star: star));
+                    break;
+                case Element.Wildcard question:
+                    units.Add(new Unit(IsBoundary: false, Question: question));
+                    break;
+                case Element.Token token:
+                    units.Add(new Unit(IsBoundary: false, Token: token));
+                    break;
+            }
         }
+
+        return units;
     }
 
     private static string ToRegex(List<Element> elements)
@@ -337,6 +371,13 @@ public sealed class DatePattern : IFileNameDateMatcher
         TokenKind.Second2 or TokenKind.Second1 => Field.Second,
         _ => null,
     };
+
+    /// <summary>One character-sized piece of a pattern for the ambiguity check.</summary>
+    private sealed record Unit(
+        bool IsBoundary,
+        Element.Token? Token = null,
+        Element.Wildcard? Star = null,
+        Element.Wildcard? Question = null);
 
     private abstract record Element
     {
