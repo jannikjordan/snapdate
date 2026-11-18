@@ -55,6 +55,28 @@ public sealed class MetadataExtractorReaderTests : IDisposable
         Assert.Null(metadata.Taken);
     }
 
+    private sealed class FixedClock : TimeProvider
+    {
+        public override DateTimeOffset GetUtcNow() => new(2026, 11, 18, 8, 6, 0, TimeSpan.Zero);
+
+        public override TimeZoneInfo LocalTimeZone => TimeZoneInfo.Utc;
+    }
+
+    [Theory]
+    [InlineData("1900-01-01 00:00:00", true)]
+    [InlineData("1899-12-31 23:59:59", false)]
+    [InlineData("2026-11-20 08:06:00", true)]
+    [InlineData("2026-11-20 08:06:01", false)]
+    public void Dates_are_accepted_from_1900_up_to_two_days_ahead(string taken, bool accepted)
+    {
+        var value = DateTime.Parse(taken, System.Globalization.CultureInfo.InvariantCulture);
+        var reader = new MetadataExtractorReader(new FixedClock());
+
+        var metadata = reader.Read(_temp.Write("a.jpg", TestImages.JpegWithExif(value, null)));
+
+        Assert.Equal(accepted ? value : null, metadata.Taken);
+    }
+
     [Theory]
     [InlineData(0)]
     [InlineData(3)]
