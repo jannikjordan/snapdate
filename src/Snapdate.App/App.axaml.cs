@@ -6,6 +6,7 @@ using Snapdate.App.Services;
 using Snapdate.App.ViewModels;
 using Snapdate.App.Views;
 using Snapdate.Application.Updates;
+using Snapdate.Infrastructure.FileNames;
 using Snapdate.Infrastructure.FileSystem;
 using Snapdate.Infrastructure.Installation;
 using Snapdate.Infrastructure.Metadata;
@@ -68,7 +69,8 @@ public partial class App : Avalonia.Application
                 updateCheck,
                 installInfo,
                 updateInstaller,
-                new AvaloniaAppExit(desktop));
+                new AvaloniaAppExit(desktop),
+                new JsonDateRuleStore(JsonDateRuleStore.DefaultPath));
 
             var viewModel = new MainWindowViewModel(services, CultureInfo.CurrentUICulture);
             window = new MainWindow { DataContext = viewModel };

@@ -156,11 +156,15 @@ public sealed class LocalizedStrings(CultureInfo culture)
 
     public string FilterCamera => Get(nameof(FilterCamera));
 
+    public string FilterFileName => Get(nameof(FilterFileName));
+
     public string FilterFile => Get(nameof(FilterFile));
 
     public string FilterRenamed => Get(nameof(FilterRenamed));
 
     public string BadgeCamera => Get(nameof(BadgeCamera));
+
+    public string BadgeFileName => Get(nameof(BadgeFileName));
 
     public string BadgeFile => Get(nameof(BadgeFile));
 
@@ -169,6 +173,16 @@ public sealed class LocalizedStrings(CultureInfo culture)
     public string TipCamera => Get(nameof(TipCamera));
 
     public string TipFile => Get(nameof(TipFile));
+
+    public string TipFileName => Get(nameof(TipFileName));
+
+    public string TipFileNameRule => Get(nameof(TipFileNameRule));
+
+    public string DatesDiffer => Get(nameof(DatesDiffer));
+
+    public string DatesDifferNameUsed => Get(nameof(DatesDifferNameUsed));
+
+    public string DatesDifferCameraUsed => Get(nameof(DatesDifferCameraUsed));
 
     public string TipRenamed => Get(nameof(TipRenamed));
 

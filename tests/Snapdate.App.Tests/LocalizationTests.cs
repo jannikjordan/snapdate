@@ -74,8 +74,10 @@ public sealed class LocalizationTests
         var strings = new LocalizedStrings(CultureInfo.GetCultureInfo(culture));
         foreach (var key in TypedProperties())
         {
-            var formatted = strings.Format(key, "X");
+            // Up to two placeholders ("Dates differ" names both dates).
+            var formatted = strings.Format(key, "X", "Y");
             Assert.DoesNotContain("{0}", formatted, StringComparison.Ordinal);
+            Assert.DoesNotContain("{1}", formatted, StringComparison.Ordinal);
         }
     }
 }

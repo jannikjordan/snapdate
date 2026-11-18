@@ -419,6 +419,9 @@
                   <RadioButton Classes="tab" GroupName="filter" IsChecked="{Binding IsFilterCamera}">
                     <TextBlock><Run Text="● " Foreground="{DynamicResource SdSuccessBrush}" /><Run Text="{Binding L.FilterCamera}" /><Run Text="  " /><Run Text="{Binding CountCamera}" /></TextBlock>
                   </RadioButton>
+                  <RadioButton Classes="tab" GroupName="filter" IsChecked="{Binding IsFilterFileName}">
+                    <TextBlock><Run Text="● " Foreground="{DynamicResource SdPrimaryBrush}" /><Run Text="{Binding L.FilterFileName}" /><Run Text="  " /><Run Text="{Binding CountFileName}" /></TextBlock>
+                  </RadioButton>
                   <RadioButton Classes="tab" GroupName="filter" IsChecked="{Binding IsFilterFile}">
                     <TextBlock><Run Text="● " Foreground="{DynamicResource SdWarningBrush}" /><Run Text="{Binding L.FilterFile}" /><Run Text="  " /><Run Text="{Binding CountFile}" /></TextBlock>
                   </RadioButton>
@@ -493,10 +496,19 @@
                                      TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding NewName}" />
                         </Grid>
                       </StackPanel>
-                      <Border Grid.Column="2" Classes="badge" Classes.warn="{Binding IsWarningBadge}" IsVisible="{Binding ShowBadge}"
-                              ToolTip.Tip="{Binding BadgeTip}">
-                        <TextBlock Text="{Binding BadgeText}" />
-                      </Border>
+                      <!-- Badge (text + colour) and, below it, the "Dates differ" hint (icon + text) -->
+                      <StackPanel Grid.Column="2" Spacing="3" VerticalAlignment="Center" HorizontalAlignment="Right">
+                        <Border Classes="badge" Classes.warn="{Binding IsWarningBadge}" Classes.info="{Binding IsInfoBadge}"
+                                HorizontalAlignment="Right" IsVisible="{Binding ShowBadge}"
+                                ToolTip.Tip="{Binding BadgeTip}">
+                          <TextBlock Text="{Binding BadgeText}" />
+                        </Border>
+                        <StackPanel Classes="datesDiffer" IsVisible="{Binding DatesDiffer}"
+                                    ToolTip.Tip="{Binding DatesDifferTip}">
+                          <PathIcon Data="{StaticResource IconWarning}" />
+                          <TextBlock Text="{Binding DatesDifferText}" />
+                        </StackPanel>
+                      </StackPanel>
                     </Grid>
                   </DataTemplate>
                 </ListBox.ItemTemplate>

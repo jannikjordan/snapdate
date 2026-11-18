@@ -5,6 +5,8 @@ using Snapdate.App.ViewModels;
 using Snapdate.App.Views;
 using Snapdate.Application.Ports;
 using Snapdate.Application.Settings;
+using Snapdate.Domain.FileNames;
+using Snapdate.Infrastructure.FileNames;
 using Snapdate.Infrastructure.FileSystem;
 using Snapdate.Infrastructure.Metadata;
 
@@ -51,6 +53,15 @@ internal static class SelfTest
             if (en.Step1Title == de.Step1Title || de.Step1Title == nameof(LocalizedStrings.Step1Title))
             {
                 return 2; // German satellite resources missing
+            }
+
+            // The built-in date rules are an embedded resource: trimming must not drop it, and the generated
+            // regular expressions must work in the published build. Only the embedded rules are read here.
+            var systemRules = new JsonDateRuleStore(JsonDateRuleStore.DefaultPath).LoadSystemRules();
+            if (systemRules.Count == 0
+                || new DateRuleSet(systemRules).Match("IMG-20240714-WA0001", new DateTime(2026, 1, 1)) is null)
+            {
+                return 3; // built-in file-name date rules missing or not working
             }
 
             var services = new AppServices(

@@ -1,11 +1,14 @@
 using System.Globalization;
 using Snapdate.App.Services;
 using Snapdate.App.ViewModels;
+using Snapdate.Application.FileNames;
 using Snapdate.Application.Installation;
 using Snapdate.Application.Ports;
 using Snapdate.Application.Settings;
 using Snapdate.Application.Updates;
+using Snapdate.Domain.FileNames;
 using Snapdate.Domain.Versioning;
+using Snapdate.Infrastructure.FileNames;
 using Snapdate.Infrastructure.FileSystem;
 using Snapdate.Infrastructure.Metadata;
 
@@ -88,6 +91,9 @@ internal sealed class TestServices
 
     public RecordingAppExit AppExit { get; } = new();
 
+    /// <summary>The built-in rules and no user file; never touches %APPDATA%.</summary>
+    public MemoryDateRuleStore? DateRules { get; init; } = new();
+
     public MainWindowViewModel CreateViewModel(string culture = "en-US") =>
         new(
             new AppServices(
@@ -101,8 +107,40 @@ internal sealed class TestServices
                 Feed is null ? null : new UpdateCheckService(Feed, Settings, Clock, CurrentVersion),
                 new FakeInstall(InstallKind),
                 Installer,
-                AppExit),
+                AppExit,
+                DateRules),
             CultureInfo.GetCultureInfo(culture));
+}
+
+/// <summary>An in-memory rule store: the embedded built-in rules (or the given ones) and an in-memory user file.</summary>
+internal sealed class MemoryDateRuleStore(IReadOnlyList<DateRule>? systemRules = null, UserDateRules? userRules = null) : IDateRuleStore
+{
+    // Only the embedded resource is read; the path is never used.
+    private static readonly IReadOnlyList<DateRule> BuiltIn =
+        new JsonDateRuleStore(Path.Combine(Path.GetTempPath(), "snapdate-app-tests-unused.json")).LoadSystemRules();
+
+    private readonly IReadOnlyList<DateRule> _system = systemRules ?? BuiltIn;
+
+    public UserDateRules? User { get; private set; } = userRules;
+
+    public IReadOnlyList<DateRule> LoadSystemRules() => _system;
+
+    public UserDateRulesLoad LoadUserRules() =>
+        User is null ? UserDateRulesLoad.Missing : new UserDateRulesLoad(User, UserRulesStatus.Ok, Fingerprint(User));
+
+    public UserDateRulesSave SaveUserRules(UserDateRules rules, UserRulesFingerprint expected)
+    {
+        if (!expected.Matches(LoadUserRules().Fingerprint))
+        {
+            return new UserDateRulesSave(DateRuleSaveResult.Conflict, expected);
+        }
+
+        User = rules;
+        return new UserDateRulesSave(DateRuleSaveResult.Saved, Fingerprint(rules));
+    }
+
+    private static UserRulesFingerprint Fingerprint(UserDateRules rules) =>
+        UserRulesFingerprint.ForContent(rules.CustomRules.Count, rules.GetHashCode().ToString("X8", CultureInfo.InvariantCulture));
 }
 
 internal sealed class FakeFeed : IReleaseFeed

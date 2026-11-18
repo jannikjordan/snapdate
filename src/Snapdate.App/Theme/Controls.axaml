@@ -317,6 +317,32 @@
   <Style Selector="Border.badge.warn > TextBlock">
     <Setter Property="Foreground" Value="{DynamicResource SdWarningBrush}" />
   </Style>
+  <!-- "Date from name": information, not a warning -->
+  <Style Selector="Border.badge.info">
+    <Setter Property="Background" Value="{DynamicResource SdPrimarySoftBrush}" />
+  </Style>
+  <Style Selector="Border.badge.info > TextBlock">
+    <Setter Property="Foreground" Value="{DynamicResource SdPrimaryBrush}" />
+  </Style>
+  <!-- "Dates differ" hint under a badge: icon + text, never colour alone -->
+  <Style Selector="StackPanel.datesDiffer">
+    <Setter Property="Orientation" Value="Horizontal" />
+    <Setter Property="Spacing" Value="4" />
+    <Setter Property="HorizontalAlignment" Value="Right" />
+    <Setter Property="Background" Value="Transparent" />
+  </Style>
+  <Style Selector="StackPanel.datesDiffer > PathIcon">
+    <Setter Property="Width" Value="11" />
+    <Setter Property="Height" Value="11" />
+    <Setter Property="VerticalAlignment" Value="Center" />
+    <Setter Property="Foreground" Value="{DynamicResource SdWarningBrush}" />
+  </Style>
+  <Style Selector="StackPanel.datesDiffer > TextBlock">
+    <Setter Property="FontSize" Value="11" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+    <Setter Property="VerticalAlignment" Value="Center" />
+    <Setter Property="Foreground" Value="{DynamicResource SdWarningBrush}" />
+  </Style>
 
   <!-- Filter tabs -->
   <Style Selector="RadioButton.tab">
