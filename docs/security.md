@@ -48,6 +48,13 @@ To report a vulnerability, see [SECURITY.md](../SECURITY.md).
 - Scanning skips hidden/system files and **does not follow symbolic links or
   junctions**.
 - Implausible dates (before 1900 or in the future) are ignored.
+- Dates from file names: file names and the user's own rules are untrusted. Every rule — token pattern or
+  user-written regular expression ("Advanced" mode) — runs as a `NonBacktracking` regex (linear time) with a
+  50 ms timeout on names of at most 260 characters. Regular expressions are limited to 300 characters and
+  repetitions of at most 100, must compile on their own before being wrapped as `^(?:…)$`, and every build
+  error (including unsupported constructs such as back-references) becomes a validation message, never a
+  crash. Captured values must be ASCII digits and pass the calendar and plausibility checks
+  ([ADR 0007](adr/0007-dates-from-file-names.md)).
 - The settings file is size-limited and parsed with source-generated
   `System.Text.Json`; corrupt settings fall back to defaults.
 

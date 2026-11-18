@@ -58,8 +58,9 @@ placeholders the user already knows from the file-name builder, for example
   must appear together (neither `{HH}` without `{mm}` nor `{mm}` without
   `{HH}`; error kinds `HourWithoutMinute`, `MinuteWithoutHour`); seconds
   require minutes (`SecondWithoutMinute`); ambiguous neighbours
-  (`AmbiguousNeighbours`, see below); an expression that fails to build
-  (`InvalidExpression`, used by regex mode, see below). A rule with one
+  (`AmbiguousNeighbours`, see below). Regex mode adds `InvalidSyntax`,
+  `UnsupportedConstruct`, `RepetitionTooLarge`, `UnknownGroup` and the
+  fallback `InvalidExpression` (see below). A rule with one
   invalid pattern still uses its valid ones.
 - **Ambiguity rule (runs).** A run is a maximal sequence of placeholders, `?`
   and literal digits 0–9 (it ends at any other literal character, at `*`, and
@@ -96,18 +97,36 @@ placeholders the user already knows from the file-name builder, for example
   current year (whole years are compared, not full dates).
 
 **Advanced mode: regular expression.** A rule can set `"syntax": "regex"`
-instead of the default `"pattern"`. The user's expression is wrapped as
-`^(?:…)$`, limited to 300 characters, compiled with the same options, and
-must use the named groups `year`, `month`, `day` (required) and `hour`,
-`minute`, `second` (optional); no other group names. Counted repetition is
-capped (`{n}` / `{n,m}` with n, m ≤ 100). **Any failure while building the
-regex** — constructs that `NonBacktracking` does not support
-(backreferences, lookarounds, atomic groups; `NotSupportedException`), syntax
-errors (`ArgumentException`), a too-large repetition or anything else — becomes
-a plain-language validation error (`InvalidExpression`), never a crash. The 50 ms timeout applies to
-matching, as for patterns. Group values go through the
-same ASCII-digit, calendar and plausibility checks. Implemented in #21 in the
-same release (v0.3.0); until then such rules are kept but inactive.
+instead of the default `"pattern"` (in the editor: the "Advanced: regular
+expressions" check box, off by default; switching keeps the text and checks it
+again). Each line is one expression (`DateExpression`), checked in this order:
+1. Not empty, at most **300 characters**, no control characters (a line break
+   could end a `(?x)` comment inside the wrapper).
+2. **Counted repetition capped:** every `{n}`, `{n,}`, `{n,m}` with n, m ≤ 100
+   (`RepetitionTooLarge`). Escaped characters are skipped; braces anywhere else
+   (also in character classes) are checked, which may reject a harmless literal
+   but never misses a quantifier.
+3. **Compiled on its own** with the same options as patterns
+   (`NonBacktracking | IgnoreCase | CultureInvariant | ExplicitCapture`, 50 ms
+   match timeout), so it must be complete and cannot close the wrapper from
+   inside (`a)|(?:b` is rejected). `RegexParseException` → `InvalidSyntax` with
+   the position; `NotSupportedException` — constructs `NonBacktracking` cannot
+   run (backreferences, lookarounds, atomic groups, conditionals, `\G`,
+   balancing groups) or an automaton above the engine's size limit (e.g. nested
+   repetitions such as `((a{100}){100}){100}`) → `UnsupportedConstruct`; any
+   other exception → `InvalidExpression`. Never a crash.
+4. **Wrapped as `^(?:…)$`** and compiled again; this is the regex that runs.
+5. **Group names:** only `year`, `yy` (two-digit year, same 19YY/20YY pivot as
+   `{YY}`), `month`, `day`, `hour`, `minute`, `second`, case-sensitive
+   (`UnknownGroup`); numbered groups are ignored. Required: `year` or `yy`,
+   `month`, `day`; the same time dependencies as patterns (hour ⇔ minute,
+   second ⇒ minute). A name may appear in several alternatives
+   (`(?<year>…)-…|…(?<year>…)`).
+
+Matching is shared with patterns: names longer than 260 characters are not
+matched, a timeout counts as no match, and group values must be 1–4 **ASCII**
+digits (`\d` may match other scripts' digits; those never give a date), then
+pass the calendar and plausibility checks. Implemented in #21 (v0.3.0).
 
 ### Date priority and conflicts
 1. **Camera EXIF** (metadata from a file with a camera model) always wins, as

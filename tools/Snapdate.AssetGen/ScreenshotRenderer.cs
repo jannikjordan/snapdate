@@ -219,6 +219,19 @@ internal static class ScreenshotRenderer
                         editor.Name = folder == "de" ? "Bildschirmfotos" : "Screenshots";
                         editor.PatternsText = "Screenshot_{YYYY}{MM}{DD}-{HH}{mm}{ss}*" + Environment.NewLine + "Screenshot {YYYY}-{MM}-{DD}";
                     });
+                    Shoot(dir, $"19-date-rule-regex-{suffix}", ci, thumbnails, vm =>
+                    {
+                        // The same rule in "Advanced: regular expressions" mode: one expression for both name styles.
+                        ArrangePreview(vm);
+                        vm.OpenDateRulesCommand.Execute(null);
+                        var rules = vm.RulesDialog!;
+                        rules.SelectedSample = rules.SampleNames.First(n => n.StartsWith("Screenshot", StringComparison.Ordinal));
+                        rules.AddRuleCommand.Execute(null);
+                        var editor = rules.Editor!;
+                        editor.Name = folder == "de" ? "Bildschirmfotos" : "Screenshots";
+                        editor.IsRegex = true;
+                        editor.PatternsText = @"Screenshot[ _](?<year>\d{4})-?(?<month>\d{2})-?(?<day>\d{2}).*";
+                    });
                 }
 
                 Avalonia.Application.Current!.RequestedThemeVariant = ThemeVariant.Light;
