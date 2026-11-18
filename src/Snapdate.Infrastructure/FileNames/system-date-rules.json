@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "rules": [
+    {
+      "id": "whatsapp-android",
+      "name": "WhatsApp (Android)",
+      "patterns": [ "IMG-{YYYY}{MM}{DD}-WA*", "VID-{YYYY}{MM}{DD}-WA*" ]
+    },
+    {
+      "id": "whatsapp-desktop",
+      "name": "WhatsApp Desktop / Web",
+      "patterns": [ "WhatsApp * {YYYY}-{MM}-{DD} * {HH}.{mm}.{ss}*" ]
+    }
+  ]
+}

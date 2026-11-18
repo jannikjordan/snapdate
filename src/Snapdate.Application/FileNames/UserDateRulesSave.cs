@@ -1,0 +1,9 @@
+namespace Snapdate.Application.FileNames;
+
+/// <summary>The result of <see cref="Ports.IDateRuleStore.SaveUserRules"/>.</summary>
+/// <param name="Result">What happened.</param>
+/// <param name="Fingerprint">
+/// The fingerprint of the file just written when <paramref name="Result"/> is <see cref="DateRuleSaveResult.Saved"/>;
+/// otherwise the fingerprint that was passed in, unchanged.
+/// </param>
+public sealed record UserDateRulesSave(DateRuleSaveResult Result, UserRulesFingerprint Fingerprint);
