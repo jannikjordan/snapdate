@@ -34,11 +34,11 @@ public sealed record UserDateRules(IReadOnlyList<string> DisabledSystemRuleIds, 
         && id.All(c => c is (>= 'a' and <= 'z') or (>= '0' and <= '9') or '-');
 
     /// <summary>
-    /// True when <paramref name="rule"/> can be stored as a custom rule: valid id, a name of 1–80 characters that
+    /// True when <paramref name="rule"/> is a well-formed stored rule (custom or built-in): valid id, a name of 1–80 characters that
     /// is not only white space, 1–<see cref="DateRule.MaxPatterns"/> patterns (none null) and a syntax name.
     /// The patterns themselves are not parsed; invalid ones simply never match.
     /// </summary>
-    public static bool IsValidCustomRule(DateRule? rule) =>
+    public static bool IsValidRule(DateRule? rule) =>
         rule is not null
         && IsValidId(rule.Id)
         && IsValidName(rule.Name)

@@ -39,7 +39,7 @@ public sealed class DateRuleCatalog
         // Ids must be unique across both lists, or switching a rule off would be ambiguous.
         var ids = new HashSet<string>(_system.Select(rule => rule.Id), StringComparer.Ordinal);
         _custom = [.. (rules.CustomRules ?? [])
-            .Where(UserDateRules.IsValidCustomRule)
+            .Where(UserDateRules.IsValidRule)
             .Where(rule => ids.Add(rule.Id))
             .Take(UserDateRules.MaxCustomRules)
             .Select(rule => rule with { Origin = RuleOrigin.Custom })];
@@ -140,7 +140,7 @@ public sealed class DateRuleCatalog
         ArgumentNullException.ThrowIfNull(rule);
 
         var index = IndexOfCustom(rule.Id);
-        if (IsReadOnly || index < 0 || !UserDateRules.IsValidCustomRule(rule))
+        if (IsReadOnly || index < 0 || !UserDateRules.IsValidRule(rule))
         {
             return false;
         }
@@ -170,7 +170,7 @@ public sealed class DateRuleCatalog
         }
 
         var rule = new DateRule(NewId(), name, RuleOrigin.Custom, enabled, [.. patterns ?? []], syntax);
-        if (!UserDateRules.IsValidCustomRule(rule))
+        if (!UserDateRules.IsValidRule(rule))
         {
             return null;
         }
