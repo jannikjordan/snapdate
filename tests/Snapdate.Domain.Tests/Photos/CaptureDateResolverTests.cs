@@ -91,7 +91,7 @@ public sealed class CaptureDateResolverTests
     }
 
     [Fact]
-    public void Date_only_name_uses_midnight_when_the_file_timestamp_is_a_minute_into_the_next_day()
+    public void Date_only_name_uses_midnight_when_the_file_timestamp_is_at_midnight_of_the_next_day()
     {
         var resolved = Resolve(null, fromCamera: false, Name(2026, 11, 17), new Timestamp(new DateTime(2026, 11, 18, 0, 0, 0)));
 
@@ -99,7 +99,7 @@ public sealed class CaptureDateResolverTests
     }
 
     [Fact]
-    public void Date_only_name_keeps_a_file_timestamp_at_one_minute_to_midnight()
+    public void Date_only_name_keeps_a_file_timestamp_at_one_second_to_midnight()
     {
         var resolved = Resolve(null, fromCamera: false, Name(2026, 11, 17), new Timestamp(new DateTime(2026, 11, 17, 23, 59, 59)));
 
@@ -177,6 +177,16 @@ public sealed class CaptureDateResolverTests
 
         Assert.Equal(new CaptureDate(new DateTime(2026, 8, 12), DateSource.FileName), resolved.Date);
         Assert.Equal(new DateTime(2026, 8, 11, 23, 59, 0), resolved.IgnoredMetadataDate);
+        Assert.True(resolved.DatesDiffer);
+    }
+
+    [Fact]
+    public void Metadata_at_midnight_after_the_name_date_is_another_day()
+    {
+        var resolved = Resolve(Exif(new DateTime(2026, 8, 13, 0, 0, 0)), fromCamera: false, Name(2026, 8, 12));
+
+        Assert.Equal(new CaptureDate(new DateTime(2026, 8, 12), DateSource.FileName), resolved.Date);
+        Assert.Equal(new DateTime(2026, 8, 13, 0, 0, 0), resolved.IgnoredMetadataDate);
         Assert.True(resolved.DatesDiffer);
     }
 
