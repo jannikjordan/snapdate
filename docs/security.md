@@ -10,6 +10,7 @@ To report a vulnerability, see [SECURITY.md](../SECURITY.md).
 | The user's photos | Lost, overwritten, half-copied | Bugs, crashes, power loss, disk full, name collisions |
 | The user's file system | Files written outside the chosen folder | Hostile metadata (e.g. a camera model `..\..\Windows`) |
 | The application process | Crash or code execution while parsing | Malformed or hostile image/video files |
+| Dates from file names | Hang or slow scan, absurd dates, lost or overwritten rules | Hostile file names, a hostile or corrupt rules file, a user-written regular expression, a second app instance |
 | The user's privacy | Data leaving the computer | Telemetry, crash reporters; the update check is the only network access and sends no identifiers |
 | The update check | Spoofed or hostile "latest release" answer, redirect to another host, oversized response, tracking | Network attacker, compromised redirect, hostile server |
 | The in-app updater | Running a tampered, wrong-architecture, older or attacker-supplied installer; redirect to another host; partial or oversized download; forged install marker; file swapped after verification | Network attacker, compromised CDN link, local process writing next to the exe or into the update folder |
@@ -47,7 +48,7 @@ To report a vulnerability, see [SECURITY.md](../SECURITY.md).
   anything that would resolve outside the chosen target folder.
 - Scanning skips hidden/system files and **does not follow symbolic links or
   junctions**.
-- Implausible dates (before 1900 or in the future) are ignored.
+- Implausible dates (before 1900 or more than 2 days in the future) are ignored, whether they come from metadata or from a file name (`DatePlausibility`).
 - Dates from file names: file names and the user's own rules are untrusted. Every rule — token pattern or
   user-written regular expression ("Advanced" mode) — runs as a `NonBacktracking` regex (no catastrophic
   backtracking; time linear in the name, with a factor that depends on the expression) on names of at most 260
@@ -67,6 +68,20 @@ To report a vulnerability, see [SECURITY.md](../SECURITY.md).
     patterns still run), so many rules cannot add up. The rule editor's tester runs off the UI thread.
   - Captured values must be ASCII digits and pass the calendar and plausibility checks
     ([ADR 0007](adr/0007-dates-from-file-names.md)).
+- The user's rules file `%APPDATA%\Snapdate\date-rules.json` is **untrusted input** (it can be edited by hand or
+  by another program):
+  - at most 64 KB, parsed with source-generated `System.Text.Json` (no reflection); larger, invalid or wrongly
+    typed files are *unreadable*: ignored (the built-in rules keep working) and, before the next save, moved aside
+    to `date-rules.unreadable-<timestamp>.json` — never overwritten or deleted;
+  - per-entry limits (at most 100 own rules, 10 lines per rule, 80-character names, ids `custom-<8 hex>`): only
+    offending entries are dropped; every line then goes through the same pattern / regular-expression checks as
+    in the editor, and an unknown `syntax` is kept but never run;
+  - the built-in rules are embedded in the exe, so they cannot be changed or replaced on disk;
+  - **conflict-safe saving**: every save carries the fingerprint (length + SHA-256) of the file it was based on
+    and is refused if the file changed meanwhile (another Snapdate window, a hand edit); writes go to a temp file
+    followed by an atomic move;
+  - a file that cannot be opened (*inaccessible*, e.g. locked) or that was written by a newer version is
+    **read-only**: Snapdate never overwrites it, so neither a passing lock nor a newer version's data is lost.
 - The settings file is size-limited and parsed with source-generated
   `System.Text.Json`; corrupt settings fall back to defaults.
 
@@ -74,8 +89,8 @@ To report a vulnerability, see [SECURITY.md](../SECURITY.md).
 - Network use is limited to (a) opening our own **https** documentation links in
   the browser when the user clicks *Help* or *Project website* and (b) the
   **update check** described below.
-- No telemetry, no crash upload. Settings stay in
-  `%APPDATA%\Snapdate\settings.json`.
+- No telemetry, no crash upload. Settings and the user's own date rules stay in
+  `%APPDATA%\Snapdate\settings.json` and `date-rules.json`; file names are only read locally.
 
 ### Update check (network surface)
 Decision and rationale: [ADR 0004](adr/0004-update-check-and-in-app-update.md).

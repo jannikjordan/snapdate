@@ -106,9 +106,21 @@ system, or MetadataExtractor.
   the original file (lower-cased: `.JPG` → `.jpg`, configurable later).
   `/` inside a pattern creates sub-folders (e.g. `{YYYY}/{MM}/{YYYY}-{MM}-{DD}`).
 - `CaptureDate` — value + `DateSource` (`ExifOriginal`, `ExifDigitized`,
-  `Xmp`, `QuickTime`, `PngText`, `FileCreated`, `FileModified`).
-  Fallback order: EXIF DateTimeOriginal → DateTimeDigitized → EXIF DateTime →
-  XMP CreateDate → QuickTime CreationDate → earliest of file created/modified.
+  `ExifDateTime`, `Xmp`, `QuickTime`, `PngText`, `FileName`, `FileTimestamp`).
+  Metadata order: EXIF DateTimeOriginal → DateTimeDigitized → EXIF DateTime →
+  XMP CreateDate → QuickTime CreationDate → PNG text.
+  `CaptureDateResolver` then decides ([ADR 0007](adr/0007-dates-from-file-names.md)):
+  camera metadata (with a camera model) → date from the file name (first
+  matching rule of `DateRuleSet`) → app-written metadata (no camera model) →
+  earliest of file created/modified. A file-name date and app-written metadata
+  on the same day keep the metadata date; on different days the name wins and
+  the photo is flagged "Dates differ" (also when camera metadata beats a
+  file-name date on another day). A date-only name takes the file timestamp's
+  time when it is on the same day, else 00:00:00.
+- `FileNames/` — `DatePattern` (token pattern, e.g. `IMG-{YYYY}{MM}{DD}-WA*`),
+  `DateExpression` (advanced regex mode, checked by `ExpressionGrammar`),
+  `DateRule`, `DateRuleSet` (first match wins, 200 ms regex budget per name).
+  Every date passes `DatePlausibility` (shared with the metadata reader).
 - `RenamePlan` / `RenameItem` — source path, target relative path, status
   (`Ready`, `Duplicate`, `Skipped`, `Error`), reason.
 - `CollisionPolicy` — `AppendCounter` (default: `name (2).jpg`), `Skip`.
@@ -116,7 +128,8 @@ system, or MetadataExtractor.
 - `FileNameSanitizer` — see §5.
 
 ### 3.2 Application (`Snapdate.Application`)
-- Ports: `IMetadataReader`, `IFileSystem`, `IClock`, `ISettingsStore`.
+- Ports: `IMetadataReader`, `IFileSystem`, `IClock`, `ISettingsStore`,
+  `IDateRuleStore` (built-in and user rules for dates from file names).
 - `ScanSourceUseCase` — enumerate supported files (optionally recursive),
   streaming results (`IAsyncEnumerable`) so the UI fills progressively.
 - `BuildPlanUseCase` — apply pattern, sanitise, resolve collisions against both

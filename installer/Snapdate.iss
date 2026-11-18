@@ -79,8 +79,8 @@ Name: "en"; MessagesFile: "compiler:Default.isl"
 Name: "de"; MessagesFile: "compiler:Languages\German.isl"
 
 [CustomMessages]
-en.RemoveSettingsPrompt=Do you also want to delete your Snapdate settings (remembered folders, file name pattern, language)?%n%nChoose No to keep them, for example if you want to install Snapdate again later.
-de.RemoveSettingsPrompt=Möchten Sie auch Ihre Snapdate-Einstellungen löschen (gemerkte Ordner, Dateinamen-Muster, Sprache)?%n%nWählen Sie Nein, um sie zu behalten, zum Beispiel wenn Sie Snapdate später erneut installieren möchten.
+en.RemoveSettingsPrompt=Do you also want to delete your Snapdate settings (remembered folders, file name pattern, language) and your own date rules?%n%nChoose No to keep them, for example if you want to install Snapdate again later.
+de.RemoveSettingsPrompt=Möchten Sie auch Ihre Snapdate-Einstellungen (gemerkte Ordner, Dateinamen-Muster, Sprache) und Ihre eigenen Datumsregeln löschen?%n%nWählen Sie Nein, um sie zu behalten, zum Beispiel wenn Sie Snapdate später erneut installieren möchten.
 
 en.NewerInstalled=A newer version of Snapdate (%1) is already installed. This installer contains the older version %2 and will not replace it.
 de.NewerInstalled=Es ist bereits eine neuere Version von Snapdate (%1) installiert. Dieses Installationsprogramm enthält die ältere Version %2 und ersetzt sie nicht.
