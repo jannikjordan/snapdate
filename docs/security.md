@@ -52,14 +52,20 @@ To report a vulnerability, see [SECURITY.md](../SECURITY.md).
   user-written regular expression ("Advanced" mode) — runs as a `NonBacktracking` regex (no catastrophic
   backtracking; time linear in the name, with a factor that depends on the expression) on names of at most 260
   characters. The 50 ms timeout is only a last resort: the engine checks it only now and then, not while it fills
-  in the groups. What keeps matching fast is the size of the expressions: token patterns only produce small
-  groups and `.*?`; regular expressions are limited to 300 characters, counts of at most 20, no repeated group
-  that repeats something itself, no `(?x)`, and a budget of at most 30 quantifiers, 8 unbounded ones and
-  (unbounded + 1) × (bounded widths) ≤ 160. The slowest accepted expressions found by fuzzing take about 20 ms per
-  hostile name; tests require under 200 ms. Expressions must compile on their own before being wrapped as
-  `^(?:…)$`, and every build error (including unsupported constructs such as back-references) becomes a
-  validation message, never a crash. Captured values must be ASCII digits and pass the calendar and plausibility
-  checks ([ADR 0007](adr/0007-dates-from-file-names.md)).
+  in the groups. What keeps matching fast is the shape of the expressions:
+  - token patterns only produce small fixed groups, `[0-9]{1,2}` and `.*?` (under 10 ms on hostile names);
+  - regular expressions are an **allowlist**: Snapdate's own parser accepts only literals, escaped
+    non-letters, `\d \s \w .`, simple classes (no nesting, subtraction or `\p{…}`), `(…)`, `(?:…)`,
+    `(?<date-part>…)`, `|`, `^ $` and quantifiers up to 20; nothing whose width varies (including alternatives
+    of different length) may be repeated; at most 30 quantifiers, 8 unbounded ones, and unbounded × positions
+    ≤ 240; at most 300 characters. The engine must then compile the same text (on its own and wrapped as
+    `^(?:…)$`), or it is rejected. Every problem is a validation message, never a crash.
+  - Every expression from two security reviews (0.5–18 s before) is rejected or under 20 ms; fuzzing finds no
+    accepted expression above about 40 ms per hostile name; tests require under 200 ms per match.
+  - Per file name, regex rules together get **200 ms**; after that further regex rules are skipped (token
+    patterns still run), so many rules cannot add up. The rule editor's tester runs off the UI thread.
+  - Captured values must be ASCII digits and pass the calendar and plausibility checks
+    ([ADR 0007](adr/0007-dates-from-file-names.md)).
 - The settings file is size-limited and parsed with source-generated
   `System.Text.Json`; corrupt settings fall back to defaults.
 

@@ -21,6 +21,7 @@ public sealed partial class DateRuleEditorViewModel : ObservableObject
     private readonly bool _initialIsRegex;
     private LocalizedStrings _l;
     private IReadOnlyList<Line> _lines = [];
+    private int _sampleRequest;
 
     /// <param name="owner">The dialog that opened the editor and saves the rule.</param>
     /// <param name="l">UI strings.</param>
@@ -29,6 +30,7 @@ public sealed partial class DateRuleEditorViewModel : ObservableObject
     /// <param name="patterns">Pattern text to start with for a new rule (e.g. suggested from a file name).</param>
     /// <param name="sample">File name to try at first (from the dialog's tester).</param>
     /// <param name="sampleNames">Names from the current folder for the picker.</param>
+    /// <param name="sampleDelay">How long the tester waits after a change; zero tries at once (see <see cref="SampleDelay"/>).</param>
     internal DateRuleEditorViewModel(
         DateRulesViewModel owner,
         LocalizedStrings l,
@@ -36,8 +38,10 @@ public sealed partial class DateRuleEditorViewModel : ObservableObject
         DateRule? rule,
         string? patterns,
         string? sample,
-        IReadOnlyList<string> sampleNames)
+        IReadOnlyList<string> sampleNames,
+        TimeSpan sampleDelay)
     {
+        SampleDelay = sampleDelay;
         _owner = owner;
         _l = l;
         L = l;
@@ -59,6 +63,15 @@ public sealed partial class DateRuleEditorViewModel : ObservableObject
     public string? RuleId { get; }
 
     public bool IsNew => RuleId is null;
+
+    /// <summary>
+    /// The tester waits this long after the last change and then tries the name on a background thread; zero tries it
+    /// at once on the calling thread.
+    /// </summary>
+    internal TimeSpan SampleDelay { get; }
+
+    /// <summary>Finishes when the latest tester request has been shown (or replaced); for tests.</summary>
+    internal Task SampleCompletion { get; private set; } = Task.CompletedTask;
 
     /// <summary>How the patterns are written (<see cref="DateRuleSyntax"/>); follows <see cref="IsRegex"/>.</summary>
     public string Syntax => IsRegex ? DateRuleSyntax.Regex : DateRuleSyntax.Pattern;
@@ -408,53 +421,112 @@ public sealed partial class DateRuleEditorViewModel : ObservableObject
         DatePatternErrorKind.AmbiguousNeighbours => _l.Format(nameof(LocalizedStrings.PatErrAmbiguous), error.Detail),
         // Only regular expressions produce these; worded for them whatever the current syntax.
         DatePatternErrorKind.InvalidSyntax => _l.Format(nameof(LocalizedStrings.RxErrSyntax), Math.Max(1, error.Position)),
-        DatePatternErrorKind.UnsupportedConstruct => _l.Format(nameof(LocalizedStrings.RxErrUnsupported)),
+        DatePatternErrorKind.UnsupportedConstruct => _l.Format(nameof(LocalizedStrings.RxErrUnsupported), error.Detail, error.Position + 1),
         DatePatternErrorKind.RepetitionTooLarge => _l.Format(nameof(LocalizedStrings.RxErrRepetition), error.Detail, DateExpression.MaxRepetition),
         DatePatternErrorKind.UnknownGroup => _l.Format(nameof(LocalizedStrings.RxErrUnknownGroup), error.Detail),
         DatePatternErrorKind.NestedQuantifier => _l.Format(nameof(LocalizedStrings.RxErrNested), error.Detail),
         DatePatternErrorKind.TooComplex => _l.Format(nameof(LocalizedStrings.RxErrTooComplex)),
-        DatePatternErrorKind.FreeSpacing => _l.Format(nameof(LocalizedStrings.RxErrFreeSpacing)),
         _ => _l.PatErrInvalid,
     };
 
+    /// <summary>
+    /// Tries the sample name. Empty name or no usable line: answered at once. Otherwise the lines are tried
+    /// <see cref="SampleDelay"/> after the last change (debounced), on a background thread, so a slow expression never
+    /// blocks typing; only the latest request is shown, older results are dropped. With a zero delay (tests, screenshots)
+    /// it runs at once on the calling thread.
+    /// </summary>
     private void UpdateSample()
     {
+        // Any earlier request that is still waiting or running is now out of date.
+        var request = ++_sampleRequest;
+
         var name = DateRulesViewModel.NameWithoutExtension(Sample);
-        var usable = _lines.Where(line => line.Check is not null).Take(DateRule.MaxPatterns).ToList();
+        var usable = _lines.Where(line => line.Check is not null).Take(DateRule.MaxPatterns).Select(line => (line.Number, Check: line.Check!)).ToList();
         if (name.Length == 0 || usable.Count == 0)
         {
             SampleKind = RuleSampleKind.Empty;
             SampleResult = name.Length == 0 ? _l.RuleSampleEmpty
                 : IsRegex ? _l.RuleRegexSampleNoPatterns
                 : _l.RuleSampleNoPatterns;
+            SampleCompletion = Task.CompletedTask;
             return;
         }
 
-        // Like scanning: the first line that gives a date wins. Otherwise explain the first line that fits.
         var now = _clock.GetLocalNow().DateTime;
-        var checks = usable.Select(line => (line.Number, Result: line.Check!(name, now))).ToList();
-        if (checks.FirstOrDefault(c => c.Result.Kind == PatternCheckKind.Date) is { Result: not null } match)
+        var l = _l;
+        var isRegex = IsRegex;
+        if (SampleDelay <= TimeSpan.Zero)
         {
-            SampleKind = RuleSampleKind.Match;
-            SampleResult = _l.Format(nameof(LocalizedStrings.RuleSampleMatch), match.Number, DateRulesViewModel.FormatDate(_l, match.Result.Date!.Value));
+            ShowSample(TrySample(usable, name, now, l, isRegex));
+            SampleCompletion = Task.CompletedTask;
+            return;
         }
-        else if (checks.FirstOrDefault(c => c.Result.Kind != PatternCheckKind.NoMatch) is { Result: not null } fits)
+
+        SampleCompletion = RunSampleAsync(usable, name, now, l, isRegex, request);
+    }
+
+    private async Task RunSampleAsync(
+        List<(int Number, Func<string, DateTime, PatternCheck> Check)> lines,
+        string name,
+        DateTime now,
+        LocalizedStrings l,
+        bool isRegex,
+        int request)
+    {
+        await Task.Delay(SampleDelay).ConfigureAwait(true);
+        if (request != _sampleRequest)
         {
-            SampleKind = RuleSampleKind.NotADate;
-            SampleResult = _l.Format(
-                fits.Result.Kind == PatternCheckKind.ImplausibleDate
-                    ? nameof(LocalizedStrings.RuleSampleImplausible)
-                    : nameof(LocalizedStrings.RuleSampleInvalid),
-                fits.Number,
-                fits.Result.Found);
+            return; // A newer request replaced this one while it waited.
         }
-        else
+
+        var result = await Task.Run(() => TrySample(lines, name, now, l, isRegex)).ConfigureAwait(true);
+        if (request == _sampleRequest)
         {
-            SampleKind = RuleSampleKind.NoMatch;
-            SampleResult = IsRegex ? _l.RuleRegexSampleNoMatch : _l.RuleSampleNoMatch;
+            ShowSample(result);
         }
     }
 
+    private void ShowSample((RuleSampleKind Kind, string Text) result)
+    {
+        SampleKind = result.Kind;
+        SampleResult = result.Text;
+    }
+
+    /// <summary>Like scanning: the first line that gives a date wins. Otherwise explains the first line that fits.</summary>
+    private static (RuleSampleKind Kind, string Text) TrySample(
+        List<(int Number, Func<string, DateTime, PatternCheck> Check)> lines,
+        string name,
+        DateTime now,
+        LocalizedStrings l,
+        bool isRegex)
+    {
+        (int Number, PatternCheck Result)? fits = null;
+        foreach (var (number, check) in lines)
+        {
+            var result = check(name, now);
+            if (result.Kind == PatternCheckKind.Date)
+            {
+                return (RuleSampleKind.Match, l.Format(nameof(LocalizedStrings.RuleSampleMatch), number, DateRulesViewModel.FormatDate(l, result.Date!.Value)));
+            }
+
+            if (result.Kind != PatternCheckKind.NoMatch)
+            {
+                fits ??= (number, result);
+            }
+        }
+
+        if (fits is { } found)
+        {
+            return (RuleSampleKind.NotADate, l.Format(
+                found.Result.Kind == PatternCheckKind.ImplausibleDate
+                    ? nameof(LocalizedStrings.RuleSampleImplausible)
+                    : nameof(LocalizedStrings.RuleSampleInvalid),
+                found.Number,
+                found.Result.Found));
+        }
+
+        return (RuleSampleKind.NoMatch, isRegex ? l.RuleRegexSampleNoMatch : l.RuleSampleNoMatch);
+    }
     private string Normalise(string text) =>
         string.Join('\n', text.Split('\n').Select(Clean).Where(line => line.Length > 0));
 

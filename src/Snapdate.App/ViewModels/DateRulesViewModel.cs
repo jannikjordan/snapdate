@@ -151,6 +151,12 @@ public sealed partial class DateRulesViewModel : ObservableObject
     /// <summary>The id of the rule that should get keyboard focus after the list was rebuilt; null for none.</summary>
     public string? FocusRuleId { get; private set; }
 
+    /// <summary>
+    /// Debounce of the rule editor's tester: it tries a name this long after the last change, off the UI thread.
+    /// Zero (tests, screenshots) tries at once.
+    /// </summary>
+    internal TimeSpan EditorSampleDelay { get; set; } = TimeSpan.FromMilliseconds(150);
+
     /// <summary>Opens the dialog.</summary>
     /// <param name="sampleNames">File names (with extension) from the current folder, those with a file date first.</param>
     public void Open(IEnumerable<string>? sampleNames)
@@ -324,7 +330,7 @@ public sealed partial class DateRulesViewModel : ObservableObject
         }
 
         MessageText = string.Empty;
-        Editor = new DateRuleEditorViewModel(this, _l, _clock, rule, patterns, TestName, SampleNames);
+        Editor = new DateRuleEditorViewModel(this, _l, _clock, rule, patterns, TestName, SampleNames, EditorSampleDelay);
     }
 
     /// <summary>

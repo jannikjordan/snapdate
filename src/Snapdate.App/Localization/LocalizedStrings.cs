@@ -546,8 +546,6 @@ public sealed class LocalizedStrings(CultureInfo culture)
 
     public string RxErrTooComplex => Get(nameof(RxErrTooComplex));
 
-    public string RxErrFreeSpacing => Get(nameof(RxErrFreeSpacing));
-
     public string TipRulesHint => Get(nameof(TipRulesHint));
 
     /// <summary>Looks up a key; falls back to the key itself so missing strings are visible, not fatal.</summary>

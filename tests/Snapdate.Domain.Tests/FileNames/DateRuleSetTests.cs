@@ -149,6 +149,41 @@ public sealed class DateRuleSetTests
     }
 
     [Fact]
+    public void Once_the_regex_time_budget_is_spent_further_regex_rules_are_skipped_but_patterns_still_run()
+    {
+        var regex = new DateRule("custom-1", "Regex", RuleOrigin.Custom, Enabled: true, [@"IMG-(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})-WA\d+"], DateRuleSyntax.Regex);
+        var pattern = new DateRule("custom-2", "Pattern", RuleOrigin.Custom, Enabled: true, ["IMG-{YYYY}{MM}{DD}-WA*"]);
+
+        var spent = new DateRuleSet([regex, pattern], regexBudget: TimeSpan.Zero).Match("IMG-20240714-WA0001", Now);
+        var normal = new DateRuleSet([regex, pattern]).Match("IMG-20240714-WA0001", Now);
+
+        Assert.Equal("custom-2", spent?.RuleId);
+        Assert.Equal("custom-1", normal?.RuleId);
+        Assert.Equal(TimeSpan.FromMilliseconds(200), DateRuleSet.DefaultRegexBudget);
+    }
+
+    [Fact]
+    public void Many_regex_rules_together_stay_within_the_budget_per_name()
+    {
+        // 100 rules × 10 of the most expensive accepted expressions, none of which matches: without the budget this
+        // would add up to seconds per name.
+        string[] expensive =
+        [
+            @"(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})x[a-z]*.{0,20}.{0,20}.{0,20}.{0,20}.{0,20}.{0,20}.{0,20}.{0,20}.{0,20}.{0,20}.{0,10}",
+            @"(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})x.*a" + new string('.', 228),
+        ];
+        var rules = Enumerable.Range(0, 100)
+            .Select(i => new DateRule($"custom-{i}", $"R{i}", RuleOrigin.Custom, Enabled: true, [.. Enumerable.Range(0, 10).Select(j => expensive[j % 2])], DateRuleSyntax.Regex))
+            .ToList();
+        var set = new DateRuleSet(rules);
+
+        var worst = AdversarialNames.Worst(name => set.Match(name, Now));
+
+        // The budget plus at most one expression that was already running when it ran out.
+        Assert.True(worst < DateRuleSet.DefaultRegexBudget + AdversarialNames.Bound, worst.ToString());
+    }
+
+    [Fact]
     public void The_syntax_decides_how_a_line_is_read()
     {
         // A token pattern is no valid regex rule (no named groups), and a regex is no valid token pattern.

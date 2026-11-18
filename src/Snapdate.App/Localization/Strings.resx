@@ -258,7 +258,7 @@
   <data name="RxErrTooLong" xml:space="preserve"><value>This expression is too long (at most {0} characters).</value></data>
   <data name="RxErrInvalid" xml:space="preserve"><value>This expression cannot be used. Please check it.</value></data>
   <data name="RxErrSyntax" xml:space="preserve"><value>This is not a valid regular expression. Check the brackets and special characters around character {0}.</value></data>
-  <data name="RxErrUnsupported" xml:space="preserve"><value>Snapdate cannot run this expression safely. Leave out back-references such as \1, look-arounds such as (?=…) or (?&lt;=…), atomic groups (?&gt;…) and conditions (?(…)…), and keep repetitions small.</value></data>
+  <data name="RxErrUnsupported" xml:space="preserve"><value>“{0}” (at character {1}) cannot be used. Snapdate allows plain characters, escaped characters such as \. or \(, \d, \s, \w, ., simple classes such as [a-z_-], groups (…), (?:…) and (?&lt;name&gt;…), | between alternatives, ^ and $, and the repetitions * + ? {{n}} {{n,}} {{n,m}}. Write \{{, \}} and \] for the characters themselves.</value></data>
   <data name="RxErrRepetition" xml:space="preserve"><value>The repetition {0} is too large. At most {1} repetitions are possible.</value></data>
   <data name="RxErrUnknownGroup" xml:space="preserve"><value>The group “{0}” is not a date part. Use year, yy, month, day, hour, minute or second, in lower case.</value></data>
   <data name="RxErrMissingYear" xml:space="preserve"><value>The expression needs a group for the year: (?&lt;year&gt;…) or (?&lt;yy&gt;…).</value></data>
@@ -268,8 +268,7 @@
   <data name="RxErrMinuteWithoutHour" xml:space="preserve"><value>A minute group also needs an hour group: add (?&lt;hour&gt;…).</value></data>
   <data name="RxErrSecondWithoutMinute" xml:space="preserve"><value>A second group also needs a minute group: add (?&lt;minute&gt;…).</value></data>
   <data name="RuleRegexEditorIntro" xml:space="preserve"><value>Describe how your file names look. Snapdate tries the expressions from top to bottom and reads the date with the first one that fits the whole name (without the extension).</value></data>
-  <data name="RxErrNested" xml:space="preserve"><value>The repetition {0} repeats a group that already contains a repetition such as *, + or ?. Snapdate does not allow this because it can make matching very slow. Write the parts out one after another instead.</value></data>
-  <data name="RxErrTooComplex" xml:space="preserve"><value>This expression is too complex to run safely. Use fewer repetitions (*, +, ?, {{…}}), especially fewer * and +, and smaller counts in {{…}}.</value></data>
-  <data name="RxErrFreeSpacing" xml:space="preserve"><value>The option x (ignore spaces, # comments) is not supported. Remove the x from (?x) and write the expression without comments.</value></data>
+  <data name="RxErrNested" xml:space="preserve"><value>The repetition {0} repeats something whose length can vary, such as *, +, ? or alternatives of different length like (?:a|bc). Snapdate does not allow this because it can make matching very slow. Write the parts out one after another instead.</value></data>
+  <data name="RxErrTooComplex" xml:space="preserve"><value>This expression is too complex to run quickly. Use fewer * and +, fewer repetitions overall and smaller counts in {{…}}, or shorten it.</value></data>
   <data name="TipRulesHint" xml:space="preserve"><value>The rules are under &quot;Dates from file names&quot; above the list.</value></data>
 </root>

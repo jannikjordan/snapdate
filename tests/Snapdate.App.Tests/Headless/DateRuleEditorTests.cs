@@ -42,7 +42,8 @@ public sealed class DateRuleEditorTests(HeadlessSession headless)
 
     private static DateRulesViewModel Dialog(IDateRuleStore store, string culture = "en-US")
     {
-        var dialog = new DateRulesViewModel(store, Strings(culture), TimeProvider.System);
+        // The tester answers at once here; the debounced background run has its own tests.
+        var dialog = new DateRulesViewModel(store, Strings(culture), TimeProvider.System) { EditorSampleDelay = TimeSpan.Zero };
         dialog.Open([]);
         return dialog;
     }
@@ -110,11 +111,11 @@ public sealed class DateRuleEditorTests(HeadlessSession headless)
     [InlineData(@"IMG-(?<year>\d{4})(?<day>\d{2})", "Line 1: The expression needs a group for the month: (?<month>…).")]
     [InlineData(@"(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})(?<counter>\d+)", "Line 1: The group “counter” is not a date part. Use year, yy, month, day, hour, minute or second, in lower case.")]
     [InlineData(@"(?<year>\d{4})(?<month>\d{2})(?<day>\d{2}", "Line 1: This is not a valid regular expression. Check the brackets and special characters around character 41.")]
-    [InlineData(@"(?<=x)(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})", "Line 1: Snapdate cannot run this expression safely. Leave out back-references such as \\1, look-arounds such as (?=…) or (?<=…), atomic groups (?>…) and conditions (?(…)…), and keep repetitions small.")]
+    [InlineData(@"(?<=x)(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})", "Line 1: “(?<” (at character 1) cannot be used. Snapdate allows plain characters, escaped characters such as \\. or \\(, \\d, \\s, \\w, ., simple classes such as [a-z_-], groups (…), (?:…) and (?<name>…), | between alternatives, ^ and $, and the repetitions * + ? {n} {n,} {n,m}. Write \\{, \\} and \\] for the characters themselves.")]
     [InlineData(@"(?<year>\d{4})(?<month>\d{2})(?<day>\d{2}).{1,500}", "Line 1: The repetition {1,500} is too large. At most 20 repetitions are possible.")]
-    [InlineData(@"(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})(?:.*a.{0,20}){0,10}", "Line 1: The repetition {0,10} repeats a group that already contains a repetition such as *, + or ?. Snapdate does not allow this because it can make matching very slow. Write the parts out one after another instead.")]
-    [InlineData(@"(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})[a-z]*.{0,20}[a-z]*.{0,20}[a-z]*.{0,20}", "Line 1: This expression is too complex to run safely. Use fewer repetitions (*, +, ?, {…}), especially fewer * and +, and smaller counts in {…}.")]
-    [InlineData(@"(?x)(?<year>\d{4})(?<month>\d{2})(?<day>\d{2}) # date", "Line 1: The option x (ignore spaces, # comments) is not supported. Remove the x from (?x) and write the expression without comments.")]
+    [InlineData(@"(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})(?:.*a.{0,20}){0,10}", "Line 1: The repetition {0,10} repeats something whose length can vary, such as *, +, ? or alternatives of different length like (?:a|bc). Snapdate does not allow this because it can make matching very slow. Write the parts out one after another instead.")]
+    [InlineData(@"(?<year>\d{4})(?<month>\d{2})(?<day>\d{2}).*a.{0,20}.*a.{0,20}.*a.{0,20}.*a.{0,20}", "Line 1: This expression is too complex to run quickly. Use fewer * and +, fewer repetitions overall and smaller counts in {…}, or shorten it.")]
+    [InlineData(@"(?x)(?<year>\d{4})(?<month>\d{2})(?<day>\d{2}) # date", "Line 1: “(?x” (at character 1) cannot be used. Snapdate allows plain characters, escaped characters such as \\. or \\(, \\d, \\s, \\w, ., simple classes such as [a-z_-], groups (…), (?:…) and (?<name>…), | between alternatives, ^ and $, and the repetitions * + ? {n} {n,} {n,m}. Write \\{, \\} and \\] for the characters themselves.")]
     public void A_regular_expression_that_cannot_be_used_is_explained(string expression, string message)
     {
         var editor = NewRule(Dialog(new MemoryDateRuleStore()));
@@ -366,6 +367,50 @@ public sealed class DateRuleEditorTests(HeadlessSession headless)
         Assert.Equal(kind, editor.SampleKind);
         // The space before AM/PM differs between ICU versions.
         Assert.StartsWith(result, editor.SampleResult, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Tester_waits_for_a_pause_and_shows_only_the_latest_name()
+    {
+        var dialog = new DateRulesViewModel(new MemoryDateRuleStore(), Strings(), TimeProvider.System) { EditorSampleDelay = TimeSpan.FromMilliseconds(150) };
+        dialog.Open([]);
+        var editor = NewRule(dialog);
+        Assert.Equal(TimeSpan.FromMilliseconds(150), editor.SampleDelay);
+        editor.PatternsText = "IMG_{YYYY}{MM}{DD}_*";
+        await editor.SampleCompletion;
+        var before = editor.SampleResult;
+
+        editor.Sample = "IMG_20240714_1.jpg";
+        var first = editor.SampleCompletion;
+        editor.Sample = "IMG_4711.jpg";
+
+        // Nothing changes until the pause is over; the first request is dropped, the second one shown.
+        Assert.Equal(before, editor.SampleResult);
+        await first;
+        Assert.Equal(before, editor.SampleResult);
+        await editor.SampleCompletion;
+        Assert.Equal(RuleSampleKind.NoMatch, editor.SampleKind);
+        Assert.Equal("No pattern matches this name.", editor.SampleResult);
+
+        editor.Sample = "IMG_20240714_1.jpg";
+        await editor.SampleCompletion;
+        Assert.Equal(RuleSampleKind.Match, editor.SampleKind);
+    }
+
+    [Fact]
+    public void An_empty_name_is_answered_at_once_and_cancels_a_pending_try()
+    {
+        var dialog = new DateRulesViewModel(new MemoryDateRuleStore(), Strings(), TimeProvider.System) { EditorSampleDelay = TimeSpan.FromSeconds(30) };
+        dialog.Open([]);
+        var editor = NewRule(dialog);
+        editor.PatternsText = "IMG_{YYYY}{MM}{DD}_*";
+        editor.Sample = "IMG_20240714_1.jpg";
+        Assert.False(editor.SampleCompletion.IsCompleted);
+
+        editor.Sample = string.Empty;
+
+        Assert.True(editor.SampleCompletion.IsCompleted);
+        Assert.Equal(RuleSampleKind.Empty, editor.SampleKind);
     }
 
     [Fact]
@@ -850,6 +895,7 @@ public sealed class DateRuleEditorTests(HeadlessSession headless)
         await vm.ScanCompletion;
         vm.OpenDateRulesCommand.Execute(null);
         var dialog = vm.RulesDialog!;
+        dialog.EditorSampleDelay = TimeSpan.Zero;
         dialog.SelectedSample = dialog.SampleNames[0];
         dialog.AddRuleCommand.Execute(null);
         // A tall state: several problems, a long name, the tester explaining a wrong date.

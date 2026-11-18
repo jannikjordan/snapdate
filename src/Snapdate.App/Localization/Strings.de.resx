@@ -258,7 +258,7 @@
   <data name="RxErrTooLong" xml:space="preserve"><value>Dieser Ausdruck ist zu lang (höchstens {0} Zeichen).</value></data>
   <data name="RxErrInvalid" xml:space="preserve"><value>Dieser Ausdruck kann nicht verwendet werden. Bitte prüfen Sie ihn.</value></data>
   <data name="RxErrSyntax" xml:space="preserve"><value>Das ist kein gültiger regulärer Ausdruck. Prüfen Sie die Klammern und Sonderzeichen um Zeichen {0}.</value></data>
-  <data name="RxErrUnsupported" xml:space="preserve"><value>Snapdate kann diesen Ausdruck nicht sicher ausführen. Verzichten Sie auf Rückverweise wie \1, Vorausschau oder Rückschau wie (?=…) oder (?&lt;=…), atomare Gruppen (?&gt;…) und Bedingungen (?(…)…), und halten Sie Wiederholungen klein.</value></data>
+  <data name="RxErrUnsupported" xml:space="preserve"><value>„{0}“ (bei Zeichen {1}) kann nicht verwendet werden. Snapdate erlaubt normale Zeichen, maskierte Zeichen wie \. oder \(, \d, \s, \w, ., einfache Klassen wie [a-z_-], Gruppen (…), (?:…) und (?&lt;name&gt;…), | zwischen Alternativen, ^ und $ sowie die Wiederholungen * + ? {{n}} {{n,}} {{n,m}}. Schreiben Sie \{{, \}} und \] für die Zeichen selbst.</value></data>
   <data name="RxErrRepetition" xml:space="preserve"><value>Die Wiederholung {0} ist zu groß. Höchstens {1} Wiederholungen sind möglich.</value></data>
   <data name="RxErrUnknownGroup" xml:space="preserve"><value>Die Gruppe „{0}“ ist kein Datumsteil. Verwenden Sie year, yy, month, day, hour, minute oder second, kleingeschrieben.</value></data>
   <data name="RxErrMissingYear" xml:space="preserve"><value>Der Ausdruck braucht eine Gruppe für das Jahr: (?&lt;year&gt;…) oder (?&lt;yy&gt;…).</value></data>
@@ -268,8 +268,7 @@
   <data name="RxErrMinuteWithoutHour" xml:space="preserve"><value>Zur Gruppe für die Minuten gehört auch eine für die Stunde: Fügen Sie (?&lt;hour&gt;…) hinzu.</value></data>
   <data name="RxErrSecondWithoutMinute" xml:space="preserve"><value>Zur Gruppe für die Sekunden gehört auch eine für die Minuten: Fügen Sie (?&lt;minute&gt;…) hinzu.</value></data>
   <data name="RuleRegexEditorIntro" xml:space="preserve"><value>Beschreiben Sie, wie Ihre Dateinamen aussehen. Snapdate probiert die Ausdrücke von oben nach unten aus und liest das Datum mit dem ersten, der zum ganzen Namen passt (ohne Dateiendung).</value></data>
-  <data name="RxErrNested" xml:space="preserve"><value>Die Wiederholung {0} wiederholt eine Gruppe, die selbst schon eine Wiederholung wie *, + oder ? enthält. Snapdate erlaubt das nicht, weil es den Vergleich sehr langsam machen kann. Schreiben Sie die Teile stattdessen nacheinander aus.</value></data>
-  <data name="RxErrTooComplex" xml:space="preserve"><value>Dieser Ausdruck ist zu komplex, um ihn sicher auszuführen. Verwenden Sie weniger Wiederholungen (*, +, ?, {{…}}), vor allem weniger * und +, und kleinere Zahlen in {{…}}.</value></data>
-  <data name="RxErrFreeSpacing" xml:space="preserve"><value>Die Option x (Leerzeichen ignorieren, #-Kommentare) wird nicht unterstützt. Entfernen Sie das x aus (?x) und schreiben Sie den Ausdruck ohne Kommentare.</value></data>
+  <data name="RxErrNested" xml:space="preserve"><value>Die Wiederholung {0} wiederholt etwas, dessen Länge sich ändern kann, etwa *, +, ? oder unterschiedlich lange Alternativen wie (?:a|bc). Snapdate erlaubt das nicht, weil es den Vergleich sehr langsam machen kann. Schreiben Sie die Teile stattdessen nacheinander aus.</value></data>
+  <data name="RxErrTooComplex" xml:space="preserve"><value>Dieser Ausdruck ist zu komplex, um schnell ausgeführt zu werden. Verwenden Sie weniger * und +, insgesamt weniger Wiederholungen und kleinere Zahlen in {{…}}, oder kürzen Sie ihn.</value></data>
   <data name="TipRulesHint" xml:space="preserve"><value>Die Regeln finden Sie unter „Datum aus Dateinamen“ über der Liste.</value></data>
 </root>

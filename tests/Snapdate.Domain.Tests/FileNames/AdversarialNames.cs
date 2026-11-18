@@ -43,6 +43,12 @@ internal static class AdversarialNames
             new string('a', 126) + "20240714" + new string('a', 126),
             Repeat("2024071", 37) + "a",
             "20240714_" + Repeat("a0", 125) + "b",
+            "20240714" + Repeat("a.", 126),
+            "20240714" + new string('a', 251) + "!",
+            "20240714" + new string([.. Enumerable.Range(0, 252).Select(_ => (char)random.Next(0x20, 0x3000))]),
+            "20240714" + Repeat("abcdefgh", 31) + "abcd",
+            "20240714" + Repeat("[x-a]", 50) + "aa",
+            "20240714x" + new string('a', 119) + "b" + new string('a', 131) + "]",
         ];
         return names;
     }

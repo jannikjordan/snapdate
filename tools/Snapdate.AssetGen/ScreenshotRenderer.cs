@@ -214,6 +214,7 @@ internal static class ScreenshotRenderer
                         vm.OpenDateRulesCommand.Execute(null);
                         var rules = vm.RulesDialog!;
                         rules.SelectedSample = rules.SampleNames.First(n => n.StartsWith("Screenshot", StringComparison.Ordinal));
+                        rules.EditorSampleDelay = TimeSpan.Zero; // the tester answers at once for the picture
                         rules.AddRuleCommand.Execute(null);
                         var editor = rules.Editor!;
                         editor.Name = folder == "de" ? "Bildschirmfotos" : "Screenshots";
@@ -226,6 +227,7 @@ internal static class ScreenshotRenderer
                         vm.OpenDateRulesCommand.Execute(null);
                         var rules = vm.RulesDialog!;
                         rules.SelectedSample = rules.SampleNames.First(n => n.StartsWith("Screenshot", StringComparison.Ordinal));
+                        rules.EditorSampleDelay = TimeSpan.Zero; // the tester answers at once for the picture
                         rules.AddRuleCommand.Execute(null);
                         var editor = rules.Editor!;
                         editor.Name = folder == "de" ? "Bildschirmfotos" : "Screenshots";

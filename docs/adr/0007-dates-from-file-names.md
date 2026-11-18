@@ -108,59 +108,86 @@ placeholders the user already knows from the file-name builder, for example
 **Advanced mode: regular expression.** A rule can set `"syntax": "regex"`
 instead of the default `"pattern"` (in the editor: the "Advanced: regular
 expressions" check box, off by default; switching keeps the text and checks it
-again). Each line is one expression (`DateExpression`), checked in this order:
-1. Not empty, at most **300 characters**, no control characters (a line break
-   could end a `#` comment inside the wrapper). The editor keeps regex lines as
-   typed (only the `\r` of a line break is dropped), as spaces can matter.
-2. **Counted repetition capped:** every `{n}`, `{n,}`, `{n,m}` with n, m ≤ 20
-   (`RepetitionTooLarge`; dates need at most 4). Escaped characters are
-   skipped; braces anywhere else (also in character classes) are checked, which
-   may reject a harmless literal but never misses a quantifier.
-3. **Compiled on its own** with the same options as patterns
-   (`NonBacktracking | IgnoreCase | CultureInvariant | ExplicitCapture`, 50 ms
-   match timeout), so it must be complete and cannot close the wrapper from
-   inside (`a)|(?:b` is rejected). `RegexParseException` → `InvalidSyntax` with
-   the position; `NotSupportedException` — constructs `NonBacktracking` cannot
-   run (backreferences, lookarounds, atomic groups, conditionals, `\G`,
-   balancing groups) or an automaton above the engine's size limit (e.g.
-   `((x{20}){20}){20}`) → `UnsupportedConstruct`; any other exception →
-   `InvalidExpression`. Never a crash.
-4. **Structural limits** (`ExpressionStructure`), because an accepted
-   expression such as `(?:.*a.{0,99}){0,10}` took 16–18 s and over 300 MB for
-   one 260-character name and never timed out:
-   - **No nested repetition:** a quantifier (`* + ? {…}`, lazy or not) on a
-     group that contains a variable repetition (`* + ? {n,} {n,m}`) →
-     `NestedQuantifier`. A fixed count inside (`(?:_\d{2}\d{2})?`) is fine, as
-     it only spells the atom out.
-   - **The option `x`** (white space ignored, `#` comments) → `FreeSpacing`; a
-     comment could otherwise swallow the closing `)$` of the wrapper.
-   - **A budget** → `TooComplex`: at most **30 quantifiers**, at most **8
-     unbounded** ones (`* + {n,}`), and (unbounded + 1) × (sum of the upper
-     bounds of all bounded ones, `?` = 1, `{n}` = n, `{n,m}` = m, a repeated
-     group counting its content each time) ≤ **160**. Slowness comes from
-     unbounded repetitions making many bounded positions ambiguous at once;
-     either kind alone is cheap. Realistic file-name expressions use well under
-     half of this: `.*(?<year>\d{4})[-_]?(?<month>\d{2})[-_]?(?<day>\d{2})[-_ ]?(?<hour>\d{2})[.:]?(?<minute>\d{2})[.:]?(?<second>\d{2}).*`
-     scores 3 × 19 = 57.
-   The analysis runs on text that already compiled; where it reads the text
-   differently from the engine it errs towards seeing more structure, and
-   groups that do not balance reject the expression. Measured with fuzzing
-   (several thousand generated combinations of `.`, `a`, classes,
-   alternations, groups and quantifiers; about 12 % accepted) on hostile
-   260-character names: the slowest accepted expression took about 20 ms per
-   match; the tests require under 200 ms. The rejected cases above took 0.3–18 s.
-5. **Wrapped as `^(?:…)$`** and compiled again; this is the regex that runs.
-6. **Group names:** only `year`, `yy` (two-digit year, same 19YY/20YY pivot as
-   `{YY}`), `month`, `day`, `hour`, `minute`, `second`, case-sensitive
-   (`UnknownGroup`); numbered groups are ignored. Required: `year` or `yy`,
-   `month`, `day`; the same time dependencies as patterns (hour ⇔ minute,
-   second ⇒ minute). A name may appear in several alternatives
-   (`(?<year>…)-…|…(?<year>…)`).
+again). The editor keeps regex lines as typed (only the `\r` of a line break is
+dropped), as spaces can matter. Each line is one expression (`DateExpression`).
+
+*Why an allowlist.* `NonBacktracking` has no catastrophic backtracking, but its
+time per character grows with how many places of the expression can be active
+at once, and it checks the timeout only now and then (not while it fills in the
+groups). Two review rounds found accepted expressions that took 0.5–18 s and up
+to 660 MB for one 260-character name and never timed out: repeated groups that
+repeat something (`(?:.*a.{0,99}){0,10}`), alternatives of different length
+acting as hidden repetitions (`(?:(?:|.|..)a){20}`), and character classes the
+checker read differently from the engine (`[\-[x]…]`). Guessing how the engine
+reads the text is therefore replaced by Snapdate's own parser
+(`ExpressionGrammar`): only what it understands is accepted, and the engine
+must agree.
+
+Checks, in order:
+1. Not empty, at most **300 characters**.
+2. **Allowed subset** (recursive-descent parser; anything else →
+   `UnsupportedConstruct` naming the construct and its position, or
+   `InvalidSyntax` with the position):
+   - atoms: literal characters (not `\ . [ ] ( ) { } * + ? | ^ $`, no control
+     characters), escaped characters that are not letters, digits or `_`
+     (`\.`, `\(`, `\ `), `\d \s \w`, `.`, anchors `^ $`;
+   - classes `[…]`/`[^…]` of literal characters, ranges (`a-z`), escaped
+     characters and `\d \s \w` — no `[` inside (so no nesting or subtraction),
+     no `\p{…}`, a `]` only as `\]`, not empty;
+   - groups `(…)` (not capturing, `ExplicitCapture`), `(?:…)` and
+     `(?<name>…)` with `name` one of `year`, `yy`, `month`, `day`, `hour`,
+     `minute`, `second` (case-sensitive; else `UnknownGroup`) — no other `(?`
+     form: no inline options (so no `(?x)` comments), lookarounds, atomic
+     groups, conditionals, comments or balancing groups; no backreferences,
+     `\b`, `\G` or other letter escapes;
+   - alternation `|`;
+   - quantifiers `* + ? {n} {n,} {n,m}` and their lazy forms, n ≤ m ≤ **20**
+     (`RepetitionTooLarge`; dates need at most 4). A `{` that is no
+     quantifier must be written `\{`.
+3. **Width rule.** Every node knows its shortest and longest width (unbounded
+   for `* + {n,}`); an alternation whose branches differ in length is variable
+   too. A quantifier on anything whose width varies, or that contains such a
+   part, → `NestedQuantifier` (`(?:.*a)+`, `(?:x?){3}`, `(?:|.){3}`,
+   `(?:(?:.|..)a){20}`). Fixed-width parts may be repeated
+   (`(?:_\d{2}\d{2})?`, `(?:ab|cd){3}`). Repeating something of width 0
+   (`^*`, `()?`) → `UnsupportedConstruct`.
+4. **Budget** → `TooComplex`: at most **30 quantifiers**, at most **8
+   unbounded** ones, and unbounded quantifiers × positions ≤ **240**, where
+   positions = single-character steps once counts are written out (`\d{4}` = 4,
+   `.{0,20}` = 20, `.*` = 1, a fixed-count group counts its content each time,
+   an alternation counts all its branches). Without an unbounded quantifier
+   there is no cost: bounded parts alone measured cheap. Realistic expressions
+   stay far below: `.*(?<year>\d{4})[-_.]?(?<month>\d{2})[-_.]?(?<day>\d{2})[-_ T]?(?<hour>\d{2})[-_.:]?(?<minute>\d{2})[-_.:]?(?<second>\d{2}).*`
+   costs 2 × 21 = 42.
+5. **The engine must agree:** the text is compiled on its own (so it cannot
+   close the `^(?:…)$` wrapper from inside, e.g. `a)|(?:b`) and then wrapped,
+   with `NonBacktracking | IgnoreCase | CultureInvariant | ExplicitCapture` and
+   the 50 ms timeout. Any exception → `InvalidExpression`; never a crash.
+6. **Required groups:** `year` or `yy`, `month`, `day`; the same time
+   dependencies as patterns (hour ⇔ minute, second ⇒ minute). A name may
+   appear in several alternatives (`(?<year>…)-…|…(?<year>…)`).
+
+*Measured* (tests in `MatchTimeTests`, `DateRuleSetTests`; hostile names of 260
+characters such as runs of one letter with one odd letter, repeating pairs,
+digits only, random text): every expression from both review rounds is now
+rejected or takes under 20 ms; the slowest accepted expressions found by
+fuzzing (thousands of combinations including empty and different-length
+alternatives, classes with escapes and `[`, fixed-count groups) and at the
+budget's edges take up to about 40 ms per match on a developer machine. The
+tests require under 200 ms per match.
+
+*Per-name budget.* `DateRuleSet.Match` stops trying regex rules for a name once
+they have used **200 ms** together (`DefaultRegexBudget`); token-pattern rules
+are cheap and still run. So 100 rules × 10 expressions cannot add up to
+seconds per file; one name costs at most the budget plus the one expression
+that was running. The rule editor's tester runs off the UI thread, 150 ms after
+the last change, and shows only the latest result.
 
 Matching is shared with patterns: names longer than 260 characters are not
-matched, a timeout (when the engine notices it) counts as no match, and group values must be 1–4 **ASCII**
-digits (`\d` may match other scripts' digits; those never give a date), then
-pass the calendar and plausibility checks. Implemented in #21 (v0.3.0).
+matched, a timeout (when the engine notices it) counts as no match, and group
+values must be 1–4 **ASCII** digits (`\d` may match other scripts' digits;
+those never give a date), then pass the calendar and plausibility checks.
+Implemented in #21 (v0.3.0).
 
 ### Date priority and conflicts
 1. **Camera EXIF** (metadata from a file with a camera model) always wins, as

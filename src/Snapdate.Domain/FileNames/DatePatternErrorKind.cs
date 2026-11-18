@@ -62,9 +62,9 @@ public enum DatePatternErrorKind
     InvalidSyntax,
 
     /// <summary>
-    /// Regular expressions: a construct the safe (non-backtracking) matcher cannot run — backreferences,
-    /// lookarounds, atomic groups, conditionals, <c>\G</c>, balancing groups — or an expression that is too
-    /// complex overall.
+    /// Regular expressions: something outside the allowed subset (see <c>ExpressionGrammar</c>), e.g. a lookaround,
+    /// backreference, <c>\b</c>, <c>\p{…}</c>, inline options, a nested class or an unescaped <c>{</c>;
+    /// <see cref="DatePatternError.Detail"/> is the construct as written, <see cref="DatePatternError.Position"/> where it starts.
     /// </summary>
     UnsupportedConstruct,
 
@@ -80,17 +80,14 @@ public enum DatePatternErrorKind
     UnknownGroup,
 
     /// <summary>
-    /// Regular expressions: a group that contains a variable repetition is repeated again, e.g. <c>(?:.*a)+</c> or
-    /// <c>(\d+)?</c>; <see cref="DatePatternError.Detail"/> is the outer quantifier as written.
+    /// Regular expressions: something whose width varies is repeated, e.g. <c>(?:.*a)+</c>, <c>(\d+)?</c> or
+    /// <c>(?:|.){3}</c>; <see cref="DatePatternError.Detail"/> is the quantifier as written.
     /// </summary>
     NestedQuantifier,
 
     /// <summary>
-    /// Regular expressions: too many repetitions, or too many unbounded ones (<c>* + {n,}</c>) combined with bounded
-    /// ones, to run safely (see <see cref="DateExpression"/>).
+    /// Regular expressions: too many repetitions, or too many unbounded ones (<c>* + {n,}</c>) combined with a long
+    /// expression, to run quickly (see <c>ExpressionGrammar</c>).
     /// </summary>
     TooComplex,
-
-    /// <summary>Regular expressions: the <c>x</c> option (white space ignored, <c>#</c> comments) is not supported.</summary>
-    FreeSpacing,
 }

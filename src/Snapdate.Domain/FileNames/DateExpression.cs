@@ -9,12 +9,13 @@ namespace Snapdate.Domain.FileNames;
 /// The expression must match the whole name.
 /// </summary>
 /// <remarks>
-/// The text is untrusted input. It is limited to <see cref="MaxLength"/> characters, counted repetitions to
-/// <see cref="MaxRepetition"/>, and its structure to the limits of <see cref="ExpressionStructure"/> (no repeated group
-/// that repeats something itself; a budget for repetitions). It is then wrapped as <c>^(?:…)$</c> and compiled with the
-/// same options and timeout as token patterns (<c>NonBacktracking</c>: no backreferences or lookarounds, time linear in
-/// the name but with a factor that depends on the expression — which is what the structural limits keep small; the
-/// engine checks the timeout only now and then, so it is a last resort). Every problem while building it becomes a
+/// The text is untrusted input. It is limited to <see cref="MaxLength"/> characters and must be in the subset that
+/// <see cref="ExpressionGrammar"/> parses (an allowlist: literals, escapes, <c>\d \s \w .</c>, simple classes, plain,
+/// non-capturing and named groups, <c>|</c>, quantifiers up to <see cref="MaxRepetition"/>), with no repeated part of
+/// varying width and within a complexity budget. Only then is it compiled by the engine, which must agree: on its own,
+/// and wrapped as <c>^(?:…)$</c> with the same options and timeout as token patterns. <c>NonBacktracking</c> takes time
+/// linear in the name with a factor that depends on the expression — the grammar's limits keep that factor small; the
+/// engine checks the timeout only now and then, so it is a last resort. Every problem becomes a
 /// <see cref="DatePatternError"/>; nothing throws. The captured values pass the same ASCII-digit, calendar and
 /// plausibility checks as token patterns.
 /// </remarks>
@@ -66,39 +67,24 @@ public sealed class DateExpression : IFileNameDateMatcher
             return DateExpressionParseResult.Failed(new DatePatternError(DatePatternErrorKind.TooLong, MaxLength));
         }
 
-        // A line break could end a (?x) comment inside the wrapper; file names hold no control characters anyway.
-        var control = text.AsSpan().IndexOfAnyInRange('\0', '\u001f');
-        if (control >= 0 || (control = text.IndexOf('\u007f', StringComparison.Ordinal)) >= 0)
+        // Snapdate's own parser decides what is accepted: the allowed subset, within the limits (ExpressionGrammar).
+        if (ExpressionGrammar.Check(text) is { } outside)
         {
-            return DateExpressionParseResult.Failed(new DatePatternError(DatePatternErrorKind.InvalidExpression, control));
+            return DateExpressionParseResult.Failed(outside);
         }
 
-        var repetitions = FindLargeRepetitions(text);
-        if (repetitions.Count > 0)
-        {
-            return DateExpressionParseResult.Failed([.. repetitions]);
-        }
-
-        // The expression on its own first: it must be complete, so it cannot close the ^(?:…)$ wrapper from
-        // inside (e.g. "a)|(?:b" would otherwise no longer have to match the whole name).
+        // The engine must agree. Compiled on its own first, so the text cannot close the ^(?:…)$ wrapper from inside
+        // (the grammar already rejects that; this is the second opinion).
         var (_, alone) = Build(text);
         if (alone is not null)
         {
-            return DateExpressionParseResult.Failed(alone);
+            return DateExpressionParseResult.Failed(alone with { Kind = DatePatternErrorKind.InvalidExpression });
         }
 
-        // Valid syntax, but it must also be simple enough to run fast (see ExpressionStructure).
-        if (ExpressionStructure.Check(text) is { } structure)
-        {
-            return DateExpressionParseResult.Failed(structure);
-        }
-
-        var (regex, wrapped) = Build("^(?:" + text + ")$");
+        var (regex, _) = Build("^(?:" + text + ")$");
         if (regex is null)
         {
-            return DateExpressionParseResult.Failed(new DatePatternError(
-                wrapped?.Kind == DatePatternErrorKind.UnsupportedConstruct ? DatePatternErrorKind.UnsupportedConstruct : DatePatternErrorKind.InvalidExpression,
-                0));
+            return DateExpressionParseResult.Failed(new DatePatternError(DatePatternErrorKind.InvalidExpression, 0));
         }
 
         var errors = CheckGroups(regex.GetGroupNames());
@@ -144,73 +130,6 @@ public sealed class DateExpression : IFileNameDateMatcher
             // Untrusted input: whatever else the engine throws (e.g. a stack overflow guard) must not crash the app.
             return (null, new DatePatternError(DatePatternErrorKind.InvalidExpression, 0));
         }
-    }
-
-    /// <summary>
-    /// Finds counted repetitions (<c>{n}</c>, <c>{n,}</c>, <c>{n,m}</c>) above <see cref="MaxRepetition"/>. Escaped
-    /// characters are skipped; braces elsewhere (also in character classes and comments) are checked, which may
-    /// reject a harmless literal but never misses a real repetition.
-    /// </summary>
-    private static List<DatePatternError> FindLargeRepetitions(string text)
-    {
-        var errors = new List<DatePatternError>();
-        var i = 0;
-        while (i < text.Length)
-        {
-            if (text[i] == '\\')
-            {
-                i += 2;
-                continue;
-            }
-
-            if (text[i] != '{')
-            {
-                i++;
-                continue;
-            }
-
-            var start = i;
-            var j = ReadNumber(text, i + 1, out var first);
-            if (j == i + 1 || j >= text.Length)
-            {
-                i++;
-                continue;
-            }
-
-            var second = 0;
-            if (text[j] == ',')
-            {
-                j = ReadNumber(text, j + 1, out second);
-            }
-
-            if (j < text.Length && text[j] == '}')
-            {
-                if (first > MaxRepetition || second > MaxRepetition)
-                {
-                    errors.Add(new DatePatternError(DatePatternErrorKind.RepetitionTooLarge, start, text[start..(j + 1)]));
-                }
-
-                i = j + 1;
-                continue;
-            }
-
-            i++;
-        }
-
-        return errors;
-    }
-
-    /// <summary>Reads ASCII digits from <paramref name="index"/>; the value saturates above <see cref="MaxRepetition"/>.</summary>
-    private static int ReadNumber(string text, int index, out int value)
-    {
-        value = 0;
-        while (index < text.Length && char.IsAsciiDigit(text[index]))
-        {
-            value = Math.Min(value * 10 + (text[index] - '0'), MaxRepetition + 1);
-            index++;
-        }
-
-        return index;
     }
 
     private static List<DatePatternError> CheckGroups(string[] names)
