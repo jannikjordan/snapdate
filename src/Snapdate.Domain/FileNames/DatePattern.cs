@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
 using Snapdate.Domain.Naming;
@@ -103,12 +104,71 @@ public sealed class DatePattern : IFileNameDateMatcher
     public bool TryMatch(string? name, DateTime localNow, out FileNameDate date)
     {
         date = default;
+        return TryMatchRaw(name, out var match) && DateCapture.TryRead(match, localNow, out date);
+    }
+
+    /// <summary>
+    /// Like <see cref="TryMatch"/>, but also says why a name that fits the pattern gives no date (no calendar date,
+    /// or a date before 1900 or in the future). For the rule editor's tester. Never throws.
+    /// </summary>
+    public PatternCheck Check(string? name, DateTime localNow) =>
+        TryMatchRaw(name, out var match) ? DateCapture.Check(match, localNow) : PatternCheck.NoMatch;
+
+    /// <summary>
+    /// Suggests a pattern for a file name (without extension) that contains its date as an 8-digit
+    /// <c>YYYYMMDD</c> run, e.g. <c>IMG_20240714_153208</c> → <c>IMG_{YYYY}{MM}{DD}*</c>: the text before the run
+    /// is kept, the rest becomes <c>*</c>. Null when the name has no such run (exactly 8 digits between
+    /// non-digits, with a month 01–12 and a day 01–31 and a year from 1900) or the suggestion would not be valid.
+    /// </summary>
+    public static string? SuggestFor(string? name)
+    {
+        if (string.IsNullOrEmpty(name) || name.Length > MaxNameLength)
+        {
+            return null;
+        }
+
+        var i = 0;
+        while (i < name.Length)
+        {
+            if (!char.IsAsciiDigit(name[i]))
+            {
+                i++;
+                continue;
+            }
+
+            var start = i;
+            while (i < name.Length && char.IsAsciiDigit(name[i]))
+            {
+                i++;
+            }
+
+            if (i - start == 8 && LooksLikeDate(name.AsSpan(start, 8)))
+            {
+                var prefix = name[..start].Replace("{", "{{", StringComparison.Ordinal).Replace("}", "}}", StringComparison.Ordinal);
+                var suggestion = prefix + "{YYYY}{MM}{DD}" + (i < name.Length ? "*" : string.Empty);
+                return Parse(suggestion).IsValid ? suggestion : null;
+            }
+        }
+
+        return null;
+    }
+
+    private static bool LooksLikeDate(ReadOnlySpan<char> digits)
+    {
+        var year = int.Parse(digits[..4], NumberStyles.None, CultureInfo.InvariantCulture);
+        var month = int.Parse(digits[4..6], NumberStyles.None, CultureInfo.InvariantCulture);
+        var day = int.Parse(digits[6..], NumberStyles.None, CultureInfo.InvariantCulture);
+        return year >= 1900 && month is >= 1 and <= 12 && day is >= 1 and <= 31;
+    }
+
+    private bool TryMatchRaw(string? name, out Match match)
+    {
+        match = System.Text.RegularExpressions.Match.Empty;
         if (string.IsNullOrEmpty(name) || name.Length > MaxNameLength)
         {
             return false;
         }
 
-        Match match;
         try
         {
             match = _regex.Match(name);
@@ -118,7 +178,7 @@ public sealed class DatePattern : IFileNameDateMatcher
             return false;
         }
 
-        return match.Success && DateCapture.TryRead(match, localNow, out date);
+        return match.Success;
     }
 
     public override string ToString() => Text;
