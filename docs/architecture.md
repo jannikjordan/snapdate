@@ -108,6 +108,7 @@ exceptions reach the UI. Adapters live in Infrastructure (`HttpUpdateDownloader`
 - [ADR 0002 — Native AOT releases and locked package restore](adr/0002-native-aot-and-locked-restore.md) (AOT part superseded)
 - [ADR 0003 — Self-contained single-file exe instead of Native AOT](adr/0003-single-file-instead-of-native-aot.md)
 - [ADR 0006 — Inno Setup installer](adr/0006-inno-setup-installer.md)
+- [ADR 0007 — Dates from file names](adr/0007-dates-from-file-names.md)
 
 ## Conventions
 
