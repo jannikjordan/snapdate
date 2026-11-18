@@ -328,7 +328,8 @@ public sealed partial class DateRulesViewModel : ObservableObject
     }
 
     /// <summary>
-    /// Saves the editor's rule: replaces the user's rule it was opened for, or adds a new one (also when that rule
+    /// Saves the editor's rule: replaces the user's rule it was opened for (or only closes the editor when nothing
+    /// changed), or adds a new one (also when that rule
     /// was deleted elsewhere meanwhile, so nothing typed is lost). When saving fails the editor stays open with the
     /// reason above it; the rules were reloaded, so Save can simply be pressed again.
     /// </summary>
@@ -342,6 +343,14 @@ public sealed partial class DateRulesViewModel : ObservableObject
         DateRule? saved;
         if (editor.RuleId is { } id && Catalog.CustomRules.FirstOrDefault(r => string.Equals(r.Id, id, StringComparison.Ordinal)) is { } existing)
         {
+            if (string.Equals(existing.Name, editor.EffectiveName, StringComparison.Ordinal)
+                && (existing.Patterns ?? []).SequenceEqual(editor.Patterns, StringComparer.Ordinal))
+            {
+                // Nothing changed: no save, so closing the dialog does not scan again.
+                CloseEditor();
+                return;
+            }
+
             var updated = existing with { Name = editor.EffectiveName, Patterns = editor.Patterns };
             saved = Catalog.Update(updated) ? updated : null;
         }

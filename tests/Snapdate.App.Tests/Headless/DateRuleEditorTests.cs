@@ -383,13 +383,14 @@ public sealed class DateRuleEditorTests(HeadlessSession headless)
         var dialog = Dialog(store);
         dialog.Items[0].EditCommand.Execute(null);
         var editor = dialog.Editor!;
+        editor.Name = "My scanner 2";
         store.Write(UserDateRules.Empty);
 
         editor.SaveCommand.Execute(null); // conflict: reloaded without the rule
         editor.SaveCommand.Execute(null);
 
         var saved = Assert.Single(store.User!.CustomRules);
-        Assert.Equal("My scanner", saved.Name);
+        Assert.Equal("My scanner 2", saved.Name);
         Assert.Null(dialog.Editor);
     }
 
@@ -459,6 +460,40 @@ public sealed class DateRuleEditorTests(HeadlessSession headless)
         var photo = vm.VisibleItems.Single().Item.Photo;
         Assert.Equal("Day first", photo.ResolvedDate.RuleName);
         Assert.Equal(new DateTime(2016, 6, 7), photo.ResolvedDate.Date.Value.Date);
+    });
+
+    [Fact]
+    public Task Saving_an_unchanged_rule_only_closes_the_editor_and_does_not_rescan() => RunOnUi(async () =>
+    {
+        using var temp = new TempFolder();
+        Jpeg(temp, "in/Scan_2023-02-01_7.jpg");
+        var store = new MemoryDateRuleStore(userRules: new UserDateRules([], [MyScanner]));
+        var vm = new TestServices { DateRules = store }.CreateViewModel();
+        vm.SourceFolder = temp.Combine("in");
+        await vm.ScanCompletion;
+        var scans = 0;
+        vm.PropertyChanged += (_, e) =>
+        {
+            if (e.PropertyName == nameof(MainWindowViewModel.Phase) && vm.Phase == Phase.Scanning)
+            {
+                scans++;
+            }
+        };
+
+        vm.OpenDateRulesCommand.Execute(null);
+        var dialog = vm.RulesDialog!;
+        dialog.Items[0].EditCommand.Execute(null);
+        var editor = dialog.Editor!;
+        // Only white space differs: the saved rule would be the same.
+        editor.PatternsText = "  " + editor.PatternsText + "\n";
+        editor.SaveCommand.Execute(null);
+
+        Assert.Null(dialog.Editor);
+        Assert.Equal(MyScanner.Id, dialog.FocusRuleId);
+        Assert.Equal(0, store.Saves);
+        dialog.CloseCommand.Execute(null);
+        await vm.ScanCompletion;
+        Assert.Equal(0, scans);
     });
 
     // ---------- Window ----------
