@@ -8,11 +8,14 @@ using Avalonia.VisualTree;
 using Snapdate.App.Services;
 using Snapdate.App.ViewModels;
 using Snapdate.App.Views;
+using Snapdate.Application.FileNames;
 using Snapdate.Application.Installation;
 using Snapdate.Application.Ports;
 using Snapdate.Application.Settings;
 using Snapdate.Application.Updates;
+using Snapdate.Domain.FileNames;
 using Snapdate.Domain.Versioning;
+using Snapdate.Infrastructure.FileNames;
 using Snapdate.Infrastructure.FileSystem;
 using Snapdate.Infrastructure.Metadata;
 
@@ -75,6 +78,24 @@ internal static class ScreenshotRenderer
     private sealed class FixedInstall(InstallKind kind) : IInstallInfo
     {
         public InstallInfo Current { get; } = new(kind, kind == InstallKind.Installed ? InstallScope.CurrentUser : InstallScope.None);
+    }
+
+    /// <summary>
+    /// The built-in rules embedded in the app and no user rules: screenshots never depend on the developer's own
+    /// <c>%APPDATA%\Snapdate\date-rules.json</c>. Nothing is ever saved.
+    /// </summary>
+    private sealed class BuiltInRulesOnly : IDateRuleStore
+    {
+        // Only the embedded resource is read; the path is never opened.
+        private static readonly IReadOnlyList<DateRule> SystemRules =
+            new JsonDateRuleStore(Path.Combine(DemoRoot, "unused-date-rules.json")).LoadSystemRules();
+
+        public IReadOnlyList<DateRule> LoadSystemRules() => SystemRules;
+
+        public UserDateRulesLoad LoadUserRules() => UserDateRulesLoad.Missing;
+
+        public UserDateRulesSave SaveUserRules(UserDateRules rules, UserRulesFingerprint expected) =>
+            new(DateRuleSaveResult.ReadOnly, expected);
     }
 
     /// <summary>How the update check behaves in a screenshot.</summary>
@@ -254,7 +275,8 @@ internal static class ScreenshotRenderer
             thumbnails,
             new UpdateCheckService(new FixedFeed(latest), settings, new FixedClock(), running),
             new FixedInstall(update.Kind),
-            update.Installer);
+            update.Installer,
+            DateRules: new BuiltInRulesOnly());
         var vm = new MainWindowViewModel(services, culture);
         Wait(vm.Update.AutomaticCheckCompletion);
         var window = new MainWindow { DataContext = vm, Width = _width, Height = _height };

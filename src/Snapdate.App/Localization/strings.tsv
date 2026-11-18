@@ -69,13 +69,20 @@ NoPhotosTitle	No photos found	Keine Fotos gefunden
 NoPhotosBody	This folder contains no supported photos or videos. If they are in sub-folders, tick “Include sub-folders”.	Dieser Ordner enthält keine unterstützten Fotos oder Videos. Liegen sie in Unterordnern, setzen Sie das Häkchen bei „Unterordner einbeziehen“.
 FilterAll	All	Alle
 FilterCamera	Camera date	Aufnahmedatum
+FilterFileName	Date from name	Datum aus Name
 FilterFile	File date	Dateidatum
 FilterRenamed	Numbered	Nummeriert
 BadgeCamera	Camera date	Aufnahmedatum
+BadgeFileName	Date from name	Datum aus Name
 BadgeFile	File date	Dateidatum
 BadgeRenamed	Numbered	Nummeriert
 TipCamera	The date comes from the photo itself (saved by the camera).	Das Datum stammt aus dem Foto selbst (von der Kamera gespeichert).
-TipFile	This file has no date stored inside, so its file date was used.	In dieser Datei ist kein Aufnahmedatum gespeichert, daher wurde ihr Dateidatum verwendet.
+TipFile	This file has no date stored inside, so its file date was used. Snapdate can also read dates from file names, e.g. from WhatsApp pictures.	In dieser Datei ist kein Aufnahmedatum gespeichert, daher wurde ihr Dateidatum verwendet. Snapdate kann Daten auch aus Dateinamen lesen, z. B. bei WhatsApp-Bildern.
+TipFileName	The date was read from the file name.	Das Datum wurde aus dem Dateinamen gelesen.
+TipFileNameRule	The date was read from the file name using the rule "{0}".	Das Datum wurde nach der Regel „{0}“ aus dem Dateinamen gelesen.
+DatesDiffer	Dates differ	Daten weichen ab
+DatesDifferNameUsed	The name says {0}, the photo's metadata says {1} (written by an app, not a camera). The name was used.	Der Name sagt {0}, die Metadaten des Fotos sagen {1} (von einer App geschrieben, nicht von einer Kamera). Der Name wurde verwendet.
+DatesDifferCameraUsed	The camera date ({0}) was used; the name says {1}.	Das Aufnahmedatum ({0}) wurde verwendet; der Name sagt {1}.
 TipRenamed	Another photo already has this name, so a number was added.	Ein anderes Foto hat bereits diesen Namen, daher wurde eine Nummer ergänzt.
 ProblemSourceMissing	Choose the folder with your photos	Wählen Sie den Ordner mit Ihren Fotos
 ProblemSourceNotFound	The photo folder cannot be found	Der Fotoordner wurde nicht gefunden

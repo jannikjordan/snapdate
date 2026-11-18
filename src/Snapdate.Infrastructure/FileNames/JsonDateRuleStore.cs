@@ -43,7 +43,13 @@ public sealed class JsonDateRuleStore(string filePath, IClock? clock = null) : I
     // One lock for all instances: the rules dialog and a scan may load while another save runs.
     private static readonly Lock Gate = new();
 
+    // Bytes of an oversized file that go into its fingerprint; it is never hashed in full (it may be gigabytes).
+    private const int OversizedFingerprintPrefix = 64 * 1024;
+
     private readonly IClock? _clock = clock;
+
+    /// <summary>Writes the user file; replaced in tests to simulate a failing disk.</summary>
+    internal Func<string, byte[], bool> Writer { get; init; } = AtomicFile.TryWrite;
 
     public static string DefaultPath =>
         Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Snapdate", "date-rules.json");
@@ -97,13 +103,25 @@ public sealed class JsonDateRuleStore(string filePath, IClock? clock = null) : I
             }
 
             // Still the same unreadable bytes as at load: keep them aside instead of overwriting them.
-            if (current.Status == UserRulesStatus.Unreadable && !TryMoveAside())
+            var movedAside = false;
+            if (current.Status == UserRulesStatus.Unreadable)
             {
-                return Refused(DateRuleSaveResult.Failed);
+                if (!TryMoveAside())
+                {
+                    return Refused(DateRuleSaveResult.Failed);
+                }
+
+                movedAside = true;
             }
 
-            return AtomicFile.TryWrite(filePath, bytes)
-                ? new UserDateRulesSave(DateRuleSaveResult.Saved, FingerprintOf(bytes))
+            if (Writer(filePath, bytes))
+            {
+                return new UserDateRulesSave(DateRuleSaveResult.Saved, FingerprintOf(bytes));
+            }
+
+            // The unreadable file is gone now: a retry must be based on "no file", or it would be a conflict forever.
+            return movedAside
+                ? new UserDateRulesSave(DateRuleSaveResult.Failed, UserRulesFingerprint.Absent)
                 : Refused(DateRuleSaveResult.Failed);
         }
 
@@ -123,8 +141,7 @@ public sealed class JsonDateRuleStore(string filePath, IClock? clock = null) : I
             using var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read);
             if (stream.Length > MaxFileSize)
             {
-                // Hashed while streaming, so an oversized file is never held in memory.
-                return Unreadable(UserRulesFingerprint.ForContent(stream.Length, Convert.ToHexString(SHA256.HashData(stream))));
+                return Unreadable(FingerprintOfOversized(stream, File.GetLastWriteTimeUtc(filePath)));
             }
 
             bytes = new byte[stream.Length];
@@ -162,6 +179,20 @@ public sealed class JsonDateRuleStore(string filePath, IClock? clock = null) : I
 
         static UserDateRulesLoad Unreadable(UserRulesFingerprint fingerprint) =>
             new(UserDateRules.Empty, UserRulesStatus.Unreadable, fingerprint);
+    }
+
+    /// <summary>
+    /// Length, last write time and the first 64 KB: never reads a huge file in full, yet still notices when it is
+    /// replaced or repaired.
+    /// </summary>
+    private static UserRulesFingerprint FingerprintOfOversized(FileStream stream, DateTime lastWriteUtc)
+    {
+        var prefix = new byte[OversizedFingerprintPrefix];
+        var read = stream.ReadAtLeast(prefix, prefix.Length, throwOnEndOfStream: false);
+        using var hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
+        hash.AppendData(BitConverter.GetBytes(lastWriteUtc.Ticks));
+        hash.AppendData(prefix, 0, read);
+        return UserRulesFingerprint.ForContent(stream.Length, Convert.ToHexString(hash.GetHashAndReset()));
     }
 
     private static UserRulesFingerprint FingerprintOf(byte[] content) =>

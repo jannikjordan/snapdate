@@ -93,6 +93,13 @@ public sealed class DateRuleCatalog
             Fingerprint = saved.Fingerprint;
             Status = UserRulesStatus.Ok;
         }
+        else if (saved.Result == DateRuleSaveResult.Failed && saved.Fingerprint != Fingerprint)
+        {
+            // The unreadable file was moved aside but the new one could not be written: the next save is based on
+            // "no file", or every retry would be a conflict.
+            Fingerprint = saved.Fingerprint;
+            Status = UserRulesStatus.Missing;
+        }
 
         return saved.Result;
     }

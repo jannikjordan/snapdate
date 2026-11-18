@@ -39,10 +39,12 @@ Used only for: logo, primary button, progress bar, selected token chip glow.
 | `border` | `#E4E1F0` | `#302E48` | 1 px separators |
 | `text` | `#1B1A2E` | `#F2F1FA` | Primary text |
 | `text-muted` | `#6B6880` | `#A3A0B8` | Secondary text, labels |
-| `primary` | `#5B4BF5` | `#8B7DFF` | Links, focus ring, active states |
-| `primary-soft` | `#ECE9FF` | `#2E2A5C` | Selected chip, info badge |
+| `primary` | `#5B4BF5` | `#8B7DFF` | Links, focus ring, active states, "Date from name" filter dot |
+| `primary-soft` | `#ECE9FF` | `#2E2A5C` | Selected chip, "Date from name" (info) badge background |
+| `info` | `#5B4BF5` | `#A99EFF` | "Date from name" badge text (4.69:1 light, 5.63:1 dark on `primary-soft`, which is also the selected-row background) |
+| `info-border` | `#7B6EF6` | `#7A6EE6` | 1 px border of the "Date from name" badge, so the pill stays visible on a selected row (3.27:1 light, 3.25:1 dark on `primary-soft`) |
 | `success` | `#1FA971` | `#3CCB8F` | "Camera date" badge, done state |
-| `warning` | `#D98A0B` | `#F2B13C` | "File date" fallback badge, duplicates |
+| `warning` | `#D98A0B` | `#F2B13C` | "File date" fallback badge, duplicates, "Dates differ" hint |
 | `danger` | `#E5484D` | `#FF6B70` | Errors |
 
 All text/background pairs meet **WCAG AA** (≥ 4.5:1 body, ≥ 3:1 large/UI).
@@ -96,7 +98,7 @@ tooltips or flyouts.
 │ [logo] Snapdate v0.1.0                 EN | DE   ☾   ?   ⓘ   ─  □  ✕     │ 48 px title bar
 ├────────────────────────────────┬─────────────────────────────────────────┤
 │ ① Choose folders               │ Preview                      12 photos  │
-│  [📁 Photos from   D:\…   ▸]   │ All 12 · ● Camera 9 · ● File 3 · ● 1     │
+│  [📁 Photos from   D:\…   ▸]   │ All 12 · ● Camera 8 · ● Name 2 · ● File 2 │
 │  [📁 Save to       E:\…   ▸]   │ ┌─────────────────────────────────────┐ │
 │  ☑ Include sub-folders         │ │ [thumb] IMG_4711.JPG                │ │
 │                                │ │         → 2024-07-14_09-12-33.jpg ● │ │
@@ -152,9 +154,15 @@ Validation inline below the row (e.g. "Target is inside the source folder").
 ### 5.4 Preview list
 Virtualised list. Row: 40 px thumbnail (rounded 8), original name (muted),
 arrow, new name (mono, bold), date-source badge:
-- green **Camera** (metadata), amber **File date** (fallback), amber
-  **Renamed (2)** (collision), red **Skipped** (error, tooltip with reason).
-Filter tabs above the list: All · Camera date · File date · Problems.
+- green **Camera date** (metadata), primary/info **Date from name** (read from the file name by a date rule;
+  `Border.badge.info`, `primary-soft` background, `info` text, 1 px `info-border`; tooltip names the rule), amber **File date**
+  (fallback), amber **Numbered** (collision), red **Skipped** (error, tooltip with reason).
+- **Dates differ**: when metadata and file name give different days, a small hint sits under the badge: warning icon +
+  "Dates differ" / "Daten weichen ab" in `warning` (never colour alone). Its tooltip names both dates, which one was
+  used and why ("The name says …, the photo's metadata says … (written by an app, not a camera). The name was used." /
+  "The camera date (…) was used; the name says …"). The row's automation name includes badge and hint.
+Filter tabs above the list (wrap onto a second line when narrow): All · ● Camera date · ● Date from name (primary dot)
+· ● File date · ● Numbered. Every photo is in exactly one of the three date-source tabs, so their counts add up to All.
 Empty state: illustration + "Choose a source folder to see your photos here".
 
 ### 5.5 Action bar

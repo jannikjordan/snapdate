@@ -75,13 +75,20 @@
   <data name="NoPhotosBody" xml:space="preserve"><value>Dieser Ordner enthält keine unterstützten Fotos oder Videos. Liegen sie in Unterordnern, setzen Sie das Häkchen bei „Unterordner einbeziehen“.</value></data>
   <data name="FilterAll" xml:space="preserve"><value>Alle</value></data>
   <data name="FilterCamera" xml:space="preserve"><value>Aufnahmedatum</value></data>
+  <data name="FilterFileName" xml:space="preserve"><value>Datum aus Name</value></data>
   <data name="FilterFile" xml:space="preserve"><value>Dateidatum</value></data>
   <data name="FilterRenamed" xml:space="preserve"><value>Nummeriert</value></data>
   <data name="BadgeCamera" xml:space="preserve"><value>Aufnahmedatum</value></data>
+  <data name="BadgeFileName" xml:space="preserve"><value>Datum aus Name</value></data>
   <data name="BadgeFile" xml:space="preserve"><value>Dateidatum</value></data>
   <data name="BadgeRenamed" xml:space="preserve"><value>Nummeriert</value></data>
   <data name="TipCamera" xml:space="preserve"><value>Das Datum stammt aus dem Foto selbst (von der Kamera gespeichert).</value></data>
-  <data name="TipFile" xml:space="preserve"><value>In dieser Datei ist kein Aufnahmedatum gespeichert, daher wurde ihr Dateidatum verwendet.</value></data>
+  <data name="TipFile" xml:space="preserve"><value>In dieser Datei ist kein Aufnahmedatum gespeichert, daher wurde ihr Dateidatum verwendet. Snapdate kann Daten auch aus Dateinamen lesen, z. B. bei WhatsApp-Bildern.</value></data>
+  <data name="TipFileName" xml:space="preserve"><value>Das Datum wurde aus dem Dateinamen gelesen.</value></data>
+  <data name="TipFileNameRule" xml:space="preserve"><value>Das Datum wurde nach der Regel „{0}“ aus dem Dateinamen gelesen.</value></data>
+  <data name="DatesDiffer" xml:space="preserve"><value>Daten weichen ab</value></data>
+  <data name="DatesDifferNameUsed" xml:space="preserve"><value>Der Name sagt {0}, die Metadaten des Fotos sagen {1} (von einer App geschrieben, nicht von einer Kamera). Der Name wurde verwendet.</value></data>
+  <data name="DatesDifferCameraUsed" xml:space="preserve"><value>Das Aufnahmedatum ({0}) wurde verwendet; der Name sagt {1}.</value></data>
   <data name="TipRenamed" xml:space="preserve"><value>Ein anderes Foto hat bereits diesen Namen, daher wurde eine Nummer ergänzt.</value></data>
   <data name="ProblemSourceMissing" xml:space="preserve"><value>Wählen Sie den Ordner mit Ihren Fotos</value></data>
   <data name="ProblemSourceNotFound" xml:space="preserve"><value>Der Fotoordner wurde nicht gefunden</value></data>

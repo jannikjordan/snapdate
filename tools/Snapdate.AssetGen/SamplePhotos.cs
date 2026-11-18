@@ -12,10 +12,16 @@ namespace Snapdate.AssetGen;
 
 /// <summary>
 /// Creates a believable demo photo folder: rendered landscape "photos" saved as JPEG with real EXIF
-/// capture dates, plus files without metadata (screenshot, chat image, video) to show every badge.
+/// capture dates, plus files without metadata (screenshot, WhatsApp pictures, video) to show every badge.
+/// A WhatsApp picture with a contradicting date written by an app shows the "Dates differ" hint.
 /// </summary>
 internal static class SamplePhotos
 {
+    /// <param name="Name">File name.</param>
+    /// <param name="Taken">EXIF DateTimeOriginal; null for no EXIF.</param>
+    /// <param name="Camera">EXIF camera model; null with a <paramref name="Taken"/> date means "written by an app".</param>
+    /// <param name="Hue">Colour of the rendered picture.</param>
+    /// <param name="FileDate">Created and modified time of the file.</param>
     private sealed record Sample(string Name, DateTime? Taken, string? Camera, int Hue, DateTime FileDate);
 
     private static readonly Sample[] Samples =
@@ -25,9 +31,11 @@ internal static class SamplePhotos
         new("DSC00012.JPG", new DateTime(2024, 7, 14, 16, 1, 55), "ILCE-7M4", 28, new DateTime(2024, 8, 3)),
         new("DSC00013.JPG", new DateTime(2024, 7, 14, 16, 1, 55), "ILCE-7M4", 16, new DateTime(2024, 8, 3)),
         new("IMG_4730.JPG", new DateTime(2024, 7, 15, 7, 45, 10), "iPhone 15 Pro", 160, new DateTime(2024, 8, 2)),
+        new("WhatsApp Image 2024-07-15 at 19.05.22.jpeg", null, null, 300, new DateTime(2024, 8, 4, 10, 12, 0)),
         new("Screenshot 2024-07-15.png", null, null, 260, new DateTime(2024, 7, 15, 21, 4, 40)),
         new("IMG_4741.JPG", new DateTime(2024, 7, 16, 12, 30, 0), "iPhone 15 Pro", 45, new DateTime(2024, 8, 2)),
-        new("WhatsApp Image 2024-07-16.jpeg", null, null, 330, new DateTime(2024, 7, 16, 19, 5, 22)),
+        new("IMG-20240716-WA0003.jpg", null, null, 330, new DateTime(2024, 7, 16, 19, 5, 22)),
+        new("IMG-20240716-WA0007.jpg", new DateTime(2024, 8, 4, 10, 30, 12), null, 80, new DateTime(2024, 7, 16, 18, 42, 10)),
         new("DSC00031.JPG", new DateTime(2024, 7, 17, 18, 44, 31), "ILCE-7M4", 12, new DateTime(2024, 8, 3)),
         new("MVI_0021.MP4", null, null, 280, new DateTime(2024, 7, 17, 11, 20, 0)),
         new("IMG_4790.JPG", new DateTime(2024, 7, 18, 10, 2, 47), "iPhone 15 Pro", 140, new DateTime(2024, 8, 2)),
@@ -88,7 +96,10 @@ internal static class SamplePhotos
     private static Color Hsl(int hue, double s, double l) =>
         HslColor.ToRgb((hue % 360 + 360) % 360, s, l, 1);
 
-    /// <summary>Inserts an EXIF APP1 segment (Model + DateTimeOriginal) right after the JPEG SOI marker.</summary>
+    /// <summary>
+    /// Inserts an EXIF APP1 segment (Model, if any, + DateTimeOriginal) right after the JPEG SOI marker.
+    /// Without a model the date looks like one written by an app, not a camera.
+    /// </summary>
     private static byte[] InjectExif(byte[] jpeg, DateTime? taken, string? model)
     {
         if (taken is null)
@@ -96,10 +107,11 @@ internal static class SamplePhotos
             return jpeg;
         }
 
-        var modelBytes = Encoding.ASCII.GetBytes((model ?? string.Empty) + "\0");
+        var modelBytes = model is null ? [] : Encoding.ASCII.GetBytes(model + "\0");
         var modelSize = modelBytes.Length + (modelBytes.Length % 2);
-        const int ifd0Size = 2 + (2 * 12) + 4;
-        const int modelOffset = 8 + ifd0Size;
+        var entries = model is null ? 1 : 2;
+        var ifd0Size = 2 + (entries * 12) + 4;
+        var modelOffset = 8 + ifd0Size;
         var exifIfdOffset = modelOffset + modelSize;
         var dateOffset = exifIfdOffset + 2 + 12 + 4;
         var tiff = new byte[dateOffset + 20];
@@ -107,9 +119,15 @@ internal static class SamplePhotos
         "II"u8.CopyTo(tiff);
         BinaryPrimitives.WriteUInt16LittleEndian(tiff.AsSpan(2), 42);
         BinaryPrimitives.WriteUInt32LittleEndian(tiff.AsSpan(4), 8);
-        BinaryPrimitives.WriteUInt16LittleEndian(tiff.AsSpan(8), 2);
-        WriteEntry(tiff, 10, 0x0110, 2, (uint)modelBytes.Length, (uint)modelOffset);   // Model
-        WriteEntry(tiff, 22, 0x8769, 4, 1, (uint)exifIfdOffset);                       // Exif IFD pointer
+        BinaryPrimitives.WriteUInt16LittleEndian(tiff.AsSpan(8), (ushort)entries);
+        var entry = 10;
+        if (model is not null)
+        {
+            WriteEntry(tiff, entry, 0x0110, 2, (uint)modelBytes.Length, (uint)modelOffset); // Model
+            entry += 12;
+        }
+
+        WriteEntry(tiff, entry, 0x8769, 4, 1, (uint)exifIfdOffset);                       // Exif IFD pointer
         modelBytes.CopyTo(tiff, modelOffset);
         BinaryPrimitives.WriteUInt16LittleEndian(tiff.AsSpan(exifIfdOffset), 1);
         WriteEntry(tiff, exifIfdOffset + 2, 0x9003, 2, 20, (uint)dateOffset);          // DateTimeOriginal

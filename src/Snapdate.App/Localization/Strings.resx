@@ -75,13 +75,20 @@
   <data name="NoPhotosBody" xml:space="preserve"><value>This folder contains no supported photos or videos. If they are in sub-folders, tick “Include sub-folders”.</value></data>
   <data name="FilterAll" xml:space="preserve"><value>All</value></data>
   <data name="FilterCamera" xml:space="preserve"><value>Camera date</value></data>
+  <data name="FilterFileName" xml:space="preserve"><value>Date from name</value></data>
   <data name="FilterFile" xml:space="preserve"><value>File date</value></data>
   <data name="FilterRenamed" xml:space="preserve"><value>Numbered</value></data>
   <data name="BadgeCamera" xml:space="preserve"><value>Camera date</value></data>
+  <data name="BadgeFileName" xml:space="preserve"><value>Date from name</value></data>
   <data name="BadgeFile" xml:space="preserve"><value>File date</value></data>
   <data name="BadgeRenamed" xml:space="preserve"><value>Numbered</value></data>
   <data name="TipCamera" xml:space="preserve"><value>The date comes from the photo itself (saved by the camera).</value></data>
-  <data name="TipFile" xml:space="preserve"><value>This file has no date stored inside, so its file date was used.</value></data>
+  <data name="TipFile" xml:space="preserve"><value>This file has no date stored inside, so its file date was used. Snapdate can also read dates from file names, e.g. from WhatsApp pictures.</value></data>
+  <data name="TipFileName" xml:space="preserve"><value>The date was read from the file name.</value></data>
+  <data name="TipFileNameRule" xml:space="preserve"><value>The date was read from the file name using the rule &quot;{0}&quot;.</value></data>
+  <data name="DatesDiffer" xml:space="preserve"><value>Dates differ</value></data>
+  <data name="DatesDifferNameUsed" xml:space="preserve"><value>The name says {0}, the photo&apos;s metadata says {1} (written by an app, not a camera). The name was used.</value></data>
+  <data name="DatesDifferCameraUsed" xml:space="preserve"><value>The camera date ({0}) was used; the name says {1}.</value></data>
   <data name="TipRenamed" xml:space="preserve"><value>Another photo already has this name, so a number was added.</value></data>
   <data name="ProblemSourceMissing" xml:space="preserve"><value>Choose the folder with your photos</value></data>
   <data name="ProblemSourceNotFound" xml:space="preserve"><value>The photo folder cannot be found</value></data>
