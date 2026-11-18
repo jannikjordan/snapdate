@@ -361,6 +361,64 @@ public sealed class DateRulesDialogTests(HeadlessSession headless)
         Assert.Equal(Strings().Get(message), dialog.MessageText);
     }
 
+    [Theory]
+    [InlineData(DateRuleSaveResult.Failed, 0)]
+    [InlineData(DateRuleSaveResult.TooLarge, 0)]
+    [InlineData(DateRuleSaveResult.Conflict, 1)]
+    public Task Only_a_change_made_elsewhere_rescans_after_a_refused_save(DateRuleSaveResult result, int expectedScans) => RunOnUi(async () =>
+    {
+        using var temp = new TempFolder();
+        Jpeg(temp, "in/IMG-20160706-WA0002.jpg");
+        var vm = new TestServicesWithStore(new ScriptedStore(UserRulesStatus.Ok) { SaveResult = result }).CreateViewModel("en-US");
+        vm.SourceFolder = temp.Combine("in");
+        await vm.ScanCompletion;
+        var scans = 0;
+        vm.PropertyChanged += (_, e) =>
+        {
+            if (e.PropertyName == nameof(MainWindowViewModel.Phase) && vm.Phase == Phase.Scanning)
+            {
+                scans++;
+            }
+        };
+
+        vm.OpenDateRulesCommand.Execute(null);
+        vm.RulesDialog!.Items[0].IsEnabled = false;
+        vm.RulesDialog.CloseCommand.Execute(null);
+        await vm.ScanCompletion;
+
+        Assert.Equal(expectedScans, scans);
+    });
+
+    [Fact]
+    public void Picking_the_same_name_again_after_editing_fills_the_tester_again()
+    {
+        var dialog = Dialog(new MemoryDateRuleStore());
+        dialog.Open(["IMG-20240714-WA0001.jpg", "Scan.jpg"]);
+
+        dialog.SelectedSample = "IMG-20240714-WA0001.jpg";
+        dialog.TestName = "IMG-20240714-WA0001";
+
+        Assert.Null(dialog.SelectedSample);
+        dialog.SelectedSample = "IMG-20240714-WA0001.jpg";
+        Assert.Equal("IMG-20240714-WA0001.jpg", dialog.TestName);
+        Assert.Equal("IMG-20240714-WA0001.jpg", dialog.SelectedSample);
+    }
+
+    [Theory]
+    [InlineData("en-US", "WhatsApp (Android), Built-in, off", "WhatsApp Desktop / Web, Built-in, on")]
+    [InlineData("de-DE", "WhatsApp (Android), Mitgeliefert, ausgeschaltet", "WhatsApp Desktop / Web, Mitgeliefert, eingeschaltet")]
+    public void Read_only_rows_say_whether_the_rule_is_on(string culture, string first, string second)
+    {
+        var store = new ReadOnlyWithDisabled();
+
+        var dialog = Dialog(store, culture);
+
+        Assert.Equal(first, dialog.Items[0].Accessible);
+        Assert.Equal(second, dialog.Items[1].Accessible);
+        Assert.Equal(culture == "en-US" ? "WhatsApp (Android), Built-in" : "WhatsApp (Android), Mitgeliefert",
+            Dialog(new MemoryDateRuleStore(), culture).Items[0].Accessible);
+    }
+
     [Fact]
     public void Unreadable_own_rules_show_a_warning_while_built_in_rules_stay_listed_and_active()
     {
@@ -521,6 +579,36 @@ public sealed class DateRulesDialogTests(HeadlessSession headless)
         window.Close();
     });
 
+    [Fact]
+    public Task Keyboard_focus_stays_on_the_rule_when_a_change_is_refused() => RunOnUi(() =>
+    {
+        var store = new MemoryDateRuleStore();
+        var vm = new TestServices { DateRules = store }.CreateViewModel();
+        var window = new MainWindow { DataContext = vm, Width = 980, Height = 720 };
+        window.Show();
+        Settle(window);
+        window.FindControl<Button>("DateRulesLink")!.Focus(NavigationMethod.Tab);
+        Press(window, PhysicalKey.Enter);
+        Press(window, PhysicalKey.Tab);
+        Press(window, PhysicalKey.Tab);
+        Assert.Equal("WhatsApp Desktop / Web on/off", AutomationPropertiesName(Focused(window)));
+
+        // Another window changes the file; switching the rule here is refused and the list is reloaded.
+        store.Write(new UserDateRules(["whatsapp-android"], []));
+        Press(window, PhysicalKey.Space);
+
+        Assert.Equal(vm.L.RulesConflict, vm.RulesDialog!.MessageText);
+        var focused = Assert.IsType<ToggleSwitch>(Focused(window));
+        Assert.True(DialogRoot(window).IsVisualAncestorOf(focused));
+        Assert.Equal("WhatsApp Desktop / Web on/off", AutomationPropertiesName(focused));
+        Assert.True(focused.IsChecked);
+
+        // Space again now works on the reloaded rules.
+        Press(window, PhysicalKey.Space);
+        Assert.Equal(["whatsapp-android", "whatsapp-desktop"], store.User!.DisabledSystemRuleIds);
+        window.Close();
+    });
+
     [Theory]
     [InlineData("en-US")]
     [InlineData("de-DE")]
@@ -564,6 +652,27 @@ public sealed class DateRulesDialogTests(HeadlessSession headless)
             if (!scroller.IsVisualAncestorOf(control))
             {
                 Assert.True(topLeft.Y + control.Bounds.Height <= root.Bounds.Height + 0.5, $"{control} is cut off ({culture}).");
+            }
+        }
+
+        // In every row the name, badges and patterns end before the actions (or the delete confirmation) begin.
+        var rows = root.GetVisualDescendants().OfType<Border>().Where(b => b.Classes.Contains("ruleRow")).ToList();
+        Assert.NotEmpty(rows);
+        foreach (var row in rows)
+        {
+            var actions = row.GetVisualDescendants().OfType<StackPanel>()
+                .Single(p => Grid.GetColumn(p) == 2 && p.IsEffectivelyVisible);
+            var actionsLeft = actions.TranslatePoint(default, row)!.Value.X;
+            foreach (var part in row.GetVisualDescendants().OfType<Control>()
+                         .Where(c => c is TextBlock or Border && c.IsEffectivelyVisible && !actions.IsVisualAncestorOf(c) && c != actions))
+            {
+                if (part is Border { Classes.Count: 0 } || part.FindAncestorOfType<ToggleSwitch>() is not null)
+                {
+                    continue;
+                }
+
+                var right = part.TranslatePoint(new Point(part.Bounds.Width, 0), row)!.Value.X;
+                Assert.True(right <= actionsLeft + 0.5, $"{part} ({(part as TextBlock)?.Text}) runs into the row actions ({culture}).");
             }
         }
 
@@ -614,6 +723,18 @@ public sealed class DateRulesDialogTests(HeadlessSession headless)
 
             return new UserDateRulesSave(SaveResult, expected);
         }
+    }
+
+    /// <summary>A file written by a newer version that switched the Android rule off.</summary>
+    private sealed class ReadOnlyWithDisabled : IDateRuleStore
+    {
+        public IReadOnlyList<DateRule> LoadSystemRules() => new MemoryDateRuleStore().LoadSystemRules();
+
+        public UserDateRulesLoad LoadUserRules() =>
+            new(new UserDateRules(["whatsapp-android"], []), UserRulesStatus.NewerVersion, UserRulesFingerprint.ForContent(3, "ABC"));
+
+        public UserDateRulesSave SaveUserRules(UserDateRules rules, UserRulesFingerprint expected) =>
+            new(DateRuleSaveResult.ReadOnly, expected);
     }
 
     /// <summary><see cref="TestServices"/> with any rule store.</summary>

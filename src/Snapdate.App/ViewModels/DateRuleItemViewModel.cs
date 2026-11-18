@@ -113,8 +113,17 @@ public sealed partial class DateRuleItemViewModel : ObservableObject
         EditName = l.Format(nameof(LocalizedStrings.RuleEditName), Name);
         PatternsName = l.Format(nameof(LocalizedStrings.RulePatternsName), string.Join(", ", Rule.Patterns ?? []));
         SyntaxTip = IsSyntaxUnsupported ? l.Format(nameof(LocalizedStrings.RuleSyntaxUnsupported), Rule.Syntax) : string.Empty;
-        Accessible = $"{Name}, {SourceText}";
+        UpdateAccessible();
     }
+
+    /// <summary>
+    /// "&lt;name&gt;, &lt;source&gt;"; while read-only the (disabled) switch is easy to skip, so the row also says
+    /// whether the rule is on or off.
+    /// </summary>
+    private void UpdateAccessible() =>
+        Accessible = CanChange
+            ? $"{Name}, {SourceText}"
+            : $"{Name}, {SourceText}, {(IsEnabled ? L.RuleStateOn : L.RuleStateOff)}";
 
     /// <summary>Shows the switch state without saving (after a reload or a refused change).</summary>
     internal void ShowEnabled(bool enabled)
@@ -123,6 +132,7 @@ public sealed partial class DateRuleItemViewModel : ObservableObject
         IsEnabled = enabled;
         Rule = Rule with { Enabled = enabled };
         _syncing = false;
+        UpdateAccessible();
     }
 
     partial void OnIsEnabledChanged(bool value)

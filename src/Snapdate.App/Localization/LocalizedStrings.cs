@@ -352,6 +352,10 @@ public sealed class LocalizedStrings(CultureInfo culture)
 
     public string RuleToggleName => Get(nameof(RuleToggleName));
 
+    public string RuleStateOn => Get(nameof(RuleStateOn));
+
+    public string RuleStateOff => Get(nameof(RuleStateOff));
+
     public string RuleDuplicate => Get(nameof(RuleDuplicate));
 
     public string RuleDuplicateName => Get(nameof(RuleDuplicateName));

@@ -209,7 +209,7 @@ public sealed partial class DateRulesViewModel : ObservableObject
             return;
         }
 
-        if (Save())
+        if (Save(item))
         {
             RefreshRuleSets();
         }
@@ -234,7 +234,7 @@ public sealed partial class DateRulesViewModel : ObservableObject
             return;
         }
 
-        if (Save())
+        if (Save(item))
         {
             FocusRuleId = copy.Id;
             RebuildItems();
@@ -251,7 +251,7 @@ public sealed partial class DateRulesViewModel : ObservableObject
             return;
         }
 
-        if (Save())
+        if (Save(item))
         {
             // Keep the keyboard near where the deleted row was.
             var rules = Catalog.Rules;
@@ -277,9 +277,10 @@ public sealed partial class DateRulesViewModel : ObservableObject
 
     /// <summary>
     /// Saves the catalog. When that fails the file was not changed: the rules are read again, so the list shows what
-    /// is really stored, and the user is told why.
+    /// is really stored, and the user is told why. The keyboard stays on <paramref name="item"/>'s row (or the row now
+    /// in its place).
     /// </summary>
-    private bool Save()
+    private bool Save(DateRuleItemViewModel item)
     {
         var result = Catalog.Save(_store);
         if (result == DateRuleSaveResult.Saved)
@@ -290,7 +291,9 @@ public sealed partial class DateRulesViewModel : ObservableObject
             return true;
         }
 
-        Reload();
+        var index = Items.IndexOf(item);
+        // Only a conflict means the file changed elsewhere; otherwise the reloaded rules are the ones scanned already.
+        Reload(changedElsewhere: result == DateRuleSaveResult.Conflict, focusId: item.Id, focusIndex: index);
         MessageText = result switch
         {
             DateRuleSaveResult.Conflict => _l.RulesConflict,
@@ -301,11 +304,19 @@ public sealed partial class DateRulesViewModel : ObservableObject
         return false;
     }
 
-    private void Reload()
+    private void Reload(bool changedElsewhere, string focusId, int focusIndex)
     {
         Catalog = DateRuleCatalog.Load(_store);
-        // Another window may have changed the rules: scan again on close.
-        _changed = true;
+        if (changedElsewhere)
+        {
+            // Another window changed the rules: scan again on close.
+            _changed = true;
+        }
+
+        var rules = Catalog.Rules;
+        FocusRuleId = rules.Any(rule => string.Equals(rule.Id, focusId, StringComparison.Ordinal))
+            ? focusId
+            : rules.Count == 0 ? null : rules[Math.Clamp(focusIndex, 0, rules.Count - 1)].Id;
         OnPropertyChanged(nameof(Catalog));
         OnPropertyChanged(nameof(CanChange));
         RebuildItems();
@@ -344,7 +355,16 @@ public sealed partial class DateRulesViewModel : ObservableObject
 
     // ---------- Tester ----------
 
-    partial void OnTestNameChanged(string value) => UpdateTestResult();
+    partial void OnTestNameChanged(string value)
+    {
+        // Once the text was edited the picker shows nothing, so picking the same name again fills it in again.
+        if (SelectedSample is not null && !string.Equals(SelectedSample, value, StringComparison.Ordinal))
+        {
+            SelectedSample = null;
+        }
+
+        UpdateTestResult();
+    }
 
     partial void OnSelectedSampleChanged(string? value)
     {

@@ -77,7 +77,7 @@ BadgeFileName	Date from name	Datum aus Name
 BadgeFile	File date	Dateidatum
 BadgeRenamed	Numbered	Nummeriert
 TipCamera	The date comes from the photo itself (saved by the camera).	Das Datum stammt aus dem Foto selbst (von der Kamera gespeichert).
-TipFile	This file has no date stored inside, so its file date was used. Snapdate can also read dates from file names, e.g. from WhatsApp pictures.	In dieser Datei ist kein Aufnahmedatum gespeichert, daher wurde ihr Dateidatum verwendet. Snapdate kann Daten auch aus Dateinamen lesen, z. B. bei WhatsApp-Bildern.
+TipFile	This file has no date stored inside, so its file date was used. Snapdate can also read dates from file names, e.g. from WhatsApp pictures.	In dieser Datei ist kein Aufnahmedatum gespeichert, daher wurde ihr Dateidatum verwendet. Snapdate kann das Datum auch aus Dateinamen lesen, z. B. bei WhatsApp-Bildern.
 TipFileName	The date was read from the file name.	Das Datum wurde aus dem Dateinamen gelesen.
 TipFileNameRule	The date was read from the file name using the rule "{0}".	Das Datum wurde nach der Regel „{0}“ aus dem Dateinamen gelesen.
 DatesDiffer	Dates differ	Daten weichen ab
@@ -158,15 +158,17 @@ UpdateFailedMissing	This release has no installer for your PC. Please get the ne
 UpdateFailedStart	The installer could not be started. Please get the new version from the download page.	Das Installationsprogramm konnte nicht gestartet werden. Bitte laden Sie die neue Version von der Download-Seite.
 UpdateFailedInstaller	The installation was cancelled. Nothing was changed.	Die Installation wurde abgebrochen. Es wurde nichts verändert.
 RulesLink	Dates from file names	Datum aus Dateinamen
-RulesLinkTip	See and switch the rules Snapdate uses to read dates from file names, and try a file name.	Regeln ansehen und schalten, mit denen Snapdate Daten aus Dateinamen liest, und einen Dateinamen ausprobieren.
+RulesLinkTip	See and switch the rules Snapdate uses to read dates from file names, and try a file name.	Regeln ansehen, ein- und ausschalten, mit denen Snapdate das Datum aus Dateinamen liest, und einen Dateinamen ausprobieren.
 RulesTitle	Dates from file names	Datum aus Dateinamen
-RulesIntro	When a photo has no date from a camera, Snapdate reads it from the file name with the first rule that fits (your own rules first). Note: the date in a name is often the day the picture was received, not taken.	Hat ein Foto kein Datum von einer Kamera, liest Snapdate es mit der ersten passenden Regel aus dem Dateinamen (Ihre eigenen Regeln zuerst). Hinweis: Das Datum im Namen ist oft der Tag, an dem das Bild empfangen wurde, nicht der Aufnahmetag.
+RulesIntro	When a photo has no camera date, Snapdate reads the date from the file name with the first rule that fits (your own rules first). Note: the date in a name is often the day the picture was received, not taken.	Hat ein Foto kein Aufnahmedatum, liest Snapdate das Datum mit der ersten passenden Regel aus dem Dateinamen (Ihre eigenen Regeln zuerst). Hinweis: Das Datum im Namen ist oft der Tag, an dem das Bild empfangen wurde, nicht der Aufnahmetag.
 RulesListName	Rules	Regeln
 RulesSourceSystem	Built-in	Mitgeliefert
 RulesSourceCustom	Yours	Eigene
-RulesSourceSystemTip	Comes with Snapdate. You can switch it off or duplicate it to make your own version.	Kommt mit Snapdate. Sie können sie ausschalten oder duplizieren, um eine eigene Version zu erstellen.
+RulesSourceSystemTip	Comes with Snapdate. You can switch it off or duplicate it to make your own version.	Wird mit Snapdate mitgeliefert. Sie können sie ausschalten oder duplizieren, um eine eigene Version zu erstellen.
 RulesSourceCustomTip	Your own rule. It is tried before the built-in rules and never changed by updates.	Ihre eigene Regel. Sie wird vor den mitgelieferten Regeln geprüft und von Updates nie verändert.
 RuleToggleName	{0} on/off	{0} ein/aus
+RuleStateOn	on	eingeschaltet
+RuleStateOff	off	ausgeschaltet
 RuleDuplicate	Duplicate	Duplizieren
 RuleDuplicateName	Duplicate {0}	{0} duplizieren
 RuleCopyName	{0} (copy)	{0} (Kopie)

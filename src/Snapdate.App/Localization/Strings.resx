@@ -166,13 +166,15 @@
   <data name="RulesLink" xml:space="preserve"><value>Dates from file names</value></data>
   <data name="RulesLinkTip" xml:space="preserve"><value>See and switch the rules Snapdate uses to read dates from file names, and try a file name.</value></data>
   <data name="RulesTitle" xml:space="preserve"><value>Dates from file names</value></data>
-  <data name="RulesIntro" xml:space="preserve"><value>When a photo has no date from a camera, Snapdate reads it from the file name with the first rule that fits (your own rules first). Note: the date in a name is often the day the picture was received, not taken.</value></data>
+  <data name="RulesIntro" xml:space="preserve"><value>When a photo has no camera date, Snapdate reads the date from the file name with the first rule that fits (your own rules first). Note: the date in a name is often the day the picture was received, not taken.</value></data>
   <data name="RulesListName" xml:space="preserve"><value>Rules</value></data>
   <data name="RulesSourceSystem" xml:space="preserve"><value>Built-in</value></data>
   <data name="RulesSourceCustom" xml:space="preserve"><value>Yours</value></data>
   <data name="RulesSourceSystemTip" xml:space="preserve"><value>Comes with Snapdate. You can switch it off or duplicate it to make your own version.</value></data>
   <data name="RulesSourceCustomTip" xml:space="preserve"><value>Your own rule. It is tried before the built-in rules and never changed by updates.</value></data>
   <data name="RuleToggleName" xml:space="preserve"><value>{0} on/off</value></data>
+  <data name="RuleStateOn" xml:space="preserve"><value>on</value></data>
+  <data name="RuleStateOff" xml:space="preserve"><value>off</value></data>
   <data name="RuleDuplicate" xml:space="preserve"><value>Duplicate</value></data>
   <data name="RuleDuplicateName" xml:space="preserve"><value>Duplicate {0}</value></data>
   <data name="RuleCopyName" xml:space="preserve"><value>{0} (copy)</value></data>

@@ -83,7 +83,7 @@
   <data name="BadgeFile" xml:space="preserve"><value>Dateidatum</value></data>
   <data name="BadgeRenamed" xml:space="preserve"><value>Nummeriert</value></data>
   <data name="TipCamera" xml:space="preserve"><value>Das Datum stammt aus dem Foto selbst (von der Kamera gespeichert).</value></data>
-  <data name="TipFile" xml:space="preserve"><value>In dieser Datei ist kein Aufnahmedatum gespeichert, daher wurde ihr Dateidatum verwendet. Snapdate kann Daten auch aus Dateinamen lesen, z. B. bei WhatsApp-Bildern.</value></data>
+  <data name="TipFile" xml:space="preserve"><value>In dieser Datei ist kein Aufnahmedatum gespeichert, daher wurde ihr Dateidatum verwendet. Snapdate kann das Datum auch aus Dateinamen lesen, z. B. bei WhatsApp-Bildern.</value></data>
   <data name="TipFileName" xml:space="preserve"><value>Das Datum wurde aus dem Dateinamen gelesen.</value></data>
   <data name="TipFileNameRule" xml:space="preserve"><value>Das Datum wurde nach der Regel „{0}“ aus dem Dateinamen gelesen.</value></data>
   <data name="DatesDiffer" xml:space="preserve"><value>Daten weichen ab</value></data>
@@ -164,15 +164,17 @@
   <data name="UpdateFailedStart" xml:space="preserve"><value>Das Installationsprogramm konnte nicht gestartet werden. Bitte laden Sie die neue Version von der Download-Seite.</value></data>
   <data name="UpdateFailedInstaller" xml:space="preserve"><value>Die Installation wurde abgebrochen. Es wurde nichts verändert.</value></data>
   <data name="RulesLink" xml:space="preserve"><value>Datum aus Dateinamen</value></data>
-  <data name="RulesLinkTip" xml:space="preserve"><value>Regeln ansehen und schalten, mit denen Snapdate Daten aus Dateinamen liest, und einen Dateinamen ausprobieren.</value></data>
+  <data name="RulesLinkTip" xml:space="preserve"><value>Regeln ansehen, ein- und ausschalten, mit denen Snapdate das Datum aus Dateinamen liest, und einen Dateinamen ausprobieren.</value></data>
   <data name="RulesTitle" xml:space="preserve"><value>Datum aus Dateinamen</value></data>
-  <data name="RulesIntro" xml:space="preserve"><value>Hat ein Foto kein Datum von einer Kamera, liest Snapdate es mit der ersten passenden Regel aus dem Dateinamen (Ihre eigenen Regeln zuerst). Hinweis: Das Datum im Namen ist oft der Tag, an dem das Bild empfangen wurde, nicht der Aufnahmetag.</value></data>
+  <data name="RulesIntro" xml:space="preserve"><value>Hat ein Foto kein Aufnahmedatum, liest Snapdate das Datum mit der ersten passenden Regel aus dem Dateinamen (Ihre eigenen Regeln zuerst). Hinweis: Das Datum im Namen ist oft der Tag, an dem das Bild empfangen wurde, nicht der Aufnahmetag.</value></data>
   <data name="RulesListName" xml:space="preserve"><value>Regeln</value></data>
   <data name="RulesSourceSystem" xml:space="preserve"><value>Mitgeliefert</value></data>
   <data name="RulesSourceCustom" xml:space="preserve"><value>Eigene</value></data>
-  <data name="RulesSourceSystemTip" xml:space="preserve"><value>Kommt mit Snapdate. Sie können sie ausschalten oder duplizieren, um eine eigene Version zu erstellen.</value></data>
+  <data name="RulesSourceSystemTip" xml:space="preserve"><value>Wird mit Snapdate mitgeliefert. Sie können sie ausschalten oder duplizieren, um eine eigene Version zu erstellen.</value></data>
   <data name="RulesSourceCustomTip" xml:space="preserve"><value>Ihre eigene Regel. Sie wird vor den mitgelieferten Regeln geprüft und von Updates nie verändert.</value></data>
   <data name="RuleToggleName" xml:space="preserve"><value>{0} ein/aus</value></data>
+  <data name="RuleStateOn" xml:space="preserve"><value>eingeschaltet</value></data>
+  <data name="RuleStateOff" xml:space="preserve"><value>ausgeschaltet</value></data>
   <data name="RuleDuplicate" xml:space="preserve"><value>Duplizieren</value></data>
   <data name="RuleDuplicateName" xml:space="preserve"><value>{0} duplizieren</value></data>
   <data name="RuleCopyName" xml:space="preserve"><value>{0} (Kopie)</value></data>
