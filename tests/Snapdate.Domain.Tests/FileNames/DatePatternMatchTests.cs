@@ -195,6 +195,21 @@ public sealed class DatePatternMatchTests
         Assert.True(stopwatch.ElapsedMilliseconds < 100, $"Took {stopwatch.ElapsedMilliseconds} ms.");
     }
 
+    [Theory]
+    [InlineData("*-{YYYY}{MM}{DD}-*", "a-20240101-20240202-b", "2024-01-01")]
+    [InlineData("*-{YYYY}{MM}{DD}-*", "a-20240202-20240101-b", "2024-02-02")]
+    [InlineData("*{YYYY}{MM}{DD}*", "x20240101y20240202z", "2024-01-01")]
+    public void Leftmost_block_wins_when_wildcards_allow_several(string pattern, string name, string expected)
+    {
+        Assert.Equal(DateOnly.Parse(expected, System.Globalization.CultureInfo.InvariantCulture), AssertMatch(pattern, name).Date);
+    }
+
+    [Fact]
+    public void Leftmost_block_is_taken_before_validation_and_later_blocks_are_not_tried()
+    {
+        AssertNoMatch("*-{YYYY}{MM}{DD}-*", "a-20241399-20240202-b");
+    }
+
     [Fact]
     public void Failed_match_returns_default_date()
     {
