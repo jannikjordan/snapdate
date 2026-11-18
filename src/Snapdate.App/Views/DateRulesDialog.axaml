@@ -107,7 +107,7 @@
                                   VerticalAlignment="Center"
                                   ToolTip.Tip="{Binding ToggleName}"
                                   AutomationProperties.Name="{Binding ToggleName}" />
-  
+
                     <StackPanel Grid.Column="1" Margin="12,0" Spacing="3" VerticalAlignment="Center">
                       <!-- Left-aligned DockPanel: the badges follow the name, and a long name is trimmed instead of
                            pushing them under the row actions. The name is the filling (last) child. -->
@@ -128,7 +128,7 @@
                       <TextBlock Text="{Binding PatternsText}" Classes="mono muted" TextTrimming="CharacterEllipsis"
                                  ToolTip.Tip="{Binding PatternsTip}" AutomationProperties.Name="{Binding PatternsName}" />
                     </StackPanel>
-  
+
                     <!-- Row actions, or the inline delete confirmation -->
                     <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center"
                                 IsVisible="{Binding ShowActions}">

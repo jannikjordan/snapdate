@@ -39,6 +39,7 @@
         <!-- Name -->
         <Grid ColumnDefinitions="Auto,*">
           <TextBlock Classes="label" Text="{Binding L.RuleNameLabel}" VerticalAlignment="Center" Margin="0,0,12,0" />
+          <!-- MaxLength = UserDateRules.MaxNameLength (80); the view model also refuses longer names. -->
           <TextBox x:Name="RuleNameBox" Grid.Column="1" Classes="ruleName" Text="{Binding Name}"
                    MaxLength="80" PlaceholderText="{Binding L.RuleDefaultName}"
                    AutomationProperties.Name="{Binding L.RuleNameLabel}" />
