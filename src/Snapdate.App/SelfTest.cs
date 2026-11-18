@@ -3,6 +3,7 @@ using Snapdate.App.Localization;
 using Snapdate.App.Services;
 using Snapdate.App.ViewModels;
 using Snapdate.App.Views;
+using Snapdate.Application.FileNames;
 using Snapdate.Application.Ports;
 using Snapdate.Application.Settings;
 using Snapdate.Domain.FileNames;
@@ -41,6 +42,17 @@ internal static class SelfTest
         public Task OpenFileAsync(string path) => Task.CompletedTask;
     }
 
+    /// <summary>The embedded built-in rules and no user rules; never reads or writes the user's rule file.</summary>
+    private sealed class EmbeddedRulesOnly(IReadOnlyList<DateRule> systemRules) : IDateRuleStore
+    {
+        public IReadOnlyList<DateRule> LoadSystemRules() => systemRules;
+
+        public UserDateRulesLoad LoadUserRules() => UserDateRulesLoad.Missing;
+
+        public UserDateRulesSave SaveUserRules(UserDateRules rules, UserRulesFingerprint expected) =>
+            new(DateRuleSaveResult.ReadOnly, expected);
+    }
+
     public static int Run()
     {
         try
@@ -71,12 +83,24 @@ internal static class SelfTest
                 new LocalFileSystem(),
                 new MetadataExtractorReader(TimeProvider.System),
                 TimeProvider.System,
-                null);
+                null,
+                DateRules: new EmbeddedRulesOnly(systemRules));
 
-            // Loads the compiled XAML, styles and bindings of the main window.
+            // Loads the compiled XAML, styles and bindings of the main window and of the "Dates from file names"
+            // dialog (measuring it builds the rule rows from their template).
             foreach (var culture in new[] { "en-US", "de-DE" })
             {
-                _ = new MainWindow { DataContext = new MainWindowViewModel(services, CultureInfo.GetCultureInfo(culture)) };
+                var vm = new MainWindowViewModel(services, CultureInfo.GetCultureInfo(culture));
+                _ = new MainWindow { DataContext = vm };
+                var rules = vm.RulesDialog!;
+                rules.TestName = "IMG-20240714-WA0001.jpg";
+                if (rules.Items.Count == 0 || rules.TestKind != RuleTestKind.Match)
+                {
+                    return 4; // rules dialog cannot list or test the built-in rules
+                }
+
+                var dialog = new DateRulesDialog { DataContext = rules };
+                dialog.Measure(new Avalonia.Size(980, 720));
             }
 
             // Exercises the metadata parser (any file works; a non-image yields "no metadata").

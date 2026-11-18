@@ -181,7 +181,9 @@ public sealed class FileNameDateTests(HeadlessSession headless)
 
         Assert.Equal(BadgeKind.FileName, item.Badge);
         Assert.StartsWith("2023-02-01", item.NewName, StringComparison.Ordinal);
-        Assert.Equal("The date was read from the file name using the rule \"My scanner\".", item.BadgeTip);
+        Assert.Equal(
+            "The date was read from the file name using the rule \"My scanner\". The rules are under \"Dates from file names\" above the list.",
+            item.BadgeTip);
     });
 
     [Fact]

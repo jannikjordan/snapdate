@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - 📅 Dates from file names: WhatsApp pictures (Android `IMG-20240714-WA0001.jpg`, Desktop/Web `WhatsApp Image 2024-07-14 at 15.32.08.jpeg`) have no date stored inside, but the name has one. Snapdate now reads it and uses it instead of the file date (which is only the download day). Such photos get a **Date from name** label and their own filter. A date from the camera always wins; when a date written by an app and the name disagree, the name is used and the photo is marked **Dates differ** — the tooltip shows both dates.
+- 🗂️ **Dates from file names** dialog (link above the preview list): see every rule with its patterns and whether it is built in or your own, switch rules on and off, duplicate a built-in rule into your own copy and delete your own rules. Type or pick a file name to try it: Snapdate shows which rule reads which date, or that no rule fits. Changes are saved at once and the preview is updated when you close the dialog. Works with the keyboard alone and with screen readers.
 
 ## [0.2.1] - 2026-11-17
 

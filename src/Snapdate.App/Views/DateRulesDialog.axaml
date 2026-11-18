@@ -1,0 +1,153 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:Snapdate.App.ViewModels"
+             mc:Ignorable="d"
+             x:Class="Snapdate.App.Views.DateRulesDialog"
+             x:DataType="vm:DateRulesViewModel"
+             x:CompileBindings="True">
+  <!-- "Dates from file names" (DESIGN.md §5.8). Hosted in a Border.scrim in MainWindow. Tab stays inside the dialog
+       (Cycle); Esc cancels an open delete confirmation, otherwise closes. The rule editor (#20) will replace the list
+       area while it is open, so list, tester and footer are separate rows of the DockPanel. -->
+  <Border x:Name="DialogRoot" Classes="dialog wide"
+          KeyboardNavigation.TabNavigation="Cycle"
+          AutomationProperties.Name="{Binding L.RulesTitle}">
+    <DockPanel>
+      <!-- Header: title and what the rules do -->
+      <StackPanel DockPanel.Dock="Top" Spacing="6" Margin="0,0,0,14">
+        <TextBlock Text="{Binding L.RulesTitle}" FontSize="18" FontWeight="Bold" />
+        <TextBlock Text="{Binding L.RulesIntro}" Classes="muted" TextWrapping="Wrap" />
+      </StackPanel>
+
+      <!-- Lasting state of the user's rule file (unreadable, newer version, not accessible) -->
+      <Border DockPanel.Dock="Top" Classes="notice" IsVisible="{Binding HasStatus}"
+              AutomationProperties.Name="{Binding StatusText}">
+        <Grid ColumnDefinitions="Auto,*">
+          <PathIcon Data="{StaticResource IconWarning}" />
+          <TextBlock Grid.Column="1" Text="{Binding StatusText}" TextWrapping="Wrap" />
+        </Grid>
+      </Border>
+
+      <!-- Why the last change could not be saved -->
+      <Border DockPanel.Dock="Top" Classes="notice" IsVisible="{Binding HasMessage}"
+              AutomationProperties.LiveSetting="Polite"
+              AutomationProperties.Name="{Binding MessageText}">
+        <Grid ColumnDefinitions="Auto,*">
+          <PathIcon Data="{StaticResource IconWarning}" />
+          <TextBlock Grid.Column="1" Text="{Binding MessageText}" TextWrapping="Wrap" />
+        </Grid>
+      </Border>
+
+      <!-- Footer: Add rule arrives with the editor (#20); Close -->
+      <Grid DockPanel.Dock="Bottom" ColumnDefinitions="Auto,*,Auto" Margin="0,16,0,0">
+        <Button x:Name="AddRuleButton" Classes="secondary" Content="{Binding L.RulesAdd}" IsVisible="{Binding CanAdd}"
+                AutomationProperties.Name="{Binding L.RulesAdd}" />
+        <Button x:Name="CloseButton" Grid.Column="2" Classes="primary" Content="{Binding L.Close}"
+                Command="{Binding CloseCommand}" AutomationProperties.Name="{Binding L.Close}" />
+      </Grid>
+
+      <!-- Tester: type or pick a name, see which rule reads which date -->
+      <Border DockPanel.Dock="Bottom" Classes="tester" Margin="0,14,0,0">
+        <StackPanel Spacing="8">
+          <TextBlock Classes="label" Text="{Binding L.TesterTitle}" />
+          <Grid ColumnDefinitions="*,Auto">
+            <TextBox x:Name="TestNameBox" Classes="tester" Text="{Binding TestName}"
+                     PlaceholderText="{Binding L.TesterPlaceholder}"
+                     AutomationProperties.Name="{Binding L.TesterTitle}" />
+            <ComboBox x:Name="SamplePicker" Grid.Column="1" Classes="tester" Margin="8,0,0,0" Width="230"
+                      ItemsSource="{Binding SampleNames}" SelectedItem="{Binding SelectedSample}"
+                      PlaceholderText="{Binding L.TesterPick}" IsVisible="{Binding HasSampleNames}"
+                      ToolTip.Tip="{Binding L.TesterPickName}"
+                      AutomationProperties.Name="{Binding L.TesterPickName}">
+              <ComboBox.ItemTemplate>
+                <DataTemplate x:DataType="x:String">
+                  <TextBlock Text="{Binding}" Classes="mono" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding}" />
+                </DataTemplate>
+              </ComboBox.ItemTemplate>
+            </ComboBox>
+          </Grid>
+          <Grid x:Name="TestResultPanel" Classes="testResult" ColumnDefinitions="Auto,*"
+                Classes.match="{Binding IsTestMatch}" Classes.off="{Binding IsTestSwitchedOff}"
+                Classes.none="{Binding IsTestNoMatch}"
+                AutomationProperties.LiveSetting="Polite"
+                AutomationProperties.Name="{Binding TestResult}">
+            <Panel IsVisible="{Binding HasTestResult}" Margin="0,0,8,0" VerticalAlignment="Center">
+              <PathIcon Data="{StaticResource IconCheck}" IsVisible="{Binding IsTestMatch}" />
+              <PathIcon Data="{StaticResource IconWarning}" IsVisible="{Binding IsTestSwitchedOff}" />
+              <PathIcon Data="{StaticResource IconClose}" IsVisible="{Binding IsTestNoMatch}" />
+            </Panel>
+            <TextBlock Grid.Column="1" Text="{Binding TestResult}" TextWrapping="Wrap" />
+          </Grid>
+        </StackPanel>
+      </Border>
+
+      <!-- The rules, in the order they are tried -->
+      <ScrollViewer x:Name="RuleScroller" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+        <ItemsControl x:Name="RuleList" ItemsSource="{Binding Items}" AutomationProperties.Name="{Binding L.RulesListName}">
+          <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate><StackPanel Spacing="8" /></ItemsPanelTemplate>
+          </ItemsControl.ItemsPanel>
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="vm:DateRuleItemViewModel">
+              <Border Classes="ruleRow" AutomationProperties.Name="{Binding Accessible}">
+                <Grid ColumnDefinitions="Auto,*,Auto">
+                  <ToggleSwitch Classes="rule" IsChecked="{Binding IsEnabled}" IsEnabled="{Binding CanChange}"
+                                VerticalAlignment="Center"
+                                ToolTip.Tip="{Binding ToggleName}"
+                                AutomationProperties.Name="{Binding ToggleName}" />
+
+                  <StackPanel Grid.Column="1" Margin="12,0" Spacing="3" VerticalAlignment="Center">
+                    <!-- Left-aligned DockPanel: the badges follow the name, and a long name is trimmed instead of
+                         pushing them under the row actions. The name is the filling (last) child. -->
+                    <DockPanel HorizontalAlignment="Left">
+                      <Border DockPanel.Dock="Right" Classes="badge warn" Margin="8,0,0,0"
+                              IsVisible="{Binding IsSyntaxUnsupported}" ToolTip.Tip="{Binding SyntaxTip}"
+                              AutomationProperties.Name="{Binding SyntaxTip}">
+                        <TextBlock Text="{Binding SyntaxLabel}" />
+                      </Border>
+                      <Border DockPanel.Dock="Right" Classes="badge" Margin="8,0,0,0"
+                              Classes.info="{Binding IsCustom}" Classes.neutral="{Binding IsSystem}"
+                              ToolTip.Tip="{Binding SourceTip}">
+                        <TextBlock Text="{Binding SourceText}" />
+                      </Border>
+                      <TextBlock Text="{Binding Name}" FontWeight="SemiBold"
+                                 TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding Name}" VerticalAlignment="Center" />
+                    </DockPanel>
+                    <TextBlock Text="{Binding PatternsText}" Classes="mono muted" TextTrimming="CharacterEllipsis"
+                               ToolTip.Tip="{Binding PatternsTip}" AutomationProperties.Name="{Binding PatternsName}" />
+                  </StackPanel>
+
+                  <!-- Row actions, or the inline delete confirmation -->
+                  <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center"
+                              IsVisible="{Binding ShowActions}">
+                    <Button Classes="link" Content="{Binding L.RuleEdit}"
+                            IsVisible="{Binding CanEdit}" AutomationProperties.Name="{Binding EditName}" />
+                    <Button Classes="link" Content="{Binding L.RuleDuplicate}"
+                            Command="{Binding DuplicateCommand}" IsVisible="{Binding CanDuplicate}"
+                            ToolTip.Tip="{Binding DuplicateName}" AutomationProperties.Name="{Binding DuplicateName}" />
+                    <Button Classes="link danger" Content="{Binding L.RuleDelete}"
+                            Command="{Binding DeleteCommand}" IsVisible="{Binding CanDelete}"
+                            ToolTip.Tip="{Binding DeleteName}" AutomationProperties.Name="{Binding DeleteName}" />
+                  </StackPanel>
+                  <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center"
+                              IsVisible="{Binding IsConfirmingDelete}"
+                              AutomationProperties.LiveSetting="Polite"
+                              AutomationProperties.Name="{Binding L.RuleDeleteQuestion}">
+                    <TextBlock Text="{Binding L.RuleDeleteQuestion}"
+                               FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,4,0" />
+                    <Button Classes="link danger" Content="{Binding L.RuleDelete}"
+                            Command="{Binding ConfirmDeleteCommand}" AutomationProperties.Name="{Binding DeleteName}" />
+                    <Button Classes="link" Content="{Binding L.Cancel}"
+                            Command="{Binding CancelDeleteCommand}"
+                            AutomationProperties.Name="{Binding L.Cancel}" />
+                  </StackPanel>
+                </Grid>
+              </Border>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </ScrollViewer>
+    </DockPanel>
+  </Border>
+</UserControl>

@@ -20,6 +20,11 @@
       <SolidColorBrush x:Key="SdDangerBrush" Color="#C7353A" />
       <BoxShadows x:Key="SdCardShadow">0 1 2 0 #0A14103C, 0 4 16 0 #0F14103C</BoxShadows>
       <Color x:Key="SystemAccentColor">#5B4BF5</Color>
+      <!-- Rule switches ("Dates from file names") in the primary colour, not the Windows accent colour -->
+      <SolidColorBrush x:Key="ToggleSwitchFillOn" Color="#5B4BF5" />
+      <SolidColorBrush x:Key="ToggleSwitchFillOnPointerOver" Color="#4A3AE0" />
+      <SolidColorBrush x:Key="ToggleSwitchFillOnPressed" Color="#3F30C8" />
+      <SolidColorBrush x:Key="ToggleSwitchStrokeOn" Color="#5B4BF5" />
     </ResourceDictionary>
     <ResourceDictionary x:Key="Dark">
       <SolidColorBrush x:Key="SdBgBrush" Color="#121119" />
@@ -39,6 +44,10 @@
       <SolidColorBrush x:Key="SdDangerBrush" Color="#FF6B70" />
       <BoxShadows x:Key="SdCardShadow">0 0 0 0 #00000000</BoxShadows>
       <Color x:Key="SystemAccentColor">#8B7DFF</Color>
+      <SolidColorBrush x:Key="ToggleSwitchFillOn" Color="#8B7DFF" />
+      <SolidColorBrush x:Key="ToggleSwitchFillOnPointerOver" Color="#9D91FF" />
+      <SolidColorBrush x:Key="ToggleSwitchFillOnPressed" Color="#7A6EE6" />
+      <SolidColorBrush x:Key="ToggleSwitchStrokeOn" Color="#8B7DFF" />
     </ResourceDictionary>
   </ResourceDictionary.ThemeDictionaries>
 

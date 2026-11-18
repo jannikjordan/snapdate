@@ -4,6 +4,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:vm="using:Snapdate.App.ViewModels"
         xmlns:c="using:Snapdate.App.Controls"
+        xmlns:v="using:Snapdate.App.Views"
         xmlns:chrome="using:Avalonia.Controls.Chrome"
         mc:Ignorable="d"
         x:Class="Snapdate.App.Views.MainWindow"
@@ -407,10 +408,17 @@
             <Border DockPanel.Dock="Top" Padding="20,16,20,12"
                     BorderBrush="{DynamicResource SdBorderBrush}" BorderThickness="0,0,0,1">
               <StackPanel Spacing="6">
-                <Grid ColumnDefinitions="*,Auto">
-                  <TextBlock Classes="h2" Text="{Binding L.PreviewTitle}" />
+                <Grid ColumnDefinitions="Auto,*,Auto">
+                  <TextBlock Classes="h2" Text="{Binding L.PreviewTitle}" VerticalAlignment="Center" />
                   <TextBlock Grid.Column="1" Classes="muted" Text="{Binding PhotosCountText}" IsVisible="{Binding ShowList}"
-                             VerticalAlignment="Center" />
+                             VerticalAlignment="Center" Margin="10,0,0,0" />
+                  <!-- Opens "Dates from file names" (always there when rules are available) -->
+                  <Button x:Name="DateRulesLink" Grid.Column="2" Classes="link" Command="{Binding OpenDateRulesCommand}"
+                          IsVisible="{Binding HasRulesDialog}" IsEnabled="{Binding CanEdit}"
+                          VerticalAlignment="Center" Margin="0,-4,-6,-4"
+                          ToolTip.Tip="{Binding L.RulesLinkTip}" AutomationProperties.Name="{Binding L.RulesLink}">
+                    <TextBlock Text="{Binding L.RulesLink}" FontSize="13" />
+                  </Button>
                 </Grid>
                 <WrapPanel IsVisible="{Binding ShowList}">
                   <RadioButton Classes="tab" GroupName="filter" IsChecked="{Binding IsFilterAll}">
@@ -534,6 +542,11 @@
           </StackPanel>
         </StackPanel>
       </Border>
+    </Border>
+
+    <!-- ============ Overlay: dates from file names ============ -->
+    <Border Classes="scrim" IsVisible="{Binding RulesDialog.IsOpen, FallbackValue=False}">
+      <v:DateRulesDialog x:Name="DateRulesDialog" DataContext="{Binding RulesDialog}" />
     </Border>
 
     <!-- ============ Overlay: about ============ -->

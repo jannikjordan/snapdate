@@ -77,7 +77,7 @@ BadgeFileName	Date from name	Datum aus Name
 BadgeFile	File date	Dateidatum
 BadgeRenamed	Numbered	Nummeriert
 TipCamera	The date comes from the photo itself (saved by the camera).	Das Datum stammt aus dem Foto selbst (von der Kamera gespeichert).
-TipFile	This file has no date stored inside, so its file date was used. Snapdate can also read dates from file names, e.g. from WhatsApp pictures.	In dieser Datei ist kein Aufnahmedatum gespeichert, daher wurde ihr Dateidatum verwendet. Snapdate kann Daten auch aus Dateinamen lesen, z. B. bei WhatsApp-Bildern.
+TipFile	This file has no date stored inside, so its file date was used. Snapdate can also read dates from file names, e.g. from WhatsApp pictures.	In dieser Datei ist kein Aufnahmedatum gespeichert, daher wurde ihr Dateidatum verwendet. Snapdate kann das Datum auch aus Dateinamen lesen, z. B. bei WhatsApp-Bildern.
 TipFileName	The date was read from the file name.	Das Datum wurde aus dem Dateinamen gelesen.
 TipFileNameRule	The date was read from the file name using the rule "{0}".	Das Datum wurde nach der Regel „{0}“ aus dem Dateinamen gelesen.
 DatesDiffer	Dates differ	Daten weichen ab
@@ -157,3 +157,44 @@ UpdateFailedVerify	The download could not be verified, so it was not installed. 
 UpdateFailedMissing	This release has no installer for your PC. Please get the new version from the download page.	Diese Version hat kein Installationsprogramm für Ihren PC. Bitte laden Sie sie von der Download-Seite.
 UpdateFailedStart	The installer could not be started. Please get the new version from the download page.	Das Installationsprogramm konnte nicht gestartet werden. Bitte laden Sie die neue Version von der Download-Seite.
 UpdateFailedInstaller	The installation was cancelled. Nothing was changed.	Die Installation wurde abgebrochen. Es wurde nichts verändert.
+RulesLink	Dates from file names	Datum aus Dateinamen
+RulesLinkTip	See and switch the rules Snapdate uses to read dates from file names, and try a file name.	Regeln ansehen, ein- und ausschalten, mit denen Snapdate das Datum aus Dateinamen liest, und einen Dateinamen ausprobieren.
+RulesTitle	Dates from file names	Datum aus Dateinamen
+RulesIntro	When a photo has no camera date, Snapdate reads the date from the file name with the first rule that fits (your own rules first). Note: the date in a name is often the day the picture was received, not taken.	Hat ein Foto kein Aufnahmedatum, liest Snapdate das Datum mit der ersten passenden Regel aus dem Dateinamen (Ihre eigenen Regeln zuerst). Hinweis: Das Datum im Namen ist oft der Tag, an dem das Bild empfangen wurde, nicht der Aufnahmetag.
+RulesListName	Rules	Regeln
+RulesSourceSystem	Built-in	Mitgeliefert
+RulesSourceCustom	Yours	Eigene
+RulesSourceSystemTip	Comes with Snapdate. You can switch it off or duplicate it to make your own version.	Wird mit Snapdate mitgeliefert. Sie können sie ausschalten oder duplizieren, um eine eigene Version zu erstellen.
+RulesSourceCustomTip	Your own rule. It is tried before the built-in rules and never changed by updates.	Ihre eigene Regel. Sie wird vor den mitgelieferten Regeln geprüft und von Updates nie verändert.
+RuleToggleName	{0} on/off	{0} ein/aus
+RuleStateOn	on	eingeschaltet
+RuleStateOff	off	ausgeschaltet
+RuleDuplicate	Duplicate	Duplizieren
+RuleDuplicateName	Duplicate {0}	{0} duplizieren
+RuleCopyName	{0} (copy)	{0} (Kopie)
+RuleDelete	Delete	Löschen
+RuleDeleteName	Delete {0}	{0} löschen
+RuleDeleteQuestion	Delete this rule?	Diese Regel löschen?
+RuleEdit	Edit	Bearbeiten
+RuleEditName	Edit {0}	{0} bearbeiten
+RulesAdd	Add rule	Regel hinzufügen
+RulePatternsName	Patterns: {0}	Muster: {0}
+RuleSyntaxUnsupported	This rule is written as "{0}", which this version of Snapdate cannot use yet. It is kept but not used.	Diese Regel ist als „{0}“ geschrieben, was diese Snapdate-Version noch nicht verwenden kann. Sie bleibt erhalten, wird aber nicht verwendet.
+RulesUnreadable	Your own rules could not be read. Built-in rules still work. Saving will keep a copy of the old file.	Ihre eigenen Regeln konnten nicht gelesen werden. Die mitgelieferten Regeln funktionieren weiter. Beim Speichern wird eine Kopie der alten Datei behalten.
+RulesNewerVersion	Your rules were saved by a newer version of Snapdate. You can look at them here but not change them.	Ihre Regeln wurden von einer neueren Snapdate-Version gespeichert. Sie können sie hier ansehen, aber nicht ändern.
+RulesInaccessible	Your rules file could not be opened, so the rules cannot be changed right now. Please try again later.	Die Datei mit Ihren Regeln konnte nicht geöffnet werden, daher lassen sich die Regeln gerade nicht ändern. Bitte versuchen Sie es später erneut.
+RulesConflict	Your rules were changed elsewhere (for example in another Snapdate window). The list was reloaded; please make your change again.	Ihre Regeln wurden an anderer Stelle geändert (zum Beispiel in einem anderen Snapdate-Fenster). Die Liste wurde neu geladen; bitte nehmen Sie Ihre Änderung erneut vor.
+RulesSaveFailed	Your change could not be saved, so it was undone. Please try again later.	Ihre Änderung konnte nicht gespeichert werden und wurde daher zurückgenommen. Bitte versuchen Sie es später erneut.
+RulesTooLarge	Your change could not be saved because the rules would be too large. It was undone.	Ihre Änderung konnte nicht gespeichert werden, weil die Regeln zu groß würden. Sie wurde zurückgenommen.
+RulesReadOnly	Your rules cannot be changed right now.	Ihre Regeln können gerade nicht geändert werden.
+RulesFull	You already have the maximum of {0} own rules. Delete one first.	Sie haben bereits die höchstmögliche Zahl von {0} eigenen Regeln. Löschen Sie zuerst eine.
+TesterTitle	Try a file name	Dateinamen ausprobieren
+TesterPlaceholder	e.g. IMG-20240714-WA0001.jpg	z. B. IMG-20240714-WA0001.jpg
+TesterPick	Pick a file from the folder	Datei aus dem Ordner wählen
+TesterPickName	File names from the chosen folder	Dateinamen aus dem gewählten Ordner
+TesterEmpty	Type a file name to see which rule reads its date.	Geben Sie einen Dateinamen ein, um zu sehen, welche Regel das Datum liest.
+TesterMatch	Rule "{0}": {1}	Regel „{0}“: {1}
+TesterMatchOff	Rule "{0}": {1} (rule is switched off)	Regel „{0}“: {1} (Regel ist ausgeschaltet)
+TesterNoMatch	No rule matches	Keine Regel passt
+TesterDateTime	{0}, {1}	{0}, {1} Uhr
+TipRulesHint	The rules are under "Dates from file names" above the list.	Die Regeln finden Sie unter „Datum aus Dateinamen“ über der Liste.
