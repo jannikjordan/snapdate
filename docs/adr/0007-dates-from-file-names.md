@@ -61,21 +61,23 @@ placeholders the user already knows from the file-name builder, for example
   (`AmbiguousNeighbours`, see below); an expression that fails to build
   (`InvalidExpression`, used by regex mode, see below). A rule with one
   invalid pattern still uses its valid ones.
-- **Ambiguity rule (runs).** A *run* is a sequence of tokens that may also
-  include `?` and literal digit characters (`0`–`9`), because both behave like
-  fixed-width digits. A run ends only at a literal non-digit, at `*`, or at the
-  start or end of the pattern. Each run may contain **at most one
-  variable-width token** (`{M}`, `{D}`, `{H}`, `{m}`, `{s}`), and a run that
-  contains one must not touch `*`. In addition, a `?` must not sit directly
-  next to a variable-width token (stricter than the run rule, but harmless).
-  Fixed-width tokens may touch `*`. Violations are reported as
-  `AmbiguousNeighbours`.
+- **Ambiguity rule (runs).** A run is a maximal sequence of placeholders, `?`
+  and literal digits 0–9 (it ends at any other literal character, at `*`, and
+  at the start or end of the pattern); a run may contain at most one
+  variable-width placeholder (`{M}` `{D}` `{H}` `{m}` `{s}`), and a run that
+  contains one must not contain `?` and must not touch `*`. Violations are
+  reported as `AmbiguousNeighbours`.
   - Valid: `WhatsApp * {YYYY}-{MM}-{DD} * {HH}.{mm}.{ss}*`,
-    `{YYYY}{M}{DD}-*`.
-  - Invalid: `{YYYY}{M}{D}` (two variable-width tokens in one run),
+    `{YYYY}{M}{DD}-*`, `{YYYY}{MM}{DD}?{HH}{mm}` (no variable-width
+    placeholder, so `?` is allowed).
+  - Invalid: `{YYYY}{M}{D}` (two variable-width placeholders in one run),
     `{YYYY}-{M}1{D}` (the digit `1` joins `{M}` and `{D}` into one run),
-    `*{D}.{MM}.{YYYY}` and `{YYYY}{M}{DD}?*` (a run with a variable-width
-    token touches `*`), `{YYYY}-{M}?-{DD}` (a `?` directly next to `{M}`).
+    `*{D}.{MM}.{YYYY}` (the run with `{D}` touches `*`),
+    `{YYYY}{M}{DD}?*` (the run with `{M}` contains `?` and touches `*`),
+    `{YYYY}{M}{DD}?-*` and `{YYYY}-{M}?-{DD}` (the run with `{M}` contains
+    `?`).
+- When a name contains several places where a pattern with `*` on both sides
+  could match, the first date from the left is used.
 - Each pattern is compiled once to a `Regex` with
   `NonBacktracking | IgnoreCase | CultureInvariant | ExplicitCapture`, a
   **50 ms match timeout** (a timeout counts as no match) and no
