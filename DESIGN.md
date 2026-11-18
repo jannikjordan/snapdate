@@ -185,6 +185,34 @@ same strip with an info icon, one line of text and a "Got it" link button. Both 
 automation names. About gets a divider, the "Check for updates automatically" checkbox and a
 "Check now" secondary button with a short inline result next to it.
 
+### 5.8 Dates from file names dialog
+Opened from the link button "Dates from file names" / "Datum aus Dateinamen" (`Button.link`, `DateRulesLink`) at the right
+of the preview header; it is always there (disabled while copying). The "Date from name" and "File date" badge tooltips
+point to it. Overlay like About: `Border.scrim` + `Border.dialog.wide` (720 px wide, padding 24, 24 px top/bottom margin, so it
+is never taller than the window; only the rule list scrolls). From top to bottom:
+- Title (18/700) and a two-sentence explanation (muted): the first fitting rule is used, own rules first; a date in a name
+  is often the day the picture was received.
+- `Border.notice` (`warning-soft` background, warning icon + text, never colour alone) for the state of the user's rule
+  file: unreadable ("Built-in rules still work. Saving will keep a copy of the old file."), written by a newer version or
+  not accessible (both read-only: switches disabled, no Duplicate/Delete). A second notice (Polite live region) explains a
+  change that could not be saved (changed elsewhere → list reloaded; failed/too large → undone).
+- Rule rows (`Border.ruleRow`: `surface`, 1 px `border`, radius 10) in precedence order, own rules first: `ToggleSwitch.rule`
+  (no On/Off text, primary fill; automation name "<rule> on/off"), name (600, trimmed at 300 px, tooltip), source badge
+  ("Yours"/"Eigene" = `badge.info`, "Built-in"/"Mitgeliefert" = `badge.neutral`: `surface-2`, 1 px `border`, `text`),
+  a `badge.warn` with the syntax name for rules this version cannot use, and the patterns (mono, muted, one line, tooltip
+  one per line). Actions at the right as link buttons: built-in rows "Duplicate" (copy named "<name> (copy)"/"(Kopie)",
+  placed with the own rules, focus moves to it); own rows "Delete" (`Button.link.danger`) with an inline confirmation
+  "Delete this rule?" + Delete + Cancel. "Edit" (own rows) and "Add rule" (footer, left) exist but stay hidden until the
+  rule editor (#20).
+- Tester (`Border.tester`: `surface-2`, radius 10): label, mono text box "Try a file name" and, when a folder was scanned, a
+  picker with up to 50 of its names (those with a file date first). The result line is a Polite live region: check icon +
+  `success` text "Rule "<name>": <long date>[, <time>]" in the UI culture; warning icon + `warning` text "… (rule is
+  switched off)"; red ✕ icon + muted "No rule matches". Only photo/video extensions are removed before matching.
+- Footer: primary "Close". Esc cancels an open delete confirmation, otherwise closes. Tab cycles inside the dialog
+  (top to bottom); on open the first switch gets focus, on close focus returns to where it was.
+
+Every change is saved at once. Closing after a change scans the folder again (once) with the new rules.
+
 ## 6. Localisation
 
 - Auto: Windows display language `de-*` → German, otherwise English.
