@@ -135,6 +135,61 @@ public sealed class JsonDateRuleStoreTests : IDisposable
     }
 
     [Fact]
+    public void Oversized_files_are_fingerprinted_without_reading_them_in_full()
+    {
+        // Only the start goes into the fingerprint, so a change far beyond it is noticed through the write time.
+        var size = (int)JsonDateRuleStore.MaxFileSize * 4;
+        var content = new byte[size];
+        content.AsSpan().Fill((byte)' ');
+        _temp.Write(Path.Combine("Snapdate", "date-rules.json"), content);
+        File.SetLastWriteTimeUtc(RulesPath, new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc));
+        var store = Store();
+        var first = store.LoadUserRules();
+
+        Assert.Equal(UserRulesStatus.Unreadable, first.Status);
+        Assert.Equal(size, first.Fingerprint.Length);
+        Assert.Equal(first.Fingerprint, store.LoadUserRules().Fingerprint);
+
+        content[^1] = (byte)'x';
+        File.WriteAllBytes(RulesPath, content);
+        File.SetLastWriteTimeUtc(RulesPath, new DateTime(2026, 1, 2, 0, 0, 0, DateTimeKind.Utc));
+
+        Assert.NotEqual(first.Fingerprint, store.LoadUserRules().Fingerprint);
+        Assert.Equal(DateRuleSaveResult.Conflict, store.SaveUserRules(UserDateRules.Empty, first.Fingerprint).Result);
+    }
+
+    [Fact]
+    public void A_failed_write_after_moving_an_unreadable_file_aside_can_be_retried()
+    {
+        WriteRules("{ broken");
+        var failNext = true;
+        var store = new JsonDateRuleStore(RulesPath, new FixedClock(FixedNow))
+        {
+            Writer = (path, bytes) =>
+            {
+                if (failNext)
+                {
+                    failNext = false;
+                    return false;
+                }
+
+                File.WriteAllBytes(path, bytes);
+                return true;
+            },
+        };
+        var catalog = DateRuleCatalog.Load(store);
+        Assert.NotNull(catalog.Add("Camera", ["DSC_{YYYY}{MM}{DD}*"]));
+
+        Assert.Equal(DateRuleSaveResult.Failed, catalog.Save(store));
+        Assert.Equal(UserRulesFingerprint.Absent, catalog.Fingerprint);
+        Assert.False(File.Exists(RulesPath));
+
+        Assert.Equal(DateRuleSaveResult.Saved, catalog.Save(store));
+        Assert.Equal(catalog.ToUserRules(), store.LoadUserRules().Rules);
+        Assert.Equal("{ broken", File.ReadAllText(Path.Combine(Path.GetDirectoryName(RulesPath)!, UnreadableName())));
+    }
+
+    [Fact]
     public void Saving_after_an_unreadable_file_keeps_the_bad_file_aside()
     {
         WriteRules("{ broken");

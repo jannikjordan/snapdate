@@ -4,6 +4,7 @@ namespace Snapdate.Application.FileNames;
 /// <param name="Result">What happened.</param>
 /// <param name="Fingerprint">
 /// The fingerprint of the file just written when <paramref name="Result"/> is <see cref="DateRuleSaveResult.Saved"/>;
-/// otherwise the fingerprint that was passed in, unchanged.
+/// <see cref="UserRulesFingerprint.Absent"/> when the result is <see cref="DateRuleSaveResult.Failed"/> after an
+/// unreadable file was moved aside (there is no file any more); otherwise the fingerprint that was passed in, unchanged.
 /// </param>
 public sealed record UserDateRulesSave(DateRuleSaveResult Result, UserRulesFingerprint Fingerprint);
