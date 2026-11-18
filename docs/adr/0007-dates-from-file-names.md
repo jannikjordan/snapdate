@@ -52,14 +52,22 @@ placeholders the user already knows from the file-name builder, for example
 - A rule has **1–10 patterns** (one per line in the editor); the first pattern
   that yields a valid date wins.
 - Validation (errors are values with a character position, never exceptions):
-  empty; longer than 200 characters; unclosed brace; unknown token; unsupported
-  token (e.g. `{MMM}`, `{name}`); a token used twice; year, month or day
-  missing; hour and minute must appear together (neither `{HH}` without `{mm}`
-  nor `{mm}` without `{HH}`; error kinds `HourWithoutMinute`,
-  `MinuteWithoutHour`); seconds require minutes (`SecondWithoutMinute`);
-  **`*` or `?` directly next to a date token, or two variable-width tokens
-  (`{M}`, `{D}`, `{H}`, `{m}`, `{s}`) next to each other** (ambiguous). A rule with one invalid
-  pattern still uses its valid ones.
+  empty; longer than 200 characters; unclosed brace; a lone `}`
+  (`UnexpectedClosingBrace`); unknown token; unsupported token (e.g. `{MMM}`,
+  `{name}`); a token used twice; year, month or day missing; hour and minute
+  must appear together (neither `{HH}` without `{mm}` nor `{mm}` without
+  `{HH}`; error kinds `HourWithoutMinute`, `MinuteWithoutHour`); seconds
+  require minutes (`SecondWithoutMinute`); ambiguous neighbours
+  (`AmbiguousNeighbours`, see below). A rule with one invalid pattern still
+  uses its valid ones.
+- **Ambiguity rule (runs).** A *run* is a group of consecutive tokens with no
+  literal text between them. Each run may contain **at most one
+  variable-width token** (`{M}`, `{D}`, `{H}`, `{m}`, `{s}`), and a run that
+  contains one must not touch `*`. A `?` must not sit directly next to a
+  variable-width token. Fixed-width tokens may touch `*`, so
+  `WhatsApp * {YYYY}-{MM}-{DD} * {HH}.{mm}.{ss}*` is valid, while
+  `{YYYY}{M}{D}` or `*{D}.{MM}.{YYYY}` is not. Violations are reported as
+  `AmbiguousNeighbours`.
 - Each pattern is compiled once to a `Regex` with
   `NonBacktracking | IgnoreCase | CultureInvariant | ExplicitCapture`, a
   **50 ms match timeout** (a timeout counts as no match) and no
@@ -71,8 +79,8 @@ placeholders the user already knows from the file-name builder, for example
   **plausibility check shared with the metadata reader** (`DatePlausibility`:
   not before 1900-01-01, not more than 2 days in the future). Otherwise the
   next pattern or rule is tried.
-- **Two-digit year pivot:** `{YY}` means 20YY, or 19YY if 20YY would be in the
-  future.
+- **Two-digit year pivot:** `{YY}` means 20YY, or 19YY when 20YY is after the
+  current year (whole years are compared, not full dates).
 
 **Advanced mode: regular expression.** A rule can set `"syntax": "regex"`
 instead of the default `"pattern"`. The user's expression is wrapped as
